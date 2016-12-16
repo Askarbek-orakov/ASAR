@@ -1,12 +1,13 @@
 #'Get MG-RAST annotation
 #'
+#'Takes in Id of metagenome sample at MG-RAST and webkey to access that and generates a formatted "anno" file containing that annotation
 #'@param MetagenomeID Id of your metagenome for which you get annotation from MG-RAST
 #'@param evalue = 5 by default
 #'@param identity = 60 (%) by default
 #'@param length = 15 (bp) by default
 #'@param resource has two parameters: source = "KO" by default and type = "ontology" by default
 #'@param webkey authentication key to access annotation file from MG-RAST
-#'@return annotation file for sample having ID of "MetagenomeID"
+#'@return formatted annotation file for sample having ID of "MetagenomeID"
 #'@export
 myGetMgrastAnnotation<-function(MetagenomeID, evalue = 5, identity = 60, length = 15, 
                                 resource = c(source = "KO", type = "ontology"), webkey){
@@ -46,4 +47,19 @@ myGetMgrastAnnotation<-function(MetagenomeID, evalue = 5, identity = 60, length 
                      sep = "\t", stringsAsFactor = F)
   return(anno)
   cat("\n", MetagenomeID, "annotation data loading completed")
+}
+#'Get Annotation from File
+#'
+#'Takes in Filename of metagenome sample annotation data to create formatted "anno" file. 
+#'@param file filename containing anotation of your sample
+#'@return formatted annotation file for metagenome sample annotation from input file
+#'@export
+getAnnotationFromFile<-function(file){
+  l<-readLines(file)
+  if(!grepl("Download\\s+complete", l[length(l)])){
+    stop('Download is incomplete')
+  }
+  anno<-read.delim(file, header = FALSE, fill=TRUE,  sep = "\t", stringsAsFactor = F)
+  anno[nrow(anno)+1,1]<-'Download complete'
+  return(anno)
 }
