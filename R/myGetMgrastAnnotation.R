@@ -1,3 +1,13 @@
+#'Get MG-RAST annotation
+#'
+#'@param MetagenomeID Id of your metagenome for which you get annotation from MG-RAST
+#'@param evalue = 5 by default
+#'@param identity = 60 (%) by default
+#'@param length = 15 (bp) by default
+#'@param resource has two parameters: source = "KO" by default and type = "ontology" by default
+#'@param webkey authentication key to access annotation file from MG-RAST
+#'@return annotation file for sample having ID of "MetagenomeID"
+#'@export
 myGetMgrastAnnotation<-function(MetagenomeID, evalue = 5, identity = 60, length = 15, 
                                 resource = c(source = "KO", type = "ontology"), webkey){
   MetagenomeID <- paste0("mgm", MetagenomeID)
