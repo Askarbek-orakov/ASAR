@@ -37,3 +37,18 @@ load.metadata <- function(file) {
   rownames(mdt) <- as.character(mdt[, 1])
   ids<-as.character(mdt$MG.RAST.ID)
 }
+
+#'If one fragment of DNA matches more than one function or taxon, MG-RAST returns list separated by semicolon. 
+#'
+#'This function replaces square brackets by space and reads string as a string. 
+#'@param .x input list of annotations
+#'@return list of formatted annotations as string
+#'@export
+extractOTU<-function(.x){
+  .res<-data.frame(otu=gsub('(\\[|\\])','',
+                            unlist(
+                              strsplit(
+                                as.character(
+                                  .x$semicolon.separated.list.of.annotations),
+                                ';'))))
+}
