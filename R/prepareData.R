@@ -52,3 +52,16 @@ extractOTU<-function(.x){
                                   .x$semicolon.separated.list.of.annotations),
                                 ';'))))
 }
+
+#' Takes in JSON format as R friendly-formay and saves in "Biom.RData" file
+#' 
+#' This function is to make JSON format avalable in R and save in .RData format for further use
+#' @param file file to be read in
+#' @return Biom.RData file containing R friendly data from JSON file
+#' @export
+read.biome <- function(file) {
+  json_res<-fromJSON(file)
+  biom(json_res)->biom_res
+  biom_df<-biom_data(biom_res)
+  save(biom_df,biom_res,file = 'Biom.RData')
+}
