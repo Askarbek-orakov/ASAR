@@ -63,3 +63,17 @@ getAnnotationFromFile<-function(file){
   anno[nrow(anno)+1,1]<-'Download complete'
   return(anno)
 }
+#'
+#'
+#'Takes in Filename of metagenome sample annotation data to create formatted "anno" file. 
+#'@param file filename containing anotation of your sample
+#'@return formatted annotation file for metagenome sample annotation from input file
+#'@export
+mergeAnnots<-function(f,s){
+  keycols<-names(f)[1:12]
+  setkeyv(f,keycols)
+  setkeyv(s,keycols)
+  d.merge<-merge(f,s,all=TRUE,suffixes = c('.fun','.sp'))
+  names(d.merge)<-gsub('semicolon separated list of annotations.','',names(d.merge))
+  return(d.merge)  
+}

@@ -53,7 +53,7 @@ extractOTU<-function(.x){
                                 ';'))))
 }
 
-#' Takes in JSON format as R friendly-formay and saves in "Biom.RData" file
+#' Takes in JSON format as R friendly-formaе and saves in "Biom.RData" file
 #' 
 #' This function is to make JSON format avalable in R and save in .RData format for further use
 #' @param file file to be read in
