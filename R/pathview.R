@@ -21,7 +21,8 @@ getAllAnnots <- function(file = mdt) {
 #'@details 6) outputs pathway maps for each pathway for each metagenome sample
 #'@details 7) generates general heatmap and table of expressions of all kegg functions for all samples for species entered
 #'@param 
-#'@return formatted annotation file for metagenome sample annotation from input file
+#'@return mapped KEGG pathway maps
+#'@return Heatmap and table of all functions and samples in given specie
 #'@export
 extractFigures <- function(SpecieName) {
   d<-getSpecieFromAbundMD5(d.bm,sp = SpecieName,aggregate = FALSE)
@@ -62,4 +63,91 @@ extractFigures <- function(SpecieName) {
   showTable(res,SpecieName)
   plotHeatmap(obj,100,norm = FALSE,trace = "none", col = heatmapCols,main=c(SpecieName, ' functions \nlog-transformed'))
   plotSP(d.bm[,-3],sp = SpecieName)
+}
+#'return appropriate object
+#'
+#'Checks if "obj" is matrix. Then normalizes and/or takes log2 when their corresponding values are TRUE
+#'@param obj should be data of matrix class
+#'@param norm logical value for normalization
+#'@param log logical value for taking logarithm of 2
+#'@return processed "res" file
+#'@export
+returnAppropriateObj<-function(obj, norm, log){
+  if(class(obj)!='matrix') stop('Obj should be a matrix')
+  res<-obj
+  if(log){
+    res<-log2(res+1)
+  }
+  if(norm){
+    res<-scale(res)
+  }
+  return(res)
+}
+plotHeatmap<-function(obj,n,norm=TRUE,log=TRUE,fun=sd,...){
+  mat = returnAppropriateObj(obj, norm, log)
+  otusToKeep = which(rowSums(mat) > 0)
+  if(length(otusToKeep)==1){
+    otuStats<-fun(mat)
+  }else{  
+    otuStats = apply(mat[otusToKeep, ], 1, fun)
+  }
+  otuIndices = otusToKeep[order(otuStats, decreasing = TRUE)[1:min(c(n,dim(mat)[1]))]]
+  mat2 = mat[otuIndices, ]
+  heatmap.2(mat2, hclustfun = function(.x)hclust(.x,method = 'ward.D2'),srtCol=45,
+            key.title=NA,
+            key.xlab=NA,
+            key.par=list(mgp=c(1.5, 0.5, 0),
+                         mar=c(1, 2.5, 1, 0.5)),
+            lmat=rbind( c(0, 3, 4), c(2,1,0 ) ),
+            lwid=c(1.5, 4, 1.5 ),...)
+  
+  #srtRow=45,...)
+  invisible(mat2)
+  
+}
+plotSP<-function(d3,sp){
+  d<-getSpecieFromAbund(d3,sp = sp,aggregate = FALSE)
+  d.sp<-aggregate(.~usp,as.data.frame(d)[,-2],FUN = sum)
+  obj<-as.matrix(d.sp[,-1])
+  rownames(obj)<-d.sp$usp
+  colnames(obj)<-mdt$MGN
+  if(dim(obj)[1]>1){
+    res<-plotHeatmap(obj,50,trace = "none", col = heatmapCols,main=paste(sp,'\n log-transformed'),norm=FALSE)
+  }else{
+    res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
+  }
+  invisible(res)
+}
+
+showTable<-function(obj,main,landscape=TRUE){
+  mat<-as.matrix(obj)
+  mat<-mat[order(rowSums(mat),decreasing = TRUE),]
+  addtorow          <- list()
+  addtorow$pos      <- list()
+  addtorow$pos[[1]] <- c(0)
+  addtorow$command  <- c(paste("\\hline \n",
+                               "\\endhead \n",
+                               "\\hline \n",
+                               "\\multicolumn{3}{l}{\\footnotesize Continued on next page} \n",
+                               "\\endfoot \n",
+                               "\\endlastfoot \n",sep=""))
+  if(landscape){
+    cat(sprintf("\\newpage\n \\begin{landscape} \n\\begin{center}\n\\captionof{table}{Summary %s }\n\\scriptsize",main))
+  }else{
+    cat(sprintf("\\newpage \n\\begin{center}\n\\captionof{table}{Summary %s }\n\\scriptsize",main))
+  }
+  ind<-1:length(colnames(mat))
+  alig<-c('p{5cm}',rep('r',length(ind)))
+  
+  print(xtable(mat[,order(colnames(mat))[ind]], 
+               align = paste(alig,collapse = ''),digits = 2)
+        ,size="small",include.colnames = TRUE,
+        tabular.environment="longtable",
+        floating=FALSE,include.rownames=TRUE,
+        add.to.row = addtorow,hline.after=c(-1))
+  if(landscape){
+    cat("\\end{center}\n \\end{landscape}")
+  }else{
+    cat("\\end{center}\n ")
+  }
 }
