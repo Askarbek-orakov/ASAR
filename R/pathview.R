@@ -18,6 +18,8 @@ getAllAnnots <- function(file = mdt) {
 #'@details 3) confers unique rows resulted from merging of "d5" and "d.kres" files at "m5" and "md5" columns respectively. "d.kres" file adds up kegg orthology IDs by each unique "m5" value
 #'@details 4) "adk5" file has enrichments on each KEGG Orthology ID for each metagenome sample
 #'@details 5) "gdk5" has the same information as "adk5", but for 5 samples only.
+#'@details 6) outputs pathway maps for each pathway for each metagenome sample
+#'@details 7) generates general heatmap and table of expressions of all kegg functions for all samples for species entered
 #'@param 
 #'@return formatted annotation file for metagenome sample annotation from input file
 #'@export
@@ -56,9 +58,8 @@ extractFigures <- function(SpecieName) {
   obj<-as.matrix(d[,-(1:3)])
   rownames(obj)<-d$ufun
   colnames(obj)<-mdt$MGN
-  res<-plotHeatmap(obj,100,trace = "none", col = heatmapCols,main='Nitrosomonas functions, \nnorm and log-transformed')
-  showTable(res,'Nitrosomonas')
-  plotHeatmap(obj,100,norm = FALSE,trace = "none", col = heatmapCols,main='Nitrosomonas functions \nlog-transformed')
-  plotSP(d.bm[,-3],sp = 'Nitrosomonas')
-  
+  res<-plotHeatmap(obj,100,trace = "none", col = heatmapCols,main = c(SpecieName, ' functions, \nnorm and log-transformed'))
+  showTable(res,SpecieName)
+  plotHeatmap(obj,100,norm = FALSE,trace = "none", col = heatmapCols,main=c(SpecieName, ' functions \nlog-transformed'))
+  plotSP(d.bm[,-3],sp = SpecieName)
 }
