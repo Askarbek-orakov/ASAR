@@ -98,12 +98,12 @@ expandNamesDT<-function(d.merge){
   unique(d.ufun[ , list(fun,usp=gsub('(\\]|\\[)','',unlist( strsplit( sp, "\\]; *\\[" ) )) ,sp,ab) , by = .(md5sum,ufun) ])->d.uspfun
   return(d.uspfun)
 }
-#'Calculates number of reads. 
+#'Calculates number of reads for bacterial species and function. 
 #'
-#'
-#'@param 
-#'@param 
-#'@return 
+#'@details First calculates sum of reads ('ab') for every group in bacterial species (usp) and function (ufun).
+#'@details Columns 'species' (usp), 'functions' (ufun) and 'sum' (sum) of reads are returned as a data.table and duplicated rows by all columns are removed..
+#'@param file
+#'@return file that was input, but adding sum of reads in the table.
 #'@export
 getAbundanceFromDT<-function(d.ab){
   d.ab<-d.ab[,sum:=sum(ab),by=.(usp,ufun)]
@@ -111,11 +111,10 @@ getAbundanceFromDT<-function(d.ab){
   return(d.ab)
 }
 #'Calculates number of sequences. 
-#'
-#'
-#'@param 
-#'@param 
-#'@return  
+#'@details First calculates sum of sequences ('ab') for every group in bacterial species (usp) and function (ufun) and renames coloumn as 'sum'. Then names 'md5sum as a 'md5' and separates elements of it by comma.
+#'@details Columns 'species' (usp), 'functions' (ufun), 'sum' (sum) and md5 of sequences are returned as a data.table and duplicated rows by all columns are removed..
+#'@param file
+#'@return file that was input, but adding sum of sequences in the table.
 #'@export
 getAbundanceMD5FromDT<-function(d.ab){
   d.ab<-d.ab[,.(sum=sum(ab),md5=paste(md5sum,collapse = ',')),by=.(usp,ufun)]
