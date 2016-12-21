@@ -174,3 +174,92 @@ showTable<-function(obj,main,landscape=TRUE){
     cat("\\end{center}\n ")
   }
 }
+analyzeMatches <- function(.path, metagenomeID) {
+  #makes a list of files for that metagenomeID
+  mlist<-dir(path = .path,pattern = c(metagenomeID, '.*'))
+  #
+  mannot<-lapply(mlist,function(.x){fread(paste0('ghead -n -1 ', .path,.x),sep='\t',header = TRUE)})
+  matches<-matrix(0,nrow = length(mannot),ncol = length(mannot))
+  for(i in 1:length(mannot)) matches[i,i]<-dim(mannot[[i]])[1]
+  for(i in 2:length(mannot)-1){
+    for(j in (i+1):length(mannot)){
+      matches[i,j]<-length(which(!is.na(match(mannot[[i]]$`hit m5nr id (md5sum)`,mannot[[j]]$`hit m5nr id (md5sum)`))))
+      matches[j,i]<-length(which(!is.na(match(mannot[[j]]$`hit m5nr id (md5sum)`,mannot[[i]]$`hit m5nr id (md5sum)`))))
+    }
+  }
+  rownames(matches)<-mlist
+  colnames(matches)<-mlist
+  
+  xtable(matches)
+  xtable(cor(matches))
+}
+
+load.fdata.from.file <- function() {
+  #flist<-dir(path = './tmp',pattern = '*.ko$')
+  flist<-dir(path = './tmp',pattern = '*.3.fseed$')
+  cat(paste(flist,collapse = '\n'))
+  #flist<-flist[-length(flist)]
+  fannot<-lapply(flist,function(.x){fread(paste0('ghead -n -1 ./tmp/',.x),sep='\t',header = TRUE)})
+}
+
+load.kodata.from.file <- function() {
+  klist<-dir(path = './tmp',pattern = '^m.*.ko$')
+  cat(paste(klist,collapse = '\n'))
+  #flist<-flist[-length(flist)]
+  ko<-lapply(klist,function(.x){fread(paste0('ghead -n -1 ./tmp/',.x),sep='\t',header = TRUE)})
+}
+ 
+load.sdata.from.file <- function() {
+  slist<-dir(path = './tmp',pattern = '*.3.seed$')
+  cat(paste(slist,collapse = '\n'))
+  #slist<-slist[-length(slist)]
+  if(length(slist)!=length(flist)) stop('Length of functional and specie annotation should match\n')
+  sannot<-lapply(slist,function(.x){fread(paste0('ghead -n -1 ./tmp/',.x),sep='\t',header = TRUE)})
+}
+
+merge <- function() {
+  nms<-gsub('.fseed$','',flist)
+  res<-list()
+  kres<-list()
+  for(i in 1:length(fannot)){
+    f<-fannot[[i]]
+    #f$`query sequence id`<-gsub('\\|KO$','',f$`query sequence id`)
+    s<-sannot[[i]]
+    #s$`query sequence id`<-gsub('\\|SEED$','',s$`query sequence id`)
+    d.k<-unique(ko[[i]][,list(`hit m5nr id (md5sum)`,`semicolon separated list of annotations`)])
+    d.k1<-d.k[,list(`semicolon separated list of annotations`,ko=unlist(gsub('accession=\\[K([0-9]+)\\].*','K\\1',unlist(str_split(`semicolon separated list of annotations`,';'))))),by=.(`hit m5nr id (md5sum)`)]
+    names(d.k1)<-c('md5','annotation','ko')
+    
+    kres[[nms[i]]]<-list(ab=d.k1,name=nms[i])
+    d.merge<-mergeAnnots(f,s)
+    d.uspfun<-expandNamesDT(d.merge)
+    d.ab<-getAbundanceMD5FromDT(d.uspfun)
+    res[[nms[i]]]<-list(ab=d.ab,name=nms[i])
+    
+    #d.m.t<-table(d.merge$fun,d.merge$sp)
+    cat(paste(i,nms[i],'\n'))
+  }
+}
+
+make.d.res <- function() {
+  d.res<-ldply(.data = res,
+               .fun = function(.x){
+                 ab<-.x$ab;
+                 ab$mgid=.x$name;
+                 return(ab)
+               })
+  names(d.res)
+  d.kres<-unique(ldply(.data = kres,
+                       .fun = function(.x){
+                         ab<-.x$ab;
+                         return(ab)
+                       }))
+  names(d.kres)
+}
+
+our.aggregate <- function() {
+  dcast(setDT(d.res),usp+ufun+md5 ~ mgid,value.var = 'sum',fill = 0)->d.bm
+  names(d.bm)
+  d.sp<-aggregate(.~usp,as.data.frame(d.bm)[,-c(2,3)],FUN = sum)
+  d.fun<-aggregate(.~ufun,as.data.frame(d.bm)[,-c(1,3)],FUN = sum)
+}
