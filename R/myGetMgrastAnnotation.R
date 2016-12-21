@@ -175,12 +175,6 @@ getFunctionFromAbundMD5<-function(d.bm,fun='protein',aggregate=FALSE){
 
 
 
-
-
-
-
-
-
 #make d.res contains all data about metagenome (ids function taxonomy abundance)
 # d.kres contains 
 {r make.d.res}
