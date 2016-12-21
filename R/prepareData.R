@@ -39,7 +39,6 @@ load.metadata <- function(file) {
 }
 
 #'If one fragment of DNA matches more than one function or taxon, MG-RAST returns list separated by semicolon. 
-#'
 #'This function replaces square brackets by space and reads string as a string. 
 #'@param .x input list of annotations
 #'@return list of formatted annotations as string
@@ -64,4 +63,23 @@ read.biome <- function(file) {
   biom(json_res)->biom_res
   biom_df<-biom_data(biom_res)
   save(biom_df,biom_res,file = 'Biom.RData')
+}
+#' 
+#' 
+#' 
+#' @param file 
+#' @return 
+#' @export
+Read.ko <- function() {
+  ko.df<-data.frame(mgrast.id='mgm',query.sequence.id='query.sequence.id',
+                    hit.m5nr.id..md5sum.='hit.m5nr.id..md5sum.',
+                    alignment.length.=1,
+                    e.value=1e-5,
+                    otu='out')[FALSE,]
+  for(sid in ids){
+    d1<-fread('mgm4714675.3.ko')
+    dd<-ddply(.data = d1[1:11],.(query.sequence.id,hit.m5nr.id..md5sum.,alignment.length.,e.value),.fun = extractOTU)
+    seed.df<-rbind(seed.df,cbind(data.frame(mgrast.id=rep(sid,dim(dd)[1])),dd))
+    save(seed.df,file = 'SEED.RData')
+  }
 }
