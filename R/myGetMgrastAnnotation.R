@@ -171,23 +171,3 @@ getFunctionFromAbundMD5<-function(d.bm,fun='protein',aggregate=FALSE){
   if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~usp,as.data.frame(d.res)[,-c(2,3)],FUN = sum)
   return(d.res)
 }
-
-
-
-#make d.res contains all data about metagenome (ids function taxonomy abundance)
-# d.kres contains 
-{r make.d.res}
-d.res<-ldply(.data = res,
-             .fun = function(.x){
-               ab<-.x$ab;
-               ab$mgid=.x$name;
-               return(ab)
-             })
-names(d.res)
-d.kres<-unique(ldply(.data = kres,
-                     .fun = function(.x){
-                       ab<-.x$ab;
-                       return(ab)
-                     }))
-names(d.kres)
-

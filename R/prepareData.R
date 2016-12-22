@@ -79,7 +79,7 @@ Read.ko <- function() {
                     e.value=1e-5,
                     otu='out')[FALSE,]
   for(sid in ids){
-    d1<-fread('mgm4714675.3.ko')
+    d1<-fread(c(sid, '.3.ko'))
     dd<-ddply(.data = d1[1:11],.(query.sequence.id,hit.m5nr.id..md5sum.,alignment.length.,e.value),.fun = extractOTU)
     seed.df<-rbind(seed.df,cbind(data.frame(mgrast.id=rep(sid,dim(dd)[1])),dd))
     save(seed.df,file = 'SEED.RData')
@@ -88,8 +88,12 @@ Read.ko <- function() {
 
 #' 
 #' 
-#' @details 
-#' @details 
+#' @details Reads from 'tmp/mgm4714679.3.fseed' to the file "d.fseed" and sepatates coloumns. 
+#' @details Gives names to coloumns.
+#' @details Reads from 'tmp/mgm4714679.3.seed' to the file "d.sseed" and sepatates coloumns. 
+#' @details Gives names to coloumns.
+#' @details Assigns 'sid' and 'md5' as keycols, which means that these colounms to be sorted in both two files.
+#' @details Merges two tables in two files (d.fseed and d.sseed) based on the shared key columns and creates two coloumns named as ".fun" and ".sp"
 #' @param  
 #' @return 
 #' @export
