@@ -54,9 +54,10 @@ extractOTU<-function(.x){
 
 #' Takes in JSON format as R friendly-formaе and saves in "Biom.RData" file
 #' 
-#' This function is to make JSON format avalable in R and save in .RData format for further use
-#' @param file file to be read in
-#' @return Biom.RData file containing R friendly data from JSON file
+#' This function is to make JSON format avalable in R and save in .RData format for further use.
+#' Biom additonally gives for each strain its taxonomic lineage.
+#' @param file file to be read in.
+#' @return Biom.RData file containing R friendly data from JSON file.
 #' @export
 read.biome <- function(file) {
   json_res<-fromJSON(file)
@@ -64,11 +65,12 @@ read.biome <- function(file) {
   biom_df<-biom_data(biom_res)
   save(biom_df,biom_res,file = 'Biom.RData')
 }
+#' Read KO annotation and save it in SEED.RData file. 
 #' 
-#' 
-#' 
+#' @details To each splitted data frame applies function "extractOTU" and returns results in a data frame.
+#' @details Takes data-frame arguments and combine by rows.
 #' @param file 
-#' @return 
+#' @return file called "SEED.RData"
 #' @export
 Read.ko <- function() {
   ko.df<-data.frame(mgrast.id='mgm',query.sequence.id='query.sequence.id',
@@ -82,4 +84,88 @@ Read.ko <- function() {
     seed.df<-rbind(seed.df,cbind(data.frame(mgrast.id=rep(sid,dim(dd)[1])),dd))
     save(seed.df,file = 'SEED.RData')
   }
+}
+
+#' 
+#' 
+#' @details 
+#' @details 
+#' @param  
+#' @return 
+#' @export
+d.fseed<-fread('tmp/mgm4714679.3.fseed',sep='\t',header = FALSE,skip = 1L)
+names(d.fseed)<-c('sid','md5','pers.id','al.len','num.mis','num.gap','qstart','qend','hstart','hend','e.val','b.score','ann.list')
+
+d.sseed<-fread('tmp/mgm4714679.3.seed',sep='\t',header = FALSE,skip = 1L)
+names(d.sseed)<-c('sid','md5','pers.id','al.len','num.mis','num.gap','qstart','qend','hstart','hend','e.val','b.score','ann.list')
+keycols<-c('sid','md5')
+setkeyv(d.fseed,keycols)
+setkeyv(d.sseed,keycols)
+d.merge<-merge(d.fseed,d.sseed,all=TRUE,suffixes = c('.fun','.sp'))
+num.sp<-sapply(lapply(str_split(d.merge$ann.list.sp,';'),unique),length)
+num.fun<-sapply(lapply(str_split(d.merge$ann.list.fun,';'),unique),length)
+d.merge.ex<-data.frame(id=rep('',sum(num.fun*num.sp)),ann.fun='',ann.sp='',stringsAsFactors = FALSE)
+id1<-which(num.fun==1&num.sp==1)
+ki<-0
+kk<-sum(num.sp[id1]*num.fun[id1])
+d.merge.ex[1:kk+ki,]<-data.table(id=paste(d.merge$sid[id1],d.merge$md5[id1],sep='|md5'),ann.fun=d.merge$ann.list.fun[id1],ann.sp=d.merge$ann.list.sp[id1])
+ki<-ki+kk
+id1<-which(num.fun==1&num.sp>1)
+kk<-sum(num.sp[id1]*num.fun[id1])
+d.merge.ex[1:kk+ki,]<-data.table(
+  id=rep(paste(d.merge$sid[id1],
+               d.merge$md5[id1],sep='|md5'),
+         num.sp[id1]),
+  ann.fun=rep(sapply(str_split(d.merge$ann.list.fun[id1],';'),unique)
+              ,num.sp[id1]),
+  ann.sp=unlist(sapply(
+    str_split(d.merge$ann.list.sp[id1],';'),
+    unique)))
+ki<-ki+kk
+id1<-which(num.fun>1&num.sp==1)
+kk<-sum(num.sp[id1]*num.fun[id1])
+d.merge.ex[1:kk+ki,]<-data.table(
+  id=rep(paste(d.merge$sid[id1],
+               d.merge$md5[id1],sep='|md5'),
+         num.fun[id1]),
+  ann.fun=unlist(sapply(
+    str_split(d.merge$ann.list.fun[id1],';'),
+    unique)),
+  ann.sp=rep(sapply(str_split(d.merge$ann.list.sp[id1],';'),unique)
+             ,num.fun[id1])
+)
+ki<-ki+kk
+id1<-which(num.fun>1&num.sp>1)
+kk<-sum(num.sp[id1]*num.fun[id1])
+d.merge.ex[1:kk+ki,]<-data.table(
+  id=rep(paste(d.merge$sid[id1],
+               d.merge$md5[id1],sep='|md5'),
+         num.fun[id1]*num.sp[id1]),
+  ann.fun=unlist(sapply(id1,
+                        function(.x) rep(sapply(
+                          str_split(d.merge$ann.list.fun[.x],';'),
+                          unique),num.sp[.x]))),
+  ann.sp=unlist(sapply(id1,
+                       function(.x) rep(sapply(
+                         str_split(d.merge$ann.list.sp[.x],';'),
+                         unique),num.fun[.x])))
+)
+
+#' Read SEED species and save it in "SEED.RData" file. 
+#' 
+#' @details To each splitted data frame applies function "extractOTU" and returns results in a data frame.
+#' @details Takes data-frame arguments and combine by rows.
+#' @param file 
+#' @return file called "SEED.RData"
+#' @export
+d.sseed<-data.frame(mgrast.id='mgm',query.sequence.id='query.sequence.id',
+                    hit.m5nr.id..md5sum.='hit.m5nr.id..md5sum.',
+                    alignment.length.=1,
+                    e.value=1e-5,
+                    otu='out')[FALSE,]
+for(sid in ids){
+  d1<-read.delim('tmp/mgm4714675.3.seed')
+  dd<-ddply(.data = d1[1:11],.(query.sequence.id,hit.m5nr.id..md5sum.,alignment.length.,e.value),.fun = extractOTU)
+  seed.df<-rbind(seed.df,cbind(data.frame(mgrast.id=rep(sid,dim(dd)[1])),dd))
+  save(seed.df,file = 'SEED.RData')
 }
