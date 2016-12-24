@@ -174,47 +174,48 @@ showTable<-function(obj,main,landscape=TRUE){
     cat("\\end{center}\n ")
   }
 }
-analyzeMatches <- function(.path, metagenomeID) {
+
+analyzeMatches <- function(.path = '', metagenomeID) {
   #makes a list of files for that metagenomeID
   mlist<-dir(path = .path,pattern = c(metagenomeID, '.*'))
-  #
+  #extract all table except last row
   mannot<-lapply(mlist,function(.x){fread(paste0('ghead -n -1 ', .path,.x),sep='\t',header = TRUE)})
+  #create table with number of rows and columns equal to number of tables imported
   matches<-matrix(0,nrow = length(mannot),ncol = length(mannot))
+  # determine number of rows for each table
   for(i in 1:length(mannot)) matches[i,i]<-dim(mannot[[i]])[1]
+  # calculate numbers of md5sums between tables in both directions
   for(i in 2:length(mannot)-1){
     for(j in (i+1):length(mannot)){
       matches[i,j]<-length(which(!is.na(match(mannot[[i]]$`hit m5nr id (md5sum)`,mannot[[j]]$`hit m5nr id (md5sum)`))))
       matches[j,i]<-length(which(!is.na(match(mannot[[j]]$`hit m5nr id (md5sum)`,mannot[[i]]$`hit m5nr id (md5sum)`))))
     }
   }
+  #give names to rows and columns according to table names.
   rownames(matches)<-mlist
   colnames(matches)<-mlist
-  
+  # export tables of matches
   xtable(matches)
   xtable(cor(matches))
 }
 
-load.fdata.from.file <- function() {
-  #flist<-dir(path = './tmp',pattern = '*.ko$')
-  flist<-dir(path = './tmp',pattern = '*.3.fseed$')
+load.fdata.from.file <- function(path = '.') {
+  flist<-dir(path = path, pattern = '*.3.fseed$')
   cat(paste(flist,collapse = '\n'))
-  #flist<-flist[-length(flist)]
-  fannot<-lapply(flist,function(.x){fread(paste0('ghead -n -1 ./tmp/',.x),sep='\t',header = TRUE)})
+  fannot<-lapply(flist,function(.x){fread(paste0('ghead -n -1 ', path ,.x),sep='\t',header = TRUE)})
 }
 
-load.kodata.from.file <- function() {
-  klist<-dir(path = './tmp',pattern = '^m.*.ko$')
+load.kodata.from.file <- function(path = '.') {
+  klist<-dir(path = path, pattern = '^m.*.ko$')
   cat(paste(klist,collapse = '\n'))
-  #flist<-flist[-length(flist)]
-  ko<-lapply(klist,function(.x){fread(paste0('ghead -n -1 ./tmp/',.x),sep='\t',header = TRUE)})
+  ko<-lapply(klist,function(.x){fread(paste0('ghead -n -1 ', path, .x),sep='\t',header = TRUE)})
 }
  
-load.sdata.from.file <- function() {
-  slist<-dir(path = './tmp',pattern = '*.3.seed$')
+load.sdata.from.file <- function(path = '.') {
+  slist<-dir(path = path,pattern = '*.3.seed$')
   cat(paste(slist,collapse = '\n'))
-  #slist<-slist[-length(slist)]
   if(length(slist)!=length(flist)) stop('Length of functional and specie annotation should match\n')
-  sannot<-lapply(slist,function(.x){fread(paste0('ghead -n -1 ./tmp/',.x),sep='\t',header = TRUE)})
+  sannot<-lapply(slist,function(.x){fread(paste0('ghead -n -1 ', path, .x),sep='\t',header = TRUE)})
 }
 
 merge <- function() {
