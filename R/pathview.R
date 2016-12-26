@@ -199,7 +199,42 @@ analyzeMatches <- function(metagenomeID, .path = ".") {
   xtable(matches)
   xtable(cor(matches))
 }
+
+
+
 ## THESE ARE FUNCTIONS TO PREPARE "Pathview.RData" file
+
+#' Separate functional analysis data into a new table in a file removing duplicates.
+#'
+#'Checks md5sum and removes duplicates and copies functional analysis data into the file "d.uspfun".
+#'@param file file from which functional analysis data is going to be extracted. 
+#'@details Copies coloumns, namely `query sequence id`,`hit m5nr id (md5sum)`,fun and sp with all rows from file "d.merge" to the file "d".
+#'@details Changes names of coloumns `query sequence id`,`hit m5nr id (md5sum)`,fun and sp to 'id','md5sum','fun'and 'sp' respectively.
+#'@details Checks coloumn 'md5sum' and removes duplicates by transfering rows to "d.ufun" and removes quare brackets. 
+#'@details Checks coloumn 'md5sum' and 'ufun' and removes duplicates by transfering rows to "d.uspfun" and removes quare brackets. 
+#'@return table in the file "d.uspfun" which consists of ids, md5sum, function and species name.  
+#'@export
+expandNamesDT<-function(d.merge){
+  d<-d.merge[,.(`query sequence id`,`hit m5nr id (md5sum)`,fun,sp)]
+  names(d)<-c('id','md5sum','fun','sp')
+  #dt[ , list( pep = unlist( strsplit( pep , ";" ) ) ) , by = pro ]
+  unique(d[ , list(ufun = gsub('(\\]|\\[)','',unlist( strsplit( fun, "\\]; *\\[" ) )) ,fun,sp,ab=.N) , by = md5sum ])->d.ufun
+  unique(d.ufun[ , list(fun,usp=gsub('(\\]|\\[)','',unlist( strsplit( sp, "\\]; *\\[" ) )) ,sp,ab) , by = .(md5sum,ufun) ])->d.uspfun
+  return(d.uspfun)
+}
+
+#'Calculates number of sequences. 
+#'@details First calculates sum of sequences ('ab') for every group in bacterial species (usp) and function (ufun) and renames coloumn as 'sum'. Then names 'md5sum as a 'md5' and separates elements of it by comma.
+#'@details Columns 'species' (usp), 'functions' (ufun), 'sum' (sum) and md5 of sequences are returned as a data.table and duplicated rows by all columns are removed..
+#'@param file
+#'@return file that was input, but adding sum of sequences in the table.
+#'@export
+getAbundanceMD5FromDT<-function(d.ab){
+  d.ab<-d.ab[,.(sum=sum(ab),md5=paste(md5sum,collapse = ',')),by=.(usp,ufun)]
+  d.ab<-unique(d.ab[,.(usp,ufun,sum,md5)])
+  return(d.ab)
+}
+
 #'Load metadata of metagenome samples
 #'
 #'Takes in a file containing metadata and assigns source and origin values depending on MetagenomeID
@@ -241,7 +276,7 @@ load.metadata <- function(file) {
   return(mdt)
 }
 #'@return fannot
-#' command ">fannot <- load.fdata.from.file" should be run
+#' command ">fannot <- load.fdata.from.file()" should be run
 load.fdata.from.file <- function(path = ".") {
   flist<-dir(path = path, pattern = "*.3.fseed$")
   cat(paste(flist,collapse = "\n"))
@@ -249,7 +284,7 @@ load.fdata.from.file <- function(path = ".") {
 }
 
 #'@return ko
-#' command ">ko <- load.kodata.from.file" should be run
+#' command ">ko <- load.kodata.from.file()" should be run
 load.kodata.from.file <- function(path = '.') {
   klist<-dir(path = path, pattern = '^m.*.ko$')
   cat(paste(klist,collapse = '\n'))
@@ -257,7 +292,7 @@ load.kodata.from.file <- function(path = '.') {
 }
 
 #'@return sannot
-#' command ">sannot <- load.sdata.from.file" should be run
+#' command ">sannot <- load.sdata.from.file()" should be run
 load.sdata.from.file <- function(path = '.') {
   slist<-dir(path = path,pattern = '*.3.seed$')
   flist<-dir(path = path, pattern = "*.3.fseed$")
@@ -266,6 +301,7 @@ load.sdata.from.file <- function(path = '.') {
   sannot<-lapply(slist,function(.x){fread(paste0('ghead -n -1 ./', .x),sep='\t',header = TRUE)})
 }
 
+#command "kres.res <- our.merge()" should be run
 our.merge <- function() {
   flist<-dir(path = ".", pattern = "*.3.fseed$")
   nms<-gsub('.fseed$','',flist)
@@ -280,9 +316,10 @@ our.merge <- function() {
     s<-sannot[[i]]
     #s$`query sequence id`<-gsub('\\|SEED$','',s$`query sequence id`)
     d.k<-unique(ko[[i]][,list(`hit m5nr id (md5sum)`,`semicolon separated list of annotations`)])
+    #creates 3rd column with accession number itself only
     d.k1<-d.k[,list(`semicolon separated list of annotations`,ko=unlist(gsub('accession=\\[K([0-9]+)\\].*','K\\1',unlist(str_split(`semicolon separated list of annotations`,';'))))),by=.(`hit m5nr id (md5sum)`)]
     names(d.k1)<-c('md5','annotation','ko')
-    
+    #kres is ready
     kres[[nms[i]]]<-list(ab=d.k1,name=nms[i])
     
     keycols<-names(f)[1:12]
@@ -290,26 +327,30 @@ our.merge <- function() {
     setkeyv(s,keycols)
     d.merge<-merge(f,s,all=TRUE,suffixes = c('.fun','.sp'))
     names(d.merge)<-gsub('semicolon separated list of annotations.','',names(d.merge))
-    
     d.uspfun<-expandNamesDT(d.merge)
     d.ab<-getAbundanceMD5FromDT(d.uspfun)
+    #res is ready
     res[[nms[i]]]<-list(ab=d.ab,name=nms[i])
     
     #d.m.t<-table(d.merge$fun,d.merge$sp)
     cat(paste(i,nms[i],'\n'))
   }
+  return(list(kres=kres, res=res))
 }
 
-make.d.res <- function() {
-  d.res<-ldply(.data = res,
+#command "d.res <- make.d.res(kres.res)" should be run
+make.d.res <- function(.list) {
+  d.res<-ldply(.data = .list$res,
                .fun = function(.x){
                  ab<-.x$ab;
                  ab$mgid=.x$name;
                  return(ab)
                })
 }
-make.d.kres <- function(){
-  d.kres<-unique(ldply(.data = kres,
+
+#command "d.kres <- make.d.kres(kres.res)" should be run
+make.d.kres <- function(.list){
+  d.kres<-unique(ldply(.data = .list$kres,
                        .fun = function(.x){
                          ab<-.x$ab;
                          return(ab)
@@ -318,7 +359,8 @@ make.d.kres <- function(){
 
 our.aggregate <- function() {
   dcast(setDT(d.res),usp+ufun+md5 ~ mgid,value.var = 'sum',fill = 0)->d.bm
-  names(d.bm)
+
   d.sp<-aggregate(.~usp,as.data.frame(d.bm)[,-c(2,3)],FUN = sum)
   d.fun<-aggregate(.~ufun,as.data.frame(d.bm)[,-c(1,3)],FUN = sum)
+  return(d.bm)
 }
