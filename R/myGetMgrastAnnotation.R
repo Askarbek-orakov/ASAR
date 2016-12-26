@@ -48,6 +48,7 @@ myGetMgrastAnnotation<-function(MetagenomeID, evalue = 5, identity = 60, length 
   return(anno)
   cat("\n", MetagenomeID, "annotation data loading completed")
 }
+
 #'Get Annotation from File
 #'
 #'Takes in File name of metagenome sample annotation data to create formatted "anno" file. 
@@ -64,7 +65,7 @@ getAnnotationFromFile<-function(file){
   return(anno)
 }
 
-#'Merge functional and taxanomical analysis data of a read.
+#'Merge functional and taxonomical analysis data of a read.
 #'
 #'For each read it merges files of functional and taxonomical analysis from MG-RAST, so that it results one table containing ids, md5, function and taxonomy.
 #'@param f a list of SEED function from files for different metagenomes that end as "*.3.fseed" as MG-RAST output.
