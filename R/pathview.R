@@ -175,7 +175,7 @@ showTable<-function(obj,main,landscape=TRUE){
   }
 }
 
-analyzeMatches <- function(.path = '', metagenomeID) {
+analyzeMatches <- function(metagenomeID, .path = '.') {
   #makes a list of files for that metagenomeID
   mlist<-dir(path = .path,pattern = c(metagenomeID, '.*'))
   #extract all table except last row
