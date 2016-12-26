@@ -183,7 +183,7 @@ analyzeMatches <- function(metagenomeID, .path = ".") {
   mannot<-lapply(mlist,function(.x){fread(paste0("ghead -n -1 ./",.x),sep="\t",header = TRUE)})
   #create table with number of rows and columns equal to number of tables imported
   matches<-matrix(0,nrow = length(mannot),ncol = length(mannot))
-  # determine number of rows for each table
+  #determine number of rows for each table
   for(i in 1:length(mannot)) matches[i,i]<-dim(mannot[[i]])[1]
   # calculate numbers of md5sums between tables in both directions
   for(i in 2:length(mannot)-1){
@@ -199,30 +199,81 @@ analyzeMatches <- function(metagenomeID, .path = ".") {
   xtable(matches)
   xtable(cor(matches))
 }
-
-load.fdata.from.file <- function(path = '.') {
-  flist<-dir(path = path, pattern = '*.3.fseed$')
-  cat(paste(flist,collapse = '\n'))
-  fannot<-lapply(flist,function(.x){fread(paste0('ghead -n -1 ', path ,.x),sep='\t',header = TRUE)})
+## THESE ARE FUNCTIONS TO PREPARE "Pathview.RData" file
+#'Load metadata of metagenome samples
+#'
+#'Takes in a file containing metadata and assigns source and origin values depending on MetagenomeID
+#'@param file file containing metadata of selected samples ususally exported from MG-RAST
+#'@return formatted tab-delimited metadata table called "mdt"
+#'@export
+#'command "mdt <- load.metadata("jobs.tsv")" should be run
+load.metadata <- function(file) {
+  mdt<-read.delim(file)
+  mdt$Name<-sub('^[0-9]+_([^_]+)_[^_]+_([^_]+).*$','\\1_\\2',mdt$Metagenome.Name)
+  mdt$EID<-sub('^([^_]+)_.*$','\\1',mdt$Name)
+  mdt$MFCID<-NA
+  mdt$MFCID[mdt$EID=='S5'|mdt$EID=='S6']<-'MFC1_p'
+  mdt$MFCID[mdt$EID=='S7'|mdt$EID=='S8']<-'MFC3_p'
+  mdt$MFCID[mdt$EID=='S9'|mdt$EID=='S10']<-'MFC1_a'
+  mdt$MFCID[mdt$EID=='S11'|mdt$EID=='S12']<-'MFC3_a'
+  mdt$MFCID[mdt$EID=='S9'|mdt$EID=='S10']<-'MFC1_a'
+  mdt$MFCID[mdt$EID=='S11'|mdt$EID=='S12']<-'MFC3_a'
+  mdt$MFCID[mdt$EID=='S1']<-'inflowSW'
+  mdt$MFCID[mdt$EID=='S2']<-'rIS'
+  mdt$MFCID[mdt$EID=='S3']<-'rSW'
+  mdt$MFCID[mdt$EID=='S4']<-'sMiz'
+  mdt$Source<-NA
+  samplesToKeep<-grep('_a',mdt$MFCID)
+  mdt$Source[samplesToKeep]<-'anode'
+  samplesToKeep<-grep('_p',mdt$MFCID)
+  mdt$Source[samplesToKeep]<-'plankton'
+  samplesToKeep<-grep('^r',mdt$MFCID)
+  mdt$Source[samplesToKeep]<-'inoculum'
+  samplesToKeep<-grep('^inflow',mdt$MFCID)
+  mdt$Source[samplesToKeep]<-'inflow'
+  mdt$Origin<-NA
+  samplesToKeep<-grep('S(3|5|9|6|10)',mdt$Metagenome.Name)
+  mdt$Origin[samplesToKeep]<-'sws'
+  samplesToKeep<-grep('S(2|7|11|8|12)',mdt$Metagenome.Name)
+  mdt$Origin[samplesToKeep]<-'is'
+  mdt$Origin[mdt$MFCID=="inflowSW"]<-'inflow'
+  rownames(mdt) <- as.character(mdt[, 1])
+  return(mdt)
+}
+#'@return fannot
+#' command ">fannot <- load.fdata.from.file" should be run
+load.fdata.from.file <- function(path = ".") {
+  flist<-dir(path = path, pattern = "*.3.fseed$")
+  cat(paste(flist,collapse = "\n"))
+  fannot<-lapply(flist,function(.x){fread(paste0('ghead -n -1 ./', .x),sep='\t',header = TRUE)})
 }
 
+#'@return ko
+#' command ">ko <- load.kodata.from.file" should be run
 load.kodata.from.file <- function(path = '.') {
   klist<-dir(path = path, pattern = '^m.*.ko$')
   cat(paste(klist,collapse = '\n'))
-  ko<-lapply(klist,function(.x){fread(paste0('ghead -n -1 ', path, .x),sep='\t',header = TRUE)})
-}
- 
-load.sdata.from.file <- function(path = '.') {
-  slist<-dir(path = path,pattern = '*.3.seed$')
-  cat(paste(slist,collapse = '\n'))
-  if(length(slist)!=length(flist)) stop('Length of functional and specie annotation should match\n')
-  sannot<-lapply(slist,function(.x){fread(paste0('ghead -n -1 ', path, .x),sep='\t',header = TRUE)})
+  ko<-lapply(klist,function(.x){fread(paste0('ghead -n -1 ./', .x),sep='\t',header = TRUE)})
 }
 
-merge <- function() {
+#'@return sannot
+#' command ">sannot <- load.sdata.from.file" should be run
+load.sdata.from.file <- function(path = '.') {
+  slist<-dir(path = path,pattern = '*.3.seed$')
+  flist<-dir(path = path, pattern = "*.3.fseed$")
+  cat(paste(slist,collapse = '\n'))
+  if(length(slist)!=length(flist)) stop('Length of functional and specie annotation should match\n')
+  sannot<-lapply(slist,function(.x){fread(paste0('ghead -n -1 ./', .x),sep='\t',header = TRUE)})
+}
+
+our.merge <- function() {
+  flist<-dir(path = ".", pattern = "*.3.fseed$")
   nms<-gsub('.fseed$','',flist)
   res<-list()
   kres<-list()
+  #fannot <- load.fdata.from.file()
+  #sannot <- load.sdata.from.file()
+  #ko <- load.kodata.from.file()
   for(i in 1:length(fannot)){
     f<-fannot[[i]]
     #f$`query sequence id`<-gsub('\\|KO$','',f$`query sequence id`)
@@ -233,7 +284,13 @@ merge <- function() {
     names(d.k1)<-c('md5','annotation','ko')
     
     kres[[nms[i]]]<-list(ab=d.k1,name=nms[i])
-    d.merge<-mergeAnnots(f,s)
+    
+    keycols<-names(f)[1:12]
+    setkeyv(f,keycols)
+    setkeyv(s,keycols)
+    d.merge<-merge(f,s,all=TRUE,suffixes = c('.fun','.sp'))
+    names(d.merge)<-gsub('semicolon separated list of annotations.','',names(d.merge))
+    
     d.uspfun<-expandNamesDT(d.merge)
     d.ab<-getAbundanceMD5FromDT(d.uspfun)
     res[[nms[i]]]<-list(ab=d.ab,name=nms[i])
@@ -250,13 +307,13 @@ make.d.res <- function() {
                  ab$mgid=.x$name;
                  return(ab)
                })
-  names(d.res)
+}
+make.d.kres <- function(){
   d.kres<-unique(ldply(.data = kres,
                        .fun = function(.x){
                          ab<-.x$ab;
                          return(ab)
                        }))
-  names(d.kres)
 }
 
 our.aggregate <- function() {

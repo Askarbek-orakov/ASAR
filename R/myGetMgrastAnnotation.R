@@ -71,7 +71,7 @@ getAnnotationFromFile<-function(file){
 #'@param s a list of SEED Orthologs from files for different metagenomes that end as "*.3.seed" as MG-RAST output.
 #'@return table in file "d.merge" consisting of ids, md5, functional and taxonomical data per one read.
 #'@export
-mergeAnnots<-function(f,s){
+mergeAnnots<-function(...){
   keycols<-names(f)[1:12]
   setkeyv(f,keycols)
   setkeyv(s,keycols)
