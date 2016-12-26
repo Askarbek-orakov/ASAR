@@ -88,10 +88,10 @@ Read.ko <- function(ids) {
 #' @param file 
 #' @return file called "SEED.RData"
 read.seed.sp <- function(ids, path = '.') {
-for(sid in ids){
-  d1<-read.delim(path, sid, '.3.seed')
-  dd<-ddply(.data = d1[1:11],.(query.sequence.id,hit.m5nr.id..md5sum.,alignment.length.,e.value),.fun = extractOTU)
-  seed.df<-rbind(seed.df,cbind(data.frame(mgrast.id=rep(sid,dim(dd)[1])),dd))
+for(sid in ids){ 
+  d1<-read.delim(path, sid, '.3.seed') #reads taxonmy by SEED for metagenomes.
+  dd<-ddply(.data = d1[1:11],.(query.sequence.id,hit.m5nr.id..md5sum.,alignment.length.,e.value),.fun = extractOTU) #To each splitted data frame (query.sequence.id,hit.m5nr.id..md5sum.,alignment.length.,e.value) applies function "extractOTU" and returns results in a data frame.
+  seed.df<-rbind(seed.df,cbind(data.frame(mgrast.id=rep(sid,dim(dd)[1])),dd)) #
   save(seed.df,file = 'SEED.RData')
 }
 }
