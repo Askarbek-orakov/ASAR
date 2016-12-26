@@ -174,12 +174,13 @@ showTable<-function(obj,main,landscape=TRUE){
     cat("\\end{center}\n ")
   }
 }
-
-analyzeMatches <- function(metagenomeID, .path = '.') {
+#'@example analyzeMatches("mgm4714659")
+#'problem: should we leave paste0("ghead -n -1 ./",.x) without .path inclusion?
+analyzeMatches <- function(metagenomeID, .path = ".") {
   #makes a list of files for that metagenomeID
-  mlist<-dir(path = .path,pattern = c(metagenomeID, '.*'))
+  mlist<-dir(path = .path,pattern = c(metagenomeID, ".*"))
   #extract all table except last row
-  mannot<-lapply(mlist,function(.x){fread(paste0('ghead -n -1 ', .path,.x),sep='\t',header = TRUE)})
+  mannot<-lapply(mlist,function(.x){fread(paste0("ghead -n -1 ./",.x),sep="\t",header = TRUE)})
   #create table with number of rows and columns equal to number of tables imported
   matches<-matrix(0,nrow = length(mannot),ncol = length(mannot))
   # determine number of rows for each table
@@ -194,7 +195,7 @@ analyzeMatches <- function(metagenomeID, .path = '.') {
   #give names to rows and columns according to table names.
   rownames(matches)<-mlist
   colnames(matches)<-mlist
-  # export tables of matches
+  # export tables of matches correlated to itself with 'cor'
   xtable(matches)
   xtable(cor(matches))
 }
