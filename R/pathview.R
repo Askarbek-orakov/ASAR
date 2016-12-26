@@ -4,8 +4,8 @@
 #'@param file mdt by default, which should have MGRAST IDs in row MG.RAST.ID
 #'@return ind file with indexes of unloaded samples
 #'@export
-getAllAnnots <- function(file = mdt) {
-  ids<-file$MG.RAST.ID
+getAllAnnots <- function() {
+  ids<-mdt$MG.RAST.ID
   annot<-lapply(ids,myGetMgrastAnnotation,webkey=key)
   ind<-which(!sapply(annot,function(.x)grepl("Download\\s+complete", .x[nrow(.x), 1])))
   ind
