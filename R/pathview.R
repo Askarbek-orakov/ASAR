@@ -27,6 +27,7 @@ getAllAnnots <- function() {
 extractFigures <- function(SpecieName) {
   #gets annotations(usp, ufun, md5, metagenomeID) of reads for single species in "d" file, does not aggregate to generic functions
   d<-getSpecieFromAbundMD5(d.bm,sp = SpecieName,aggregate = FALSE) 
+  #  colnam <- as.list(colnames(d.bm[,-c(1:3)]))
   d5<-d[,list(m5=unlist(str_split(md5,',')),mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3),by=.(usp,ufun,md5)]
   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,.(m5,usp,ufun,mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3,ko)])
   adk5<-aggregate(.~ko,as.data.frame(dk5[,-c(1:3)]),FUN=sum)
@@ -72,11 +73,12 @@ extractFigures <- function(SpecieName) {
 #'@param aggregate=FALSE 
 #'@return file "d.res" that contains species name, function, mdm5 and sum of bacteria present in ten metagenomes for one bacterial species
 #'@export
-getSpecieFromAbund<-function(d.bm,sp = SpecieName,aggregate=FALSE){
+getSpecieFromAbundMD5<-function(d.bm,sp='Geobacter',aggregate=FALSE){
   d.res<-d.bm[grep(sp,d.bm$usp),]
-  if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-1],FUN = sum)
+  if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-c(1,3)],FUN = sum)
   return(d.res)
 }
+
 #'return appropriate object
 #'
 #'Checks if "obj" is matrix. Then normalizes and/or takes log2 when their corresponding values are TRUE

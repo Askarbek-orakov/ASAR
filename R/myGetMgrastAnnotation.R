@@ -122,7 +122,11 @@ getAbundanceMD5FromDT<-function(d.ab){
   d.ab<-unique(d.ab[,.(usp,ufun,sum,md5)])
   return(d.ab)
 }
-
+getSpecieFromAbund<-function(d.bm,sp = input$SpecieName,aggregate=FALSE){
+  d.res<-d.bm[grep(sp,d.bm$usp),]
+  if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-1],FUN = sum)
+  return(d.res)
+}
 #'Looks for certain function from the table in file "d.bm" and if present copies whole row to the table in file "d.res".
 #'
 #'@param file name of file that contains table of bacterial species, function, md5 and sum of bacteria present in ten metagenomes for bacterial species.
