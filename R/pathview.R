@@ -25,7 +25,7 @@ getAllAnnots <- function() {
 #'@return Heatmap and table of all functions and samples in given specie
 #'@export
 extractFigures <- function(SpecieName) {
-  #gets annoations of reads for single species in "d" file, does not aggregate to generic functions
+  #gets annotations(usp, ufun, md5, metagenomeID) of reads for single species in "d" file, does not aggregate to generic functions
   d<-getSpecieFromAbundMD5(d.bm,sp = SpecieName,aggregate = FALSE) 
   d5<-d[,list(m5=unlist(str_split(md5,',')),mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3),by=.(usp,ufun,md5)]
   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,.(m5,usp,ufun,mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3,ko)])
@@ -64,6 +64,18 @@ extractFigures <- function(SpecieName) {
   showTable(res,SpecieName)
   plotHeatmap(obj,100,norm = FALSE,trace = "none", col = heatmapCols,main=c(SpecieName, ' functions \nlog-transformed'))
   plotSP(d.bm[,-3],sp = SpecieName)
+}
+#'Looks for one bacterial species from the table in file "d.bm" and if present copies whole row of the species to the table in file "d.res".
+#'
+#'@param file name of file that contains table of bacterial species, function, md5 and sum of bacteria present in ten metagenomes for bacterial species.
+#'@param sp bacterial species.
+#'@param aggregate=FALSE 
+#'@return file "d.res" that contains species name, function, mdm5 and sum of bacteria present in ten metagenomes for one bacterial species
+#'@export
+getSpecieFromAbund<-function(d.bm,sp = SpecieName,aggregate=FALSE){
+  d.res<-d.bm[grep(sp,d.bm$usp),]
+  if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-1],FUN = sum)
+  return(d.res)
 }
 #'return appropriate object
 #'
