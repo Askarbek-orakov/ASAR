@@ -199,8 +199,8 @@ analyzeMatches <- function(metagenomeID, .path = ".") {
   xtable(matches)
   xtable(cor(matches))
 }
-
-tax.df.from.biome <- function{
+#devtools::install_github("biomformat", "joey711") NEEDED
+tax.df.from.biome <- function(){
   dat <- read_biom("mgm.biome")
   tax <- dat$rows
   d.tax <- lapply(X = tax, FUN = function(ex){list(ex$id, ex$metadata$ncbi_tax_id, ex$metadata$taxonomy$strain, ex$metadata$taxonomy$species, ex$metadata$taxonomy$genus, ex$metadata$taxonomy$family, ex$metadata$taxonomy$order, ex$metadata$taxonomy$class, ex$metadata$taxonomy$phylum, ex$metadata$taxonomy$domain)})
