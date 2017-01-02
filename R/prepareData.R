@@ -44,7 +44,7 @@ read.biome <- function(file) {
 #' @usage Read.ko(ids)
 #' @param ids list of IDs to read
 #' @return file called "SEED.RData" 
-#' @seealso @seealso \code{\link{extractOTU}} and \code{\link{read.seed.sp}}
+#' @seealso \code{\link{extractOTU}} and \code{\link{read.seed.sp}}
 #' @example Read.ko('mgm4714675.3.ko') 
 #' for(sid in ids){
 #' d1<-fread('mgm4714675.3.ko')
@@ -72,6 +72,7 @@ Read.ko <- function(ids) {
 #' @param ids name of the file
 #' @param path adress where the file is located with that name 
 #' @return file called "SEED.RData"
+#' @seealso \code{\link{extractOTU}} and \code{\link{Read.ko}}
 #' @example read.seed.sp('mgm4714675.3.seed', 'tmp')
 #' for(sid in ids){
 #' d1<-read.delim('tmp/mgm4714675.3.seed')
