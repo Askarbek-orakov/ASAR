@@ -122,7 +122,7 @@ getAbundanceMD5FromDT<-function(d.ab){
   d.ab<-unique(d.ab[,.(usp,ufun,sum,md5)])
   return(d.ab)
 }
-getSpecieFromAbund<-function(d.bm,sp = input$SpecieName,aggregate=FALSE){
+getSpecieFromAbund<-function(d.bm,sp = SpecieName,aggregate=FALSE){
   d.res<-d.bm[grep(sp,d.bm$usp),]
   if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-1],FUN = sum)
   return(d.res)

@@ -13,15 +13,21 @@ library(plyr)
 library(pathview)
 library(stringr)
 library(biomformat)
+load("d.bm.Rdata")
 ui <- fluidPage(
-  selectInput(inputId = "SpecieName", label = "Input Specie Name", as.list(unique(d.bm$usp))),
- #textInput(inputId = "SpecieName", label = "Input Specie Name", value = "Geobacter"),
+  #selectInput(inputId = "SpecieName", label = "Input Specie Name", as.list(unique(d.bm$usp))),
+ textInput(inputId = "SpecieName", label = "Input Specie Name", value = "Geobacter"),
  mainPanel(
-   d3heatmapOutput("plot1", width = "150%", height = "1000px" ),
-   tableOutput("table1")
-   #plotOutput("plot2")
+   d3heatmapOutput("plot1", width = "150%"),
+   tableOutput("table1"),
+   d3heatmapOutput("plot2", width = "150%")
  )
 )
+getSpecieFromAbund<-function(d.bm,sp = SpName,aggregate=FALSE){
+  d.res<-d.bm[grep(sp,d.bm$usp),]
+  if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-1],FUN = sum)
+  return(d.res)
+}
 getSpecieFromAbundMD5<-function(d.bm, sp = SpName, aggregate=FALSE){
   d.res<-d.bm[grep(sp,d.bm$usp),]
   if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-c(1,3)],FUN = sum)
@@ -49,7 +55,7 @@ plotSP<-function(d3,sp){
   }else{
     res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
   }
-  invisible(res)
+  return(res)
 }
 returnAppropriateObj<-function(obj, norm, log){
   if(class(obj)!='matrix') stop('Obj should be a matrix')
@@ -63,7 +69,7 @@ returnAppropriateObj<-function(obj, norm, log){
   return(res)
 }
 heatmapCols = colorRampPalette(brewer.pal(9, "RdBu"))(50)
-load("d.bm.Rdata")
+
 
 server <- function(input, output) {
   
@@ -81,8 +87,10 @@ server <- function(input, output) {
                                 obj<-as.matrix(d[,-(1:3)])
                                 rownames(obj)<-d$ufun
                                 colnames(obj)<-mdt$MGN
-                                mat2<-plotHeatmap(obj,100,trace = "none", col = heatmapCols,main = c(SpName, ' functions, \nnorm and log-transformed'))
+                                mat2<-plotHeatmap(obj,100,trace = "none", col = heatmapCols)
                                 })
-  #output$plot2 <- renderPlot(plotSP(d.bm[,-3],sp = SpecieName))
+  output$plot2 <- renderD3heatmap({SpName <- spName()
+    plot <- plotSP(d.bm[,-3],sp = SpName)
+    d3heatmap(plot)})
 }
 shinyApp(ui = ui, server = server)
