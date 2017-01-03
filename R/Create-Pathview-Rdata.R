@@ -160,7 +160,20 @@ our.aggregate <- function() {
   d.fun<-aggregate(.~ufun,as.data.frame(d.bm)[,-c(1,3)],FUN = sum)
   return(d.bm)
 }
-
+tax.df.from.biome <- function(){
+  dat <- read_biom("mgm.biome")
+  tax <- dat$rows
+  d.tax <- lapply(X = tax, FUN = function(ex){list(ex$id, ex$metadata$taxonomy$strain, ex$metadata$taxonomy$species, ex$metadata$taxonomy$genus, ex$metadata$taxonomy$family, ex$metadata$taxonomy$order, ex$metadata$taxonomy$class, ex$metadata$taxonomy$phylum, ex$metadata$taxonomy$domain)})
+  dd.tax <- lapply(d.tax, function(x) {
+    x[sapply(x, is.null)] <- NA
+    return(x)
+  })
+  tax.df <- data.frame(matrix(unlist(dd.tax), nrow=length(unlist(dd.tax))/9, byrow=T))
+  colnames(tax.df) <- list("id", "strain", "species", "genus", "family", "order", "class", "phylum", "domain")
+  rownames(tax.df) <- tax.df$id
+  tax.df <- tax.df[,-1]
+  return(tax.df)
+}
 #Calls of functions
 mdt <- load.metadata("jobs.tsv")
 fannot <- load.fdata.from.file()
@@ -170,5 +183,7 @@ kres.res <- our.merge()
 d.res <- make.d.res(kres.res)
 d.kres <- make.d.kres(kres.res)
 d.bm <- our.aggregate()
+tax.df <- tax.df.from.biome()
+taxall<- merge(d.bm,tax.df,all=TRUE,by.x='usp',by.y='strain')[,.(usp,species,genus,family,order,class,phylum,domain,md5,ufun,mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3)]
 pwlist<-sort(unique(c('00020','00062','00561','00564','00620','00640','00650','00660','00680','00720','00790','00920','02024','02025','05111','00130','00190','00400','00860','00910','01053','01057','02010','02020')))
-save(pwlist,d.bm,mdt,d.res,d.kres,fannot,sannot,ko,file = 'pathview.Rdata')
+save(pwlist,d.bm,mdt,taxall,d.res,d.kres,fannot,sannot,ko,file = 'pathview.Rdata')
