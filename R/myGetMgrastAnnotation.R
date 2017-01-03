@@ -97,13 +97,7 @@ mergeAnnots<-function(f,s){
 #'@return table in the file "d.uspfun" which consists of ids, md5sum, function and species name.  
 #'@seealso @seealso \code{\link{mergeAnnots}}
 #'@export
-#'@example expandNamesDT(d.merge){
-#'d<-d.merge[,.(`query sequence id`,`hit m5nr id (md5sum)`,fun,sp)]
-#'names(d)<-c('id','md5sum','fun','sp')
-#'#dt[ , list( pep = unlist( strsplit( pep , ";" ) ) ) , by = pro ]
-#'unique(d[ , list(ufun = gsub('(\\]|\\[)','',unlist( strsplit( fun, "\\]; *\\[" ) )) ,fun,sp,ab=.N) , by = md5sum ])->d.ufun
-#'unique(d.ufun[ , list(fun,usp=gsub('(\\]|\\[)','',unlist( strsplit( sp, "\\]; *\\[" ) )) ,sp,ab) , by = .(md5sum,ufun) ])->d.uspfun
-#'return(d.uspfun)}
+#'@example expandNamesDT(d.merge)
 expandNamesDT<-function(x){
   d<-x[,.(`query sequence id`,`hit m5nr id (md5sum)`,fun,sp)]
   names(d)<-c('id','md5sum','fun','sp')
@@ -138,7 +132,8 @@ getAbundanceMD5FromDT<-function(d.ab){
   d.ab<-unique(d.ab[,.(usp,ufun,sum,md5)])
   return(d.ab)
 }
-#'Collecting table for certain biologicalspecies. 
+
+#'Collecting table for certain biological species
 #'
 #'Looks for certain biological species from the table in input file and if present copies whole row to the table in file "d.res".
 #'@useage getSpecieFromAbund(file,sp,aggregate=FALSE)
@@ -148,8 +143,8 @@ getAbundanceMD5FromDT<-function(d.ab){
 #'@return file "d.res" that contains species name, function, mdm5 and sum of bacteria present in ten metagenomes for one certain biological function.
 #'@example getSpecieFromAbund(d.bm,sp='Geobacter',aggregate=FALSE)
 #'@export
-getSpecieFromAbund<-function(file,sp,aggregate=FALSE){
-  d.res<-file[grep(sp,d.bm$usp),]
+getSpecieFromAbund<-function(file, sp,aggregate=FALSE){
+  d.res<-file[grep(sp,file$usp),]
   if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-1],FUN = sum)
   return(d.res)
 }
@@ -169,28 +164,34 @@ getFunctionFromAbund<-function(file,fun,aggregate=FALSE){
   return(d.res)
 }
 
-#'Looks for one bacterial species from the table in file "d.bm" and if present copies whole row of the species to the table in file "d.res".
+#'Collecting table for certain biological species. 
 #'
+#'Looks for one bacterial species from the table in input file and if present copies whole row of the species to the table in file "d.res".
+#'@useage getSpecieFromAbundMD5<-function(file, sp, aggregate=FALSE)
 #'@param file name of file that contains table of bacterial species, function, md5 and sum of bacteria present in ten metagenomes for bacterial species.
 #'@param sp bacterial species.
 #'@param aggregate=FALSE 
 #'@return file "d.res" that contains species name, function, mdm5 and sum of bacteria present in ten metagenomes for one bacterial species
 #'@export
-getSpecieFromAbundMD5<-function(d.bm,sp='Geobacter',aggregate=FALSE){
-  d.res<-d.bm[grep(sp,d.bm$usp),]
+#'@example getSpecieFromAbundMD5(d.bm,sp='Geobacter',aggregate=FALSE)
+getSpecieFromAbundMD5<-function(file, sp, aggregate=FALSE){
+  d.res<-file[grep(sp,file$usp),]
   if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-c(1,3)],FUN = sum)
   return(d.res)
 }
 
-#'Looks for certain function from the table in file "d.bm" and if present copies whole row to the table in file "d.res".
+#'Collecting table for certain biological function
 #'
+#'Looks for certain biological function from the table in input file  and if present copies whole row to the table in file "d.res".
+#'@useage getFunctionFromAbundMD5(file,fun,aggregate=FALSE)
 #'@param file name of file that contains table of bacterial species, function, md5 and sum of bacteria present in ten metagenomes for bacterial species.
 #'@param fun function.
 #'@param aggregate=FALSE 
 #'@return file "d.res" that contains species name, function, mdm5 and sum of bacteria present in ten metagenomes for one certain function.
+#'@example getFunctionFromAbundMD5(d.bm,fun='protein',aggregate=FALSE)
 #'@export
-getFunctionFromAbundMD5<-function(d.bm,fun='protein',aggregate=FALSE){
-  d.res<-d.bm[grep(fun,d.bm$ufun),]
+getFunctionFromAbundMD5<-function(file,fun,aggregate=FALSE){
+  d.res<-file[grep(fun,file$ufun),]
   if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~usp,as.data.frame(d.res)[,-c(2,3)],FUN = sum)
   return(d.res)
 }
