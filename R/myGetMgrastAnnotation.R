@@ -1,6 +1,7 @@
 #'Get MG-RAST annotation
 #' 
 #'Takes in ID of metagenome sample at MG-RAST and webkey to access that and generates a formatted "anno" file containing that annotation.
+#'@usage myGetMgrastAnnotation(MetagenomeID, evalue = 5, identity = 60, length = 15, resource = c(source = "KO", type = "ontology"), webkey)
 #'@param MetagenomeID Id of your metagenome for which you get annotation from MG-RAST.
 #'@param evalue = 5 by default.
 #'@param identity = 60 (%) by default.
@@ -8,6 +9,7 @@
 #'@param resource has two parameters: source = "KO" by default and type = "ontology" by default.
 #'@param webkey authentication key to access annotation file from MG-RAST.
 #'@return Formatted annotation file for sample having ID of "MetagenomeID".
+#'@example myGetMgrastAnnotation('mgm4714675.3.ko', evalue = 5, identity = 60, length = 15, resource = c(source = "KO", type = "ontology"), webkey)
 #'@export
 myGetMgrastAnnotation<-function(MetagenomeID, evalue = 5, identity = 60, length = 15, 
                                 resource = c(source = "KO", type = "ontology"), webkey){
@@ -52,6 +54,7 @@ myGetMgrastAnnotation<-function(MetagenomeID, evalue = 5, identity = 60, length 
 #'Get Annotation from File
 #'
 #'Takes in File name of metagenome sample annotation data to create formatted "anno" file. 
+#'@useage getAnnotationFromFile(file)
 #'@param file file name containing anotation of your sample.
 #'@return Formatted annotation file for metagenome sample annotation from input file.
 #'@export
@@ -68,11 +71,12 @@ getAnnotationFromFile<-function(file){
 #'Merge functional and taxonomical analysis data of a read.
 #'
 #'For each read it merges files of functional and taxonomical analysis from MG-RAST, so that it results one table containing ids, md5, function and taxonomy.
+#'@useage mergeAnnots(f,s)
 #'@param f a list of SEED function from files for different metagenomes that end as "*.3.fseed" as MG-RAST output.
 #'@param s a list of SEED Orthologs from files for different metagenomes that end as "*.3.seed" as MG-RAST output.
 #'@return table in file "d.merge" consisting of ids, md5, functional and taxonomical data per one read.
 #'@export
-mergeAnnots<-function(...){
+mergeAnnots<-function(f,s){
   keycols<-names(f)[1:12]
   setkeyv(f,keycols)
   setkeyv(s,keycols)
@@ -82,28 +86,38 @@ mergeAnnots<-function(...){
 }
 
 #' Separate functional analysis data into a new table in a file removing duplicates.
-#'
+#' 
 #'Checks md5sum and removes duplicates and copies functional analysis data into the file "d.uspfun".
-#'@param file file from which functional analysis data is going to be extracted. 
+#'@useage expandNamesDT(x)
+#'@param x file that is output by function "mergeAnnots" and from which functional analysis data is going to be extracted. 
 #'@details Copies coloumns, namely `query sequence id`,`hit m5nr id (md5sum)`,fun and sp with all rows from file "d.merge" to the file "d".
 #'@details Changes names of coloumns `query sequence id`,`hit m5nr id (md5sum)`,fun and sp to 'id','md5sum','fun'and 'sp' respectively.
 #'@details Checks coloumn 'md5sum' and removes duplicates by transfering rows to "d.ufun" and removes quare brackets. 
 #'@details Checks coloumn 'md5sum' and 'ufun' and removes duplicates by transfering rows to "d.uspfun" and removes quare brackets. 
 #'@return table in the file "d.uspfun" which consists of ids, md5sum, function and species name.  
+#'@seealso @seealso \code{\link{mergeAnnots}}
 #'@export
-expandNamesDT<-function(d.merge){
-  d<-d.merge[,.(`query sequence id`,`hit m5nr id (md5sum)`,fun,sp)]
+#'@example expandNamesDT(d.merge){
+#'d<-d.merge[,.(`query sequence id`,`hit m5nr id (md5sum)`,fun,sp)]
+#'names(d)<-c('id','md5sum','fun','sp')
+#'#dt[ , list( pep = unlist( strsplit( pep , ";" ) ) ) , by = pro ]
+#'unique(d[ , list(ufun = gsub('(\\]|\\[)','',unlist( strsplit( fun, "\\]; *\\[" ) )) ,fun,sp,ab=.N) , by = md5sum ])->d.ufun
+#'unique(d.ufun[ , list(fun,usp=gsub('(\\]|\\[)','',unlist( strsplit( sp, "\\]; *\\[" ) )) ,sp,ab) , by = .(md5sum,ufun) ])->d.uspfun
+#'return(d.uspfun)}
+expandNamesDT<-function(x){
+  d<-x[,.(`query sequence id`,`hit m5nr id (md5sum)`,fun,sp)]
   names(d)<-c('id','md5sum','fun','sp')
   #dt[ , list( pep = unlist( strsplit( pep , ";" ) ) ) , by = pro ]
   unique(d[ , list(ufun = gsub('(\\]|\\[)','',unlist( strsplit( fun, "\\]; *\\[" ) )) ,fun,sp,ab=.N) , by = md5sum ])->d.ufun
   unique(d.ufun[ , list(fun,usp=gsub('(\\]|\\[)','',unlist( strsplit( sp, "\\]; *\\[" ) )) ,sp,ab) , by = .(md5sum,ufun) ])->d.uspfun
   return(d.uspfun)
 }
-#'Calculates number of reads for bacterial species and function. 
-#'
-#'@details First calculates sum of reads ('ab') for every group in bacterial species (usp) and function (ufun).
-#'@details Columns 'species' (usp), 'functions' (ufun) and 'sum' (sum) of reads are returned as a data.table and duplicated rows by all columns are removed..
-#'@param file
+#'Calculates number of reads for bacterial species and function.
+#' 
+#'First calculates sum of reads ('ab') for every group in bacterial species (usp) and function (ufun).
+#'Columns 'species' (usp), 'functions' (ufun) and 'sum' (sum) of reads are returned as a data.table and duplicated rows by all columns are removed.
+#'@useage getAbundanceFromDT(d.ab)
+#'@param d.ab file that should be input for the calculation.
 #'@return file that was input, but adding sum of reads in the table.
 #'@export
 getAbundanceFromDT<-function(d.ab){
@@ -111,31 +125,46 @@ getAbundanceFromDT<-function(d.ab){
   d.ab<-unique(d.ab[,.(usp,ufun,sum)])
   return(d.ab)
 }
-#'Calculates number of sequences. 
-#'@details First calculates sum of sequences ('ab') for every group in bacterial species (usp) and function (ufun) and renames coloumn as 'sum'. Then names 'md5sum as a 'md5' and separates elements of it by comma.
-#'@details Columns 'species' (usp), 'functions' (ufun), 'sum' (sum) and md5 of sequences are returned as a data.table and duplicated rows by all columns are removed..
-#'@param file
-#'@return file that was input, but adding sum of sequences in the table.
+#'Calculates number of sequences.  
+#'
+#'First calculates sum of sequences ('ab') for every group in bacterial species (usp) and function (ufun) and renames coloumn as 'sum'. Then names 'md5sum as a 'md5' and separates elements of it by comma.
+#'Columns 'species' (usp), 'functions' (ufun), 'sum' (sum) and md5 of sequences are returned as a data.table and duplicated rows by all columns are removed.
+#'@useage getAbundanceMD5FromDT(d.ab)
+#'@param d.ab file that should be input for the calculation.
+#'@return  file that was input, but adding sum of sequences and sum of md5 in the table.
 #'@export
 getAbundanceMD5FromDT<-function(d.ab){
   d.ab<-d.ab[,.(sum=sum(ab),md5=paste(md5sum,collapse = ',')),by=.(usp,ufun)]
   d.ab<-unique(d.ab[,.(usp,ufun,sum,md5)])
   return(d.ab)
 }
-getSpecieFromAbund<-function(d.bm,sp = input$SpecieName,aggregate=FALSE){
-  d.res<-d.bm[grep(sp,d.bm$usp),]
+#'Collecting table for certain biologicalspecies. 
+#'
+#'Looks for certain biological species from the table in input file and if present copies whole row to the table in file "d.res".
+#'@useage getSpecieFromAbund(file,sp,aggregate=FALSE)
+#'@param file name of file that contains table of bacterial species, function, md5 and sum of bacteria present in metagenomes for bacterial species.
+#'@param sp biological species present in metagenome. 
+#'@param aggregate=FALSE 
+#'@return file "d.res" that contains species name, function, mdm5 and sum of bacteria present in ten metagenomes for one certain biological function.
+#'@example getSpecieFromAbund(d.bm,sp='Geobacter',aggregate=FALSE)
+#'@export
+getSpecieFromAbund<-function(file,sp,aggregate=FALSE){
+  d.res<-file[grep(sp,d.bm$usp),]
   if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-1],FUN = sum)
   return(d.res)
 }
-#'Looks for certain function from the table in file "d.bm" and if present copies whole row to the table in file "d.res".
+#'Collecting table for certain biological function 
 #'
-#'@param file name of file that contains table of bacterial species, function, md5 and sum of bacteria present in ten metagenomes for bacterial species.
-#'@param fun function.
+#'Looks for certain biological function from the table in input file and if present copies whole row to the table in file "d.res".
+#'@useage getFunctionFromAbund(file,fun,aggregate=FALSE)
+#'@param file name of file that contains table of bacterial species, function, md5 and sum of bacteria present in metagenomes for bacterial species.
+#'@param fun biological function either by KEGG or SEED. 
 #'@param aggregate=FALSE 
-#'@return file "d.res" that contains species name, function, mdm5 and sum of bacteria present in ten metagenomes for one certain function.
+#'@return file "d.res" that contains species name, function, mdm5 and sum of bacteria present in ten metagenomes for one certain biological function.
+#'@example getFunctionFromAbund(d.bm,fun='protein',aggregate=FALSE)
 #'@export
-getFunctionFromAbund<-function(d.bm,fun='protein',aggregate=FALSE){
-  d.res<-d.bm[grep(fun,d.bm$ufun),]
+getFunctionFromAbund<-function(file,fun,aggregate=FALSE){
+  d.res<-file[grep(fun,file$ufun),]
   if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~usp,as.data.frame(d.res)[,-2],FUN = sum)
   return(d.res)
 }
