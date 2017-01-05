@@ -1,10 +1,12 @@
-#'Download annotations for all samples and check download completeness
+#'Downloading annotations for all samples (metagenomes) 
 #' 
-#'Gets IDs from file$MG.RAST.ID to put it into myGetMgrastAnnotation function to get annotations and then checks each for download completess
+#'Gets IDs from file$MG.RAST.ID to put it into myGetMgrastAnnotation function to get annotations and then checks each for download completess.
+#'@useage getAllAnnots(file)
 #'@param file mdt by default, which should have MGRAST IDs in row MG.RAST.ID
 #'@return ind file with indexes of unloaded samples
 #'@export
-getAllAnnots <- function() {
+#'@example getAllAnnots(mdt)
+getAllAnnots <- function(mdt) {
   ids<-mdt$MG.RAST.ID
   annot<-lapply(ids,myGetMgrastAnnotation,webkey=key)
   ind<-which(!sapply(annot,function(.x)grepl("Download\\s+complete", .x[nrow(.x), 1])))
@@ -13,16 +15,19 @@ getAllAnnots <- function() {
 
 #'Plots graphs for single specific species
 #'
-#'@details 1) gets annoations of reads for single species in "d" file
-#'@details 2) splits rows with several "md5"s  to separate rows with unique "m5" values in "d5" file
-#'@details 3) confers unique rows resulted from merging of "d5" and "d.kres" files at "m5" and "md5" columns respectively. "d.kres" file adds up kegg orthology IDs by each unique "m5" value
-#'@details 4) "adk5" file has enrichments on each KEGG Orthology ID for each metagenome sample
+#'After entering biological species name this function will plot mapped KEGG pathway maps and heatmaps for that species.
+#'@details 1) gets annoations of reads for single species in "d" file.
+#'@details 2) splits rows with several "md5"s  to separate rows with unique "m5" values in "d5" file.
+#'@details 3) confers unique rows resulted from merging of "d5" and "d.kres" files at "m5" and "md5" columns respectively. "d.kres" file adds up kegg orthology IDs by each unique "m5" value.
+#'@details 4) "adk5" file has enrichments on each KEGG Orthology ID for each metagenome sample.
 #'@details 5) "gdk5" has the same information as "adk5", but for 5 samples only.
-#'@details 6) outputs pathway maps for each pathway for each metagenome sample
-#'@details 7) generates general heatmap and table of expressions of all kegg functions for all samples for species entered
-#'@param 
+#'@details 6) outputs pathway maps for each pathway for each metagenome sample.
+#'@details 7) generates general heatmap and table of expressions of all KEGG functions for all samples for species entered.
+#'@useage extractFigures('Geobacter')
+#'@param SpecieName name of biological species for which KEGG pathway maps, heatmap and table of all functions and samples in given specie are going to be plotted.
 #'@return mapped KEGG pathway maps
 #'@return Heatmap and table of all functions and samples in given specie
+#'@example extractFigures('Geobacter')
 #'@export
 extractFigures <- function(SpecieName) {
   #gets annotations(usp, ufun, md5, metagenomeID) of reads for single species in "d" file, does not aggregate to generic functions
@@ -66,28 +71,32 @@ extractFigures <- function(SpecieName) {
   plotHeatmap(obj,100,norm = FALSE,trace = "none", col = heatmapCols,main=c(SpecieName, ' functions \nlog-transformed'))
   plotSP(d.bm[,-3],sp = SpecieName)
 }
-#'Looks for one bacterial species from the table in file "d.bm" and if present copies whole row of the species to the table in file "d.res".
+#'Collecting table for certain biological species. 
 #'
+#'Looks for one bacterial species from the table in input file and if present copies whole row of the species to the table in file "d.res".
+#'@useage getSpecieFromAbundMD5<-function(file, sp, aggregate=FALSE)
 #'@param file name of file that contains table of bacterial species, function, md5 and sum of bacteria present in ten metagenomes for bacterial species.
 #'@param sp bacterial species.
 #'@param aggregate=FALSE 
 #'@return file "d.res" that contains species name, function, mdm5 and sum of bacteria present in ten metagenomes for one bacterial species
 #'@export
+#'@example getSpecieFromAbundMD5(d.bm,sp='Geobacter',aggregate=FALSE)
 getSpecieFromAbundMD5<-function(d.bm,sp='Geobacter',aggregate=FALSE){
   d.res<-d.bm[grep(sp,d.bm$usp),]
   if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-c(1,3)],FUN = sum)
   return(d.res)
 }
 
-#'return appropriate object
+#'Returning appropriate object as a matrix
 #'
-#'Checks if "obj" is matrix. Then normalizes and/or takes log2 when their corresponding values are TRUE
-#'@param obj should be data of matrix class
-#'@param norm logical value for normalization
-#'@param log logical value for taking logarithm of 2
+#'Checks if "obj" is matrix. Then normalizes and/or takes log2 when their corresponding values are TRUE.
+#'@useage returnAppropriateObj(obj, norm, log)
+#'@param obj should be data of matrix class.
+#'@param norm logical value for normalization.
+#'@param log logical value for taking logarithm of 2.
 #'@return processed "res" file
 #'@export
-
+#'@example returnAppropriateObj(obj, norm = FALSE,log = TRUE)
 returnAppropriateObj<-function(obj, norm, log){
   if(class(obj)!='matrix') stop('Obj should be a matrix')
   res<-obj
@@ -101,7 +110,18 @@ returnAppropriateObj<-function(obj, norm, log){
 }
 #' Plot a Heatmap
 #' 
-#' @export 
+#' 
+#' @details 
+#' @usage 
+#' @param 
+#' @param 
+#' @param 
+#' @param 
+#' @param 
+#' @param 
+#' @return 
+#' @export
+#' @example  
 plotHeatmap<-function(obj,n,norm=TRUE,log=TRUE,fun=sd,...){
   #uses returnAppropriateObj function to get normalized and log(2)-ed obj matrix as mat
   mat = returnAppropriateObj(obj, norm, log)

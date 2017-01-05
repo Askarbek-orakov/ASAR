@@ -1,15 +1,19 @@
 ## THESE ARE FUNCTIONS TO PREPARE "Pathview.RData" file
 ## if you have required files for each sample, running this code should create pathview.Rdata file containing files needed to visualize paths and make tables and heatmaps.
-#' Separate functional analysis data into a new table in a file removing duplicates.
-#'
+
+#'Separate functional analysis data into a new table in a file removing duplicates.
+#' 
 #'Checks md5sum and removes duplicates and copies functional analysis data into the file "d.uspfun".
-#'@param file file from which functional analysis data is going to be extracted. 
+#'@useage expandNamesDT(x)
+#'@param x file that is output by function "mergeAnnots" and from which functional analysis data is going to be extracted. 
 #'@details Copies coloumns, namely `query sequence id`,`hit m5nr id (md5sum)`,fun and sp with all rows from file "d.merge" to the file "d".
 #'@details Changes names of coloumns `query sequence id`,`hit m5nr id (md5sum)`,fun and sp to 'id','md5sum','fun'and 'sp' respectively.
 #'@details Checks coloumn 'md5sum' and removes duplicates by transfering rows to "d.ufun" and removes quare brackets. 
 #'@details Checks coloumn 'md5sum' and 'ufun' and removes duplicates by transfering rows to "d.uspfun" and removes quare brackets. 
 #'@return table in the file "d.uspfun" which consists of ids, md5sum, function and species name.  
+#'@seealso @seealso \code{\link{mergeAnnots}}
 #'@export
+#'@example expandNamesDT(d.merge)
 expandNamesDT<-function(d.merge){
   d<-d.merge[,.(`query sequence id`,`hit m5nr id (md5sum)`,fun,sp)]
   names(d)<-c('id','md5sum','fun','sp')
@@ -19,11 +23,13 @@ expandNamesDT<-function(d.merge){
   return(d.uspfun)
 }
 
-#'Calculates number of sequences. 
-#'@details First calculates sum of sequences ('ab') for every group in bacterial species (usp) and function (ufun) and renames coloumn as 'sum'. Then names 'md5sum as a 'md5' and separates elements of it by comma.
-#'@details Columns 'species' (usp), 'functions' (ufun), 'sum' (sum) and md5 of sequences are returned as a data.table and duplicated rows by all columns are removed..
-#'@param file
-#'@return file that was input, but adding sum of sequences in the table.
+#'Calculates number of sequences.  
+#'
+#'First calculates sum of sequences ('ab') for every group in bacterial species (usp) and function (ufun) and renames coloumn as 'sum'. Then names 'md5sum as a 'md5' and separates elements of it by comma.
+#'Columns 'species' (usp), 'functions' (ufun), 'sum' (sum) and md5 of sequences are returned as a data.table and duplicated rows by all columns are removed.
+#'@useage getAbundanceMD5FromDT(d.ab)
+#'@param d.ab file that should be input for the calculation.
+#'@return  file that was input, but adding sum of sequences and sum of md5 in the table.
 #'@export
 getAbundanceMD5FromDT<-function(d.ab){
   d.ab<-d.ab[,.(sum=sum(ab),md5=paste(md5sum,collapse = ',')),by=.(usp,ufun)]
@@ -33,10 +39,12 @@ getAbundanceMD5FromDT<-function(d.ab){
 
 #'Load metadata of metagenome samples
 #'
-#'Takes in a file containing metadata and assigns source and origin values depending on MetagenomeID
+#'Takes in a file containing metadata and assigns source and origin values depending on MetagenomeID and transfers it to the file "mdt" as output.
+#'@useage load.metadata(file)
 #'@param file file containing metadata of selected samples ususally exported from MG-RAST
 #'@return formatted tab-delimited metadata table called "mdt"
 #'@export
+#'@example load.metadata("jobs.tsv")
 #'command "mdt <- load.metadata("jobs.tsv")" should be run
 load.metadata <- function(file) {
   mdt<-read.delim(file)
@@ -71,12 +79,21 @@ load.metadata <- function(file) {
   rownames(mdt) <- as.character(mdt[, 1])
   return(mdt)
 }
-#'@return fannot
+#'Loading files output by MG-RAST with functional analysis by SEED.
+#' 
+#' After entering location of a file (path) and name of the file (pattern), this function reads in information from the file as a list.
+#' @details 
+#' @usage load.fdata.from.file(path)
+#' @param path location of a file that should be input.
+#' @return list called "fannot" 
+#' @export
+#' @example load.fdata.from.file(path = ".")
 #' command ">fannot <- load.fdata.from.file()" should be run
 load.fdata.from.file <- function(path = ".") {
   flist<-dir(path = path, pattern = "*.3.fseed$")
   cat(paste(flist,collapse = "\n"))
   fannot<-lapply(flist,function(.x){fread(paste0('ghead -n -1 ./', .x),sep='\t',header = TRUE)})
+  return(fannot)
 }
 
 #'@return ko
