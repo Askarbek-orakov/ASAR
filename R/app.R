@@ -59,7 +59,7 @@ plotSP<-function(d3,sp,tx,tx2){
   rownames(obj)<-d.sp[,tx2]
   colnames(obj)<-mdt$MGN
   if(dim(obj)[1]>1){
-    res<-plotHeatmap(obj,50,trace = "none", col = heatmapCols,main=paste(sp,'\n log-transformed'),norm=FALSE)
+    res<-plotHeatmap(obj,100,trace = "none", col = heatmapCols,norm=FALSE)
   }else{
     res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
   }
@@ -87,13 +87,13 @@ ui <- fluidPage(
   uiOutput("taxNames"),
   p("For Taxonomic Content analysis I want taxon chosen above to be separated by :"),
   selectInput(inputId = "taxlevel2", label = "Choose Another Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum"), selected = "usp")
-  ),
+  , width = 3),
   mainPanel(
     tabsetPanel(
-      tabPanel("Functional Heatmap", d3heatmapOutput("plot1", width = "150%", height = "1500px")), 
+      tabPanel("Functional Heatmap", d3heatmapOutput("plot1", width = "100%", height = "1500px")), 
       tabPanel("Functional Table", tableOutput("table1")), 
-      tabPanel("Taxonomic Content Heatmap", d3heatmapOutput("plot2", width = "150%"))
-  ))
+      tabPanel("Taxonomic Content Heatmap", d3heatmapOutput("plot2", width = "100%", height = "1500px"))
+  ), width = 9)
 )
 server <- function(input, output) {
   observeEvent(input$do, { 
