@@ -33,20 +33,12 @@ getSpecieFromAbund<-function(d.bm,sp = SpName,aggregate=FALSE){
   if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-1],FUN = sum)
   return(d.res)
 }
-getSpecieFromAbundMD5<-function(d.bm, tx=tx, sp = SpName, aggregate=FALSE){
+getSpecieFromAbundMD5<-function(taxall, tx=tx, sp = SpName, aggregate=FALSE){
   drops <- c("usp", "species", "genus", "family", "order", "class", "phylum", "domain")
   drops <- drops[drops!= tx]
   dd.res <- taxall[ , !(names(taxall) %in% drops), with = FALSE]
   d.res<-dd.res[grep(sp,dd.res[,get(tx)])]
-  #if(get(tx)=="usp") {d.res<-taxall[grep(sp,taxall[,get(tx)]),-(2:8)]
-  #} else if(get(tx)=="species") {d.res<-taxall[grep(sp,taxall[,get(tx)]),-c(1,3,4,5,6,7,8)]
-  #} else if(get(tx)=="genus") {d.res<-taxall[grep(sp,taxall[,get(tx)]),-c(1,2,4,5,6,7,8)]
-  #} else if(get(tx)=="family") {d.res<-taxall[grep(sp,taxall[,get(tx)]),-c(1,2,3,5,6,7,8)]
-  #} else if(get(tx)=="order") {d.res<-taxall[grep(sp,taxall[,get(tx)]),-c(1,2,3,4,6,7,8)]
-  #} else if(get(tx)=="class") {d.res<-taxall[grep(sp,taxall[,get(tx)]),-c(1,2,3,4,5,7,8)]
-  #} else if(get(tx)=="phylum") {d.res<-taxall[grep(sp,taxall[,get(tx)]),-c(1,2,3,4,5,6,8)]
-  #} else if(get(tx)=="domain") {d.res<-taxall[grep(sp,taxall[,get(tx)]),-c(1,2,3,4,5,6,7)]}
-  if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-c(1,3)],FUN = sum)
+  if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-c(1,2)],FUN = sum)
   return(d.res)
 }
 plotHeatmap<-function(obj,n,norm=TRUE,log=TRUE,fun=sd,...){
@@ -94,7 +86,7 @@ ui <- fluidPage(
   uiOutput("taxNames"),
   #textInput(inputId = "SpecieName", label = "Input Specie Name", value = "Geobacter"),
   mainPanel(
-    d3heatmapOutput("plot1", width = "150%"),
+    d3heatmapOutput("plot1", width = "150%", height = "1500px"),
     tableOutput("table1"),
     d3heatmapOutput("plot2", width = "150%")
   )
@@ -105,13 +97,14 @@ server <- function(input, output) {
     output$taxNames <- renderUI({x <- input$taxlevel
     selectInput(inputId = "SpecieName", label = "Input Specie Name", as.vector(unique(taxall[,get(x)])))
     })})
+  
   txa <- reactive({input$taxlevel})
- 
   spName <- reactive({input$SpecieName})
+  
   output$plot1 <- renderD3heatmap({SpName <- spName()
   tx <- txa()
-  d<-getSpecieFromAbundMD5(taxall,tx = tx, sp = SpName,aggregate = FALSE)
-  obj<-as.matrix(d[,-(1:3)])
+  d<-getSpecieFromAbundMD5(taxall,tx = tx, sp = SpName,aggregate = TRUE)
+  obj<-as.matrix(d[,-1])
   rownames(obj)<-d$ufun
   colnames(obj)<-mdt$MGN
   mat2 <- plotHeatmap(obj,100,norm = FALSE,trace = "none", col = heatmapCols)
@@ -119,8 +112,8 @@ server <- function(input, output) {
   }) 
   output$table1 <- renderTable({SpName <- spName()
   tx <- txa()
-  d<-getSpecieFromAbundMD5(taxall,tx=tx, sp = SpName,aggregate = FALSE)
-  obj<-as.matrix(d[,-(1:3)])
+  d<-getSpecieFromAbundMD5(taxall,tx=tx, sp = SpName,aggregate = TRUE)
+  obj<-as.matrix(d[,-1])
   rownames(obj)<-d$ufun
   colnames(obj)<-mdt$MGN
   mat2<-plotHeatmap(obj,100,trace = "none", col = heatmapCols)
