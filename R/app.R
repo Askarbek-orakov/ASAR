@@ -28,25 +28,17 @@ tax.df.from.biome <- function(){
   tax.df <- tax.df[,-1]
   return(tax.df)
 }
-getSpecieFromAbund<-function(d.bm,sp = SpName,aggregate=FALSE){
-  d.res<-d.bm[grep(sp,d.bm$usp),]
+getSpecieFromAbund<-function(d.bm,sp = sp, tx=tx, aggregate=FALSE){
+  d.res<-d.bm[grep(sp,d.bm[,get(tx)])]
   if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-1],FUN = sum)
   return(d.res)
 }
-getSpecieFromAbundMD5<-function(d.bm, tx=tx, sp = SpName, aggregate=FALSE){
+getSpecieFromAbundMD5<-function(taxall, tx=tx, sp = SpName, aggregate=FALSE){
   drops <- c("usp", "species", "genus", "family", "order", "class", "phylum", "domain")
   drops <- drops[drops!= tx]
   dd.res <- taxall[ , !(names(taxall) %in% drops), with = FALSE]
   d.res<-dd.res[grep(sp,dd.res[,get(tx)])]
-  #if(get(tx)=="usp") {d.res<-taxall[grep(sp,taxall[,get(tx)]),-(2:8)]
-  #} else if(get(tx)=="species") {d.res<-taxall[grep(sp,taxall[,get(tx)]),-c(1,3,4,5,6,7,8)]
-  #} else if(get(tx)=="genus") {d.res<-taxall[grep(sp,taxall[,get(tx)]),-c(1,2,4,5,6,7,8)]
-  #} else if(get(tx)=="family") {d.res<-taxall[grep(sp,taxall[,get(tx)]),-c(1,2,3,5,6,7,8)]
-  #} else if(get(tx)=="order") {d.res<-taxall[grep(sp,taxall[,get(tx)]),-c(1,2,3,4,6,7,8)]
-  #} else if(get(tx)=="class") {d.res<-taxall[grep(sp,taxall[,get(tx)]),-c(1,2,3,4,5,7,8)]
-  #} else if(get(tx)=="phylum") {d.res<-taxall[grep(sp,taxall[,get(tx)]),-c(1,2,3,4,5,6,8)]
-  #} else if(get(tx)=="domain") {d.res<-taxall[grep(sp,taxall[,get(tx)]),-c(1,2,3,4,5,6,7)]}
-  if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-c(1,3)],FUN = sum)
+  if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-c(1,2)],FUN = sum)
   return(d.res)
 }
 plotHeatmap<-function(obj,n,norm=TRUE,log=TRUE,fun=sd,...){
@@ -60,11 +52,11 @@ plotHeatmap<-function(obj,n,norm=TRUE,log=TRUE,fun=sd,...){
   otuIndices = otusToKeep[order(otuStats, decreasing = TRUE)[1:min(c(n,dim(mat)[1]))]]
   mat2 = mat[otuIndices, ]}
 
-plotSP<-function(d3,sp){
-  d<-getSpecieFromAbund(d3,sp = sp,aggregate = FALSE)
-  d.sp<-aggregate(.~usp,as.data.frame(d)[,-2],FUN = sum)
+plotSP<-function(d3,sp,tx,tx2){
+  d<-getSpecieFromAbund(d3,sp = sp, tx = tx, aggregate = FALSE)
+  d.sp<- ddply(d, tx2, numcolwise(sum)) 
   obj<-as.matrix(d.sp[,-1])
-  rownames(obj)<-d.sp$usp
+  rownames(obj)<-d.sp[,tx2]
   colnames(obj)<-mdt$MGN
   if(dim(obj)[1]>1){
     res<-plotHeatmap(obj,50,trace = "none", col = heatmapCols,main=paste(sp,'\n log-transformed'),norm=FALSE)
@@ -89,44 +81,56 @@ tax.df <- tax.df.from.biome()
 taxall<- merge(d.bm,tax.df,all=FALSE,by.x='usp',by.y='strain')[,.(usp,species,genus,family,order,class,phylum,domain,md5,ufun,mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3)]
 
 ui <- fluidPage(
-  selectInput(inputId = "taxlevel", label = "choose taxonomic level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain"), selected = "usp"),
+  sidebarPanel(
+  selectInput(inputId = "taxlevel", label = "Choose Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain"), selected = "usp"),
   actionButton("do", "GO"),
   uiOutput("taxNames"),
-  #textInput(inputId = "SpecieName", label = "Input Specie Name", value = "Geobacter"),
+  p("For Taxonomic Content analysis I want taxon chosen above to be separated by :"),
+  selectInput(inputId = "taxlevel2", label = "Choose Another Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum"), selected = "usp")
+  ),
   mainPanel(
-    d3heatmapOutput("plot1", width = "150%"),
-    tableOutput("table1"),
-    d3heatmapOutput("plot2", width = "150%")
-  )
+    tabsetPanel(
+      tabPanel("Functional Heatmap", d3heatmapOutput("plot1", width = "150%", height = "1500px")), 
+      tabPanel("Functional Table", tableOutput("table1")), 
+      tabPanel("Taxonomic Content Heatmap", d3heatmapOutput("plot2", width = "150%"))
+  ))
 )
-#as.list(unique(taxall$x))
 server <- function(input, output) {
   observeEvent(input$do, { 
     output$taxNames <- renderUI({x <- input$taxlevel
     selectInput(inputId = "SpecieName", label = "Input Specie Name", as.vector(unique(taxall[,get(x)])))
     })})
+  
   txa <- reactive({input$taxlevel})
- 
+  txa2 <- reactive({input$taxlevel2})
   spName <- reactive({input$SpecieName})
+  
   output$plot1 <- renderD3heatmap({SpName <- spName()
   tx <- txa()
-  d<-getSpecieFromAbundMD5(taxall,tx = tx, sp = SpName,aggregate = FALSE)
-  obj<-as.matrix(d[,-(1:3)])
+  d<-getSpecieFromAbundMD5(taxall,tx = tx, sp = SpName,aggregate = TRUE)
+  obj<-as.matrix(d[,-1])
   rownames(obj)<-d$ufun
   colnames(obj)<-mdt$MGN
   mat2 <- plotHeatmap(obj,100,norm = FALSE,trace = "none", col = heatmapCols)
   d3heatmap(mat2)
   }) 
+  
   output$table1 <- renderTable({SpName <- spName()
   tx <- txa()
-  d<-getSpecieFromAbundMD5(taxall,tx=tx, sp = SpName,aggregate = FALSE)
-  obj<-as.matrix(d[,-(1:3)])
+  d<-getSpecieFromAbundMD5(taxall,tx=tx, sp = SpName,aggregate = TRUE)
+  obj<-as.matrix(d[,-1])
   rownames(obj)<-d$ufun
   colnames(obj)<-mdt$MGN
   mat2<-plotHeatmap(obj,100,trace = "none", col = heatmapCols)
   })
+  
   output$plot2 <- renderD3heatmap({SpName <- spName()
-  plot <- plotSP(d.bm[,-3],sp = SpName)
+  tx <- txa()
+  tx2 <- txa2()
+  drops <- c("usp", "species", "genus", "family", "order", "class", "phylum", "domain", "md5")
+  drops <- drops[drops!= tx]
+  drops <- drops[drops!= tx2]
+  plot <- plotSP(taxall[ , !(names(taxall) %in% drops), with = FALSE], sp = SpName, tx = tx, tx2 = tx2)
   d3heatmap(plot)})
 }
 shinyApp(ui = ui, server = server)
