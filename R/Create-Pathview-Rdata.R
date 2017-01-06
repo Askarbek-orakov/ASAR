@@ -4,7 +4,7 @@
 #'Separate functional analysis data into a new table in a file removing duplicates.
 #' 
 #'Checks md5sum and removes duplicates and copies functional analysis data into the file "d.uspfun".
-#'@useage expandNamesDT(x)
+#'@usage expandNamesDT(x)
 #'@param x file that is output by function "mergeAnnots" and from which functional analysis data is going to be extracted. 
 #'@details Copies coloumns, namely `query sequence id`,`hit m5nr id (md5sum)`,fun and sp with all rows from file "d.merge" to the file "d".
 #'@details Changes names of coloumns `query sequence id`,`hit m5nr id (md5sum)`,fun and sp to 'id','md5sum','fun'and 'sp' respectively.
@@ -40,7 +40,7 @@ getAbundanceMD5FromDT<-function(d.ab){
 #'Load metadata of metagenome samples
 #'
 #'Takes in a file containing metadata and assigns source and origin values depending on MetagenomeID and transfers it to the file "mdt" as output.
-#'@useage load.metadata(file)
+#'@usage load.metadata(file)
 #'@param file file containing metadata of selected samples ususally exported from MG-RAST
 #'@return formatted tab-delimited metadata table called "mdt"
 #'@export
@@ -82,7 +82,6 @@ load.metadata <- function(file) {
 #'Loading files output by MG-RAST with functional analysis by SEED.
 #' 
 #' After entering location of a file (path) and name of the file (pattern), this function reads in information from the file as a list.
-#' @details 
 #' @usage load.fdata.from.file(path)
 #' @param path location of a file that should be input.
 #' @return list called "fannot" 
@@ -96,15 +95,30 @@ load.fdata.from.file <- function(path = ".") {
   return(fannot)
 }
 
-#'@return ko
+#'Loading file KEGG Orthology output by MG-RAST.
+#' 
+#' After entering location of a file (path) and name of the file (pattern), this function reads in information from the file as a list.
+#' @usage load.kodata.from.file (path)
+#' @param path location of a file that should be input.
+#' @return list called "ko" 
+#' @export
+#' @example load.kodata.from.file()
+#'@return list "ko"
 #' command ">ko <- load.kodata.from.file()" should be run
 load.kodata.from.file <- function(path = '.') {
   klist<-dir(path = path, pattern = '^m.*.ko$')
   cat(paste(klist,collapse = '\n'))
   ko<-lapply(klist,function(.x){fread(paste0('ghead -n -1 ./', .x),sep='\t',header = TRUE)})
 }
-
-#'@return sannot
+#'Loading files output by MG-RAST with functional and taxonomical analysis by SEED.
+#' 
+#' After entering location of a file (path) and name of the file (pattern), this function reads in information from the file as a list.
+#' @usage load.kodata.from.file (path)
+#' @param path location of a file that should be input.
+#' @return list called "ko" 
+#' @export
+#' @example load.sdata.from.file()
+#'@return list "sannot"
 #' command ">sannot <- load.sdata.from.file()" should be run
 load.sdata.from.file <- function(path = '.') {
   slist<-dir(path = path,pattern = '*.3.seed$')
@@ -114,6 +128,15 @@ load.sdata.from.file <- function(path = '.') {
   sannot<-lapply(slist,function(.x){fread(paste0('ghead -n -1 ./', .x),sep='\t',header = TRUE)})
 }
 
+#' 
+#' 
+#' 
+#' @details 
+#' @usage 
+#' @param 
+#' @return 
+#' @example 
+#'@return 
 #command "kres.res <- our.merge()" should be run
 our.merge <- function() {
   flist<-dir(path = ".", pattern = "*.3.fseed$")
@@ -151,6 +174,15 @@ our.merge <- function() {
   return(list(kres=kres, res=res))
 }
 
+#' 
+#' 
+#' 
+#' @details 
+#' @usage 
+#' @param 
+#' @return 
+#' @example 
+#'@return 
 #command "d.res <- make.d.res(kres.res)" should be run
 make.d.res <- function(.list) {
   d.res<-ldply(.data = .list$res,
@@ -160,7 +192,15 @@ make.d.res <- function(.list) {
                  return(ab)
                })
 }
-
+#' 
+#' 
+#' 
+#' @details 
+#' @usage 
+#' @param 
+#' @return 
+#' @example 
+#'@return 
 #command "d.kres <- make.d.kres(kres.res)" should be run
 make.d.kres <- function(.list){
   d.kres<-unique(ldply(.data = .list$kres,
@@ -169,7 +209,15 @@ make.d.kres <- function(.list){
                          return(ab)
                        }))
 }
-
+#' 
+#' 
+#' 
+#' @details 
+#' @usage 
+#' @param 
+#' @return 
+#' @example 
+#'@return 
 our.aggregate <- function() {
   dcast(setDT(d.res),usp+ufun+md5 ~ mgid,value.var = 'sum',fill = 0)->d.bm
   
@@ -177,6 +225,15 @@ our.aggregate <- function() {
   d.fun<-aggregate(.~ufun,as.data.frame(d.bm)[,-c(1,3)],FUN = sum)
   return(d.bm)
 }
+#' 
+#' 
+#' 
+#' @details 
+#' @usage 
+#' @param 
+#' @return 
+#' @example 
+#'@return 
 tax.df.from.biome <- function(){
   dat <- read_biom("mgm.biome")
   tax <- dat$rows

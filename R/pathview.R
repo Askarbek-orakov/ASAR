@@ -112,16 +112,16 @@ returnAppropriateObj<-function(obj, norm, log){
 #' 
 #' 
 #' @details 
-#' @usage 
-#' @param 
-#' @param 
-#' @param 
-#' @param 
-#' @param 
-#' @param 
+#' @usage plotHeatmap(obj, n, norm, log, fun, ...)
+#' @param obj
+#' @param n
+#' @param norm
+#' @param log
+#' @param fun
+#' @param ...
 #' @return 
 #' @export
-#' @example  
+#' @example  plotHeatmap(obj,n,norm=TRUE,log=TRUE,fun=sd,...)
 plotHeatmap<-function(obj,n,norm=TRUE,log=TRUE,fun=sd,...){
   #uses returnAppropriateObj function to get normalized and log(2)-ed obj matrix as mat
   mat = returnAppropriateObj(obj, norm, log)
@@ -152,7 +152,14 @@ plotHeatmap<-function(obj,n,norm=TRUE,log=TRUE,fun=sd,...){
 }
 #'plot Heatmap for species
 #'
-#'@export
+#' @details 
+#' @usage 
+#' @param d3
+#' @param sp
+#' @param ...
+#' @return 
+#' @export
+#' @example
 plotSP<-function(d3,sp){
   #filters rows with given species from d3 to d
   d<-getSpecieFromAbund(d3,sp = sp,aggregate = FALSE)
@@ -171,7 +178,15 @@ plotSP<-function(d3,sp){
   }
   invisible(res)
 }
-
+#'
+#' @details 
+#' @usage 
+#' @param obj
+#' @param main
+#' @param landscape
+#' @return 
+#' @export
+#' @example
 showTable<-function(obj,main,landscape=TRUE){
   mat<-as.matrix(obj)
   #order mat rows in decreasing order by rowSums
@@ -208,6 +223,13 @@ showTable<-function(obj,main,landscape=TRUE){
     cat("\\end{center}\n ")
   }
 }
+#'
+#' @details 
+#' @usage analyzeMatches(metagenomeID, .path )
+#' @param metagenomeID
+#' @param .path
+#' @return 
+#' @export
 #'@example analyzeMatches("mgm4714659")
 #'problem: should we leave paste0("ghead -n -1 ./",.x) without .path inclusion?
 analyzeMatches <- function(metagenomeID, .path = ".") {
@@ -233,6 +255,13 @@ analyzeMatches <- function(metagenomeID, .path = ".") {
   xtable(matches)
   xtable(cor(matches))
 }
+#'
+#' @details 
+#' @usage 
+#' @param 
+#' @return 
+#' @export
+#'@example
 #devtools::install_github("biomformat", "joey711") NEEDED
 tax.df.from.biome <- function(){
   dat <- read_biom("mgm.biome")
