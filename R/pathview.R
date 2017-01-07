@@ -713,7 +713,7 @@ showTable<-function(obj,main,landscape=TRUE){
     cat("\\end{center}\n ")
   }
 }
-#'
+#' 
 #' @details 
 #' @usage analyzeMatches(metagenomeID, .path )
 #' @param metagenomeID
