@@ -132,14 +132,13 @@ load.sdata.from.file <- function(path = '.') {
 #' 
 #' 
 #' @details 
-#' @usage 
-#' @param 
-#' @return 
-#' @example 
-#'@return 
-#command "kres.res <- our.merge()" should be run
-our.merge <- function() {
-  flist<-dir(path = ".", pattern = "*.3.fseed$")
+#' @usage command "kres.res <- our.merge()" should be run
+#' @param path destination of .fseed files. "." by default.
+#' @return list of kres and res dataframes
+#' @example our.merge()
+
+our.merge <- function(path = ".") {
+  flist<-dir(path = path, pattern = "*.3.fseed$")
   nms<-gsub('.fseed$','',flist)
   res<-list()
   kres<-list()
