@@ -259,5 +259,9 @@ d.kres <- make.d.kres(kres.res)
 d.bm <- our.aggregate()
 tax.df <- tax.df.from.biome()
 taxall<- merge(d.bm,tax.df,all=TRUE,by.x='usp',by.y='strain')[,.(usp,species,genus,family,order,class,phylum,domain,md5,ufun,mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3)]
+funtree <- read.delim("subsys.txt", header = FALSE, quote = "")
+funtree <- funtree[,-5]
+colnames(funtree) <- c("FUN4", "FUN3", "FUN2", "FUN1")
+funtaxall <- merge(taxall, funtree, by.x = 'ufun', by.y = 'FUN1')[,.(usp,species,genus,family,order,class,phylum,domain,md5,ufun,FUN2,FUN3,FUN4,mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3)]
 pwlist<-sort(unique(c('00020','00062','00561','00564','00620','00640','00650','00660','00680','00720','00790','00920','02024','02025','05111','00130','00190','00400','00860','00910','01053','01057','02010','02020')))
 save(pwlist,d.bm,mdt,taxall,d.res,d.kres,fannot,sannot,ko,file = 'pathview.Rdata')

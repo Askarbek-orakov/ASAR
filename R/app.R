@@ -13,6 +13,7 @@ library(plyr)
 library(pathview)
 library(stringr)
 library(biomformat)
+library(d3heatmap)
 load("d.bm.Rdata")
 tax.df.from.biome <- function(){
   dat <- read_biom("mgm.biome")
@@ -79,6 +80,10 @@ returnAppropriateObj<-function(obj, norm, log){
 heatmapCols = colorRampPalette(brewer.pal(9, "RdBu"))(50)
 tax.df <- tax.df.from.biome()
 taxall<- merge(d.bm,tax.df,all=FALSE,by.x='usp',by.y='strain')[,.(usp,species,genus,family,order,class,phylum,domain,md5,ufun,mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3)]
+funtree <- read.delim("subsys.txt", header = FALSE, quote = "")
+funtree <- funtree[,-5]
+colnames(funtree) <- c("FUN4", "FUN3", "FUN2", "FUN1")
+funtaxall <- merge(taxall, funtree, by.x = 'ufun', by.y = 'FUN1')[,.(usp,species,genus,family,order,class,phylum,domain,md5,ufun,FUN2,FUN3,FUN4,mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3)]
 
 ui <- fluidPage(
   sidebarPanel(
