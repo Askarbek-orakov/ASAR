@@ -1,0 +1,1 @@
+curl  -H "auth: K8qdy8tr2FfgxuU83thKceAJt" -H 'Accept-Encoding: gzip,deflate' "http://api.metagenomics.anl.gov/1/annotation/similarity/mgm4714675.3?source=SEED&type=organism&identity=60&length=15" -o mgm4714675.3.seed
