@@ -1,0 +1,296 @@
+---
+title: "Prepare data "
+author: "Анатолий Сорокин"
+date: '`r format(Sys.time(), "%d.%m.%Y")`'
+output:
+  pdf_document:
+    keep_tex: yes
+    number_sections: yes
+  html_document: default
+params:
+  format: !r if(opts_knit$get("rmarkdown.pandoc.to") == 'html') c('screen', 'print')
+    else 'print'
+  version: !r if(nchar(Sys.which("git"))) system("git describe --long --dirty --abbrev=10  --tags  --always",
+    intern=TRUE) else date()
+header-includes:
+- \usepackage[T2A]{fontenc}
+- \usepackage[utf8]{inputenc}
+- \usepackage[english,russian]{babel}
+- \usepackage{grffile}
+- \usepackage{rotating}
+- \usepackage{caption}
+- \usepackage{longtable}
+- \usepackage{lscape}
+---
+```{r loadPackages, include=FALSE, cache=FALSE}
+## load additional packages in this chunk
+library(pander)
+library(knitr)
+library(ggplot2)
+library(plyr)
+library(biom)
+library(RJSONIO)
+library(data.table)
+```
+
+```{r setup, include=FALSE, cache=FALSE}
+## This chunk should contain global configuration commands.
+## Use this to set knitr options and related things. Everything
+## in this chunk will be included in an appendix to document the
+## configuration used.
+#output <- opts_knit$get("rmarkdown.pandoc.to")
+
+## By default R code is only included in HTML versions of the report
+## (where it can be collapsed). You can generate a PDF version
+## using rmarkdown::pdf_document to get a copy for print. Extensive
+## chunks of R code may or may not be desired in /hat setting. If you
+## want them simply change the following arguments to `echo = TRUE`.
+## In either case the default can be overwritten for individual chunks.
+#opts_chunk$set(echo = output=="html")
+#opts_chunk$set(warning = output=="html")
+#opts_chunk$set(message = output=="html")
+
+## Cache options
+opts_chunk$set(cache=TRUE)
+
+## Figure options
+## Set default figure format
+#options(reportmd.figure.format=params$format)
+
+## Set 'hide.fig.code' to FALSE to include code chunks that
+## produce Figures in the output. Note that this affects all chunks
+## that provide a figure caption.
+opts_chunk$set(hold=TRUE, hide.fig.code=FALSE)
+
+## Set up default plotting options for different formats.
+## These can be overwritten for individual chunks
+#interactiveFig()
+#screenFig()
+#printFig()
+
+## Pander options
+panderOptions("digits", 3)
+panderOptions("table.split.table", 160)
+
+## Configure Figure and Table lables
+#options(figcap.prefix = "Figure", figcap.sep = ":", figcap.prefix.highlight = "**")
+#options(tabcap.prefix = "Table", tabcap.sep = ":", tabcap.prefix.highlight = "**")
+
+## Install required knitr hooks
+#installHooks()
+```
+
+```{r functions, include=FALSE}
+## Custom functions used in the analysis should go into this chunk.
+## They will be listed in their own section of the appendix.
+extractOTU<-function(.x){
+.res<-data.frame(otu=gsub('(\\[|\\])','',
+                          unlist(
+                            strsplit(
+                              as.character(
+                                .x$semicolon.separated.list.of.annotations),
+                              ';'))))
+}
+
+```
+
+# Read metadata
+
+```{r load.metadata}
+mdt<-read.delim(file = 'jobs.tsv')
+mdt$Name<-sub('^[0-9]+_([^_]+)_[^_]+_([^_]+).*$','\\1_\\2',mdt$Metagenome.Name)
+mdt$EID<-sub('^([^_]+)_.*$','\\1',mdt$Name)
+mdt$MFCID<-NA
+mdt$MFCID[mdt$EID=='S5'|mdt$EID=='S6']<-'MFC1_p'
+mdt$MFCID[mdt$EID=='S7'|mdt$EID=='S8']<-'MFC3_p'
+mdt$MFCID[mdt$EID=='S9'|mdt$EID=='S10']<-'MFC1_a'
+mdt$MFCID[mdt$EID=='S11'|mdt$EID=='S12']<-'MFC3_a'
+mdt$MFCID[mdt$EID=='S9'|mdt$EID=='S10']<-'MFC1_a'
+mdt$MFCID[mdt$EID=='S11'|mdt$EID=='S12']<-'MFC3_a'
+mdt$MFCID[mdt$EID=='S1']<-'inflowSW'
+mdt$MFCID[mdt$EID=='S2']<-'rIS'
+mdt$MFCID[mdt$EID=='S3']<-'rSW'
+mdt$MFCID[mdt$EID=='S4']<-'sMiz'
+mdt$Source<-NA
+samplesToKeep<-grep('_a',mdt$MFCID)
+mdt$Source[samplesToKeep]<-'anode'
+samplesToKeep<-grep('_p',mdt$MFCID)
+mdt$Source[samplesToKeep]<-'plankton'
+samplesToKeep<-grep('^r',mdt$MFCID)
+mdt$Source[samplesToKeep]<-'inoculum'
+samplesToKeep<-grep('^inflow',mdt$MFCID)
+mdt$Source[samplesToKeep]<-'inflow'
+mdt$Origin<-NA
+samplesToKeep<-grep('S(3|5|9|6|10)',mdt$Metagenome.Name)
+mdt$Origin[samplesToKeep]<-'sws'
+samplesToKeep<-grep('S(2|7|11|8|12)',mdt$Metagenome.Name)
+mdt$Origin[samplesToKeep]<-'is'
+mdt$Origin[mdt$MFCID=="inflowSW"]<-'inflow'
+rownames(mdt) <- as.character(mdt[, 1])
+ids<-as.character(mdt$MG.RAST.ID)
+```
+
+
+# Read BIOM data
+
+Data was downloaded with command:
+```
+curl  -H "auth: K8qdy8tr2FfgxuU83thKceAJt" -H 'Accept-Encoding: gzip,deflate' "http://api-pql.metagenomics.anl.gov/1/matrix/organism?id=mgm4714659.3&id=mgm4714661.3&id=mgm4714663.3&id=mgm4714665.3&id=mgm4714667.3&id=mgm4714669.3&id=mgm4714671.3&id=mgm4714673.3&id=mgm4714675.3&id=mgm4714677.3&id=mgm4714679.3&source=SEED&group_level=strain&result_type=abundance&hit_type=all&identity=60&length=15" -o mgm.biome
+
+```
+
+Let's read it into R:
+```{r read.biome}
+json_res<-fromJSON('mgm.biome')
+biom(json_res)->biom_res
+biom_df<-biom_data(biom_res)
+save(biom_df,biom_res,file = 'Biom.RData')
+```
+
+
+# Read KO annotation
+Data was read with command:
+
+```
+curl  -H "auth: SfANq3Fvh3hBPaPr76vHNzMRQ" -H 'Accept-Encoding: gzip,deflate' "http://api-pql.metagenomics.anl.gov/1/annotation/similarity/mgm4714675.3?source=KO&type=ontology&identity=60&length=15" -o mgm4714675.3.ko 
+```
+
+Let's read this into R:
+
+```{r read.ko}
+ko.df<-data.frame(mgrast.id='mgm',query.sequence.id='query.sequence.id',
+                    hit.m5nr.id..md5sum.='hit.m5nr.id..md5sum.',
+                    alignment.length.=1,
+                    e.value=1e-5,
+                    otu='out')[FALSE,]
+for(sid in ids){
+  d1<-fread('mgm4714675.3.ko')
+dd<-ddply(.data = d1[1:11],.(query.sequence.id,hit.m5nr.id..md5sum.,alignment.length.,e.value),.fun = extractOTU)
+seed.df<-rbind(seed.df,cbind(data.frame(mgrast.id=rep(sid,dim(dd)[1])),dd))
+save(seed.df,file = 'SEED.RData')
+}
+```
+
+
+## Read SEED functions
+
+Load data by command
+```
+curl  -H "auth: K8qdy8tr2FfgxuU83thKceAJt" -H 'Accept-Encoding: gzip,deflate' "http://api-pql.metagenomics.anl.gov/1/annotation/similarity/mgm4714679.3?source=SEED&type=function&identity=60&length=15" -o mgm4714679.3.fseed
+```
+
+read and prepare
+```{r read.seed.fun}
+d.fseed<-fread('tmp/mgm4714679.3.fseed',sep='\t',header = FALSE,skip = 1L)
+names(d.fseed)<-c('sid','md5','pers.id','al.len','num.mis','num.gap','qstart','qend','hstart','hend','e.val','b.score','ann.list')
+
+d.sseed<-fread('tmp/mgm4714679.3.seed',sep='\t',header = FALSE,skip = 1L)
+names(d.sseed)<-c('sid','md5','pers.id','al.len','num.mis','num.gap','qstart','qend','hstart','hend','e.val','b.score','ann.list')
+keycols<-c('sid','md5')
+setkeyv(d.fseed,keycols)
+setkeyv(d.sseed,keycols)
+d.merge<-merge(d.fseed,d.sseed,all=TRUE,suffixes = c('.fun','.sp'))
+num.sp<-sapply(lapply(str_split(d.merge$ann.list.sp,';'),unique),length)
+num.fun<-sapply(lapply(str_split(d.merge$ann.list.fun,';'),unique),length)
+d.merge.ex<-data.frame(id=rep('',sum(num.fun*num.sp)),ann.fun='',ann.sp='',stringsAsFactors = FALSE)
+id1<-which(num.fun==1&num.sp==1)
+ki<-0
+kk<-sum(num.sp[id1]*num.fun[id1])
+d.merge.ex[1:kk+ki,]<-data.table(id=paste(d.merge$sid[id1],d.merge$md5[id1],sep='|md5'),ann.fun=d.merge$ann.list.fun[id1],ann.sp=d.merge$ann.list.sp[id1])
+ki<-ki+kk
+id1<-which(num.fun==1&num.sp>1)
+kk<-sum(num.sp[id1]*num.fun[id1])
+d.merge.ex[1:kk+ki,]<-data.table(
+  id=rep(paste(d.merge$sid[id1],
+               d.merge$md5[id1],sep='|md5'),
+         num.sp[id1]),
+  ann.fun=rep(sapply(str_split(d.merge$ann.list.fun[id1],';'),unique)
+              ,num.sp[id1]),
+  ann.sp=unlist(sapply(
+    str_split(d.merge$ann.list.sp[id1],';'),
+    unique)))
+ki<-ki+kk
+id1<-which(num.fun>1&num.sp==1)
+kk<-sum(num.sp[id1]*num.fun[id1])
+d.merge.ex[1:kk+ki,]<-data.table(
+  id=rep(paste(d.merge$sid[id1],
+               d.merge$md5[id1],sep='|md5'),
+         num.fun[id1]),
+  ann.fun=unlist(sapply(
+    str_split(d.merge$ann.list.fun[id1],';'),
+    unique)),
+  ann.sp=rep(sapply(str_split(d.merge$ann.list.sp[id1],';'),unique)
+              ,num.fun[id1])
+  )
+ki<-ki+kk
+id1<-which(num.fun>1&num.sp>1)
+kk<-sum(num.sp[id1]*num.fun[id1])
+d.merge.ex[1:kk+ki,]<-data.table(
+  id=rep(paste(d.merge$sid[id1],
+               d.merge$md5[id1],sep='|md5'),
+         num.fun[id1]*num.sp[id1]),
+  ann.fun=unlist(sapply(id1,
+                        function(.x) rep(sapply(
+                          str_split(d.merge$ann.list.fun[.x],';'),
+                          unique),num.sp[.x]))),
+  ann.sp=unlist(sapply(id1,
+                        function(.x) rep(sapply(
+                          str_split(d.merge$ann.list.sp[.x],';'),
+                          unique),num.fun[.x])))
+  )
+
+```
+# Read SEED species
+Data was read with command:
+
+```
+curl  -H "auth: K8qdy8tr2FfgxuU83thKceAJt" -H 'Accept-Encoding: gzip,deflate' "http://api.metagenomics.anl.gov/1/annotation/similarity/mgm4714675.3?source=SEED&type=organism&identity=60&length=15" -o mgm4714675.3.seed
+```
+
+Let's read this into R:
+
+```{r read.seed.sp}
+d.sseed<-data.frame(mgrast.id='mgm',query.sequence.id='query.sequence.id',
+                    hit.m5nr.id..md5sum.='hit.m5nr.id..md5sum.',
+                    alignment.length.=1,
+                    e.value=1e-5,
+                    otu='out')[FALSE,]
+for(sid in ids){
+  d1<-read.delim('tmp/mgm4714675.3.seed')
+dd<-ddply(.data = d1[1:11],.(query.sequence.id,hit.m5nr.id..md5sum.,alignment.length.,e.value),.fun = extractOTU)
+seed.df<-rbind(seed.df,cbind(data.frame(mgrast.id=rep(sid,dim(dd)[1])),dd))
+save(seed.df,file = 'SEED.RData')
+}
+```
+
+# Read KEGG function
+```
+curl  -H "auth: y8MLy5NRMBfCRGzPcxYP9b86c" -H 'Accept-Encoding: gzip,deflate' "http://api-pql.metagenomics.anl.gov/1/annotation/similarity/mgm4714679.3?source=KEGG&type=function&identity=60&length=15" -o mgm4714679.3.fkegg
+```
+
+# Read KEGG species
+
+```
+```
+
+
+# Приложения {.tabset}
+## Функции
+```{r functions, eval=FALSE, include=TRUE}
+```
+
+## Конфигурация R
+```{r setup, eval=FALSE}
+```
+
+## Версии
+### Версия документа
+```{r docVersion, echo=FALSE, results='asis', cache=FALSE}
+cat(params$version)
+```
+
+### Session Info
+```{r sessionInfo, echo=FALSE, results='asis', class='text', warning=FALSE}
+pander(devtools::session_info())
+```
+
