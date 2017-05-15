@@ -13,6 +13,7 @@ library(plyr)
 library(pathview)
 library(stringr)
 library(biomformat)
+library(d3heatmap)
 load("d.bm.Rdata")
 tax.df.from.biome <- function(){
   dat <- read_biom("mgm.biome")
