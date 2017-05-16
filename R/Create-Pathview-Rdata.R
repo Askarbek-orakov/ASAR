@@ -91,7 +91,7 @@ load.metadata <- function(file) {
 load.fdata.from.file <- function(path = ".") {
   flist<-dir(path = path, pattern = "*.3.fseed$")
   cat(paste(flist,collapse = "\n"))
-  fannot<-lapply(flist,function(.x){fread(paste0('ghead -n -1 ./', .x),sep='\t',header = TRUE)})
+  fannot<-lapply(flist,function(.x){fread(paste0('head -n -1 ./', .x),sep='\t',header = TRUE)})
   return(fannot)
 }
 
