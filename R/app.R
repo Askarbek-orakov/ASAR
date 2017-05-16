@@ -14,6 +14,7 @@ library(pathview)
 library(stringr)
 library(biomformat)
 library(d3heatmap)
+library(KEGGREST)
 load("pathview.Rdata")
 getSpecieFromAbund<-function(d.bm,sp = sp, tx=tx, fun=fun, fN=fN, aggregate=FALSE){
   es<-d.bm[grep(sp,d.bm[,get(tx)])]
