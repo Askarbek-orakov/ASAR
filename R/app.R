@@ -65,6 +65,10 @@ returnAppropriateObj<-function(obj, norm, log){
   }
   return(res)
 }
+getKOtaxon <- function(tx = tx, sp = SpName){
+  taxon <- -funtaxall[grep(sp,d.bm$as.character(tx)),]
+  
+}
 
 funtree <- read.delim("subsys.txt", header = FALSE, quote = "")
 funtree <- funtree[,-5]
