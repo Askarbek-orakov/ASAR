@@ -66,6 +66,10 @@ returnAppropriateObj<-function(obj, norm, log){
   }
   return(res)
 }
+getKOtaxon <- function(tx = tx, sp = SpName){
+  taxon <- -funtaxall[grep(sp,d.bm$as.character(tx)),]
+  
+}
 
 koTaxaMetagenome<-function(sp.li, mgm, kon) {
   d<-getSpecieFromAbundMD5(d.bm,sp = sp.li,aggregate = FALSE)
