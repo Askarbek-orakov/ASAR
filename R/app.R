@@ -65,8 +65,14 @@ returnAppropriateObj<-function(obj, norm, log){
   }
   return(res)
 }
-getKOtaxon <- function(tx = tx, sp = SpName){
-  taxon <- -funtaxall[grep(sp,d.bm$as.character(tx)),]
+CompareMGonKO <- function(ko,mg1, mg2,tx = tx, sp = SpName){
+  taxon<-funtaxall[grep(sp,funtaxall[,get(tx)])]
+  drops <- c("usp","ufun","md5") 
+  d5<-taxon[,m5:=unlist(str_split(md5,',')),by=.(usp,ufun,md5)]
+  # find function to leave all other than by.. , probably "..."
+  dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,.(m5,usp,ufun,mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3,ko)])
+  mg1total <-dk5[dk5$ko == get(ko),]
+  #filter by ko and sum abundances for each metagenome and present as heatmap.
   
 }
 

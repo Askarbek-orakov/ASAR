@@ -245,7 +245,7 @@ tax.df.from.biome <- function(){
   tax.df <- data.frame(matrix(unlist(dd.tax), nrow=length(unlist(dd.tax))/9, byrow=T))
   colnames(tax.df) <- list("id", "strain", "species", "genus", "family", "order", "class", "phylum", "domain")
   rownames(tax.df) <- tax.df$id
-  tax.df <- tax.df[,-1]
+  #tax.df <- tax.df[,-1]
   return(tax.df)
 }
 #Calls of functions
@@ -258,7 +258,7 @@ d.res <- make.d.res(kres.res)
 d.kres <- make.d.kres(kres.res)
 d.bm <- our.aggregate()
 tax.df <- tax.df.from.biome()
-taxall<- merge(d.bm,tax.df,all=TRUE,by.x='usp',by.y='strain')[,.(usp,species,genus,family,order,class,phylum,domain,md5,ufun,mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3)]
+taxall<- merge(d.bm,tax.df,all=TRUE,by.x='usp',by.y="id")[,.(usp,species,genus,family,order,class,phylum,domain,md5,ufun,mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3)]
 funtree <- read.delim("subsys.txt", header = FALSE, quote = "")
 funtree <- funtree[,-5]
 colnames(funtree) <- c("FUN4", "FUN3", "FUN2", "FUN1")
