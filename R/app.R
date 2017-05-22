@@ -31,6 +31,12 @@ getSpecieFromAbundMD5<-function(taxall, tx=tx, sp = SpName, aggregate=FALSE){
   if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-c(1,2)],FUN = sum)
   return(d.res)
 }
+
+getSpecieFromAbundMD5_2<-function(d.bm,sp=SpName,aggregate=FALSE){
+  d.res<-d.bm[grep(sp,d.bm$usp),]
+  if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-c(1,3)],FUN = sum)
+  return(d.res)
+}
 plotHeatmap<-function(obj,n,norm=TRUE,log=TRUE,fun=sd,...){
   mat = returnAppropriateObj(obj, norm, log)
   otusToKeep = which(rowSums(mat) > 0)
@@ -66,32 +72,36 @@ returnAppropriateObj<-function(obj, norm, log){
   }
   return(res)
 }
-CompareMGonKO <- function(ko,mg1, mg2,tx = tx, sp = SpName){
-  taxon<-funtaxall[grep(sp,funtaxall[,get(tx)])]
-  drops <- c("usp","ufun","md5") 
-  d5<-taxon[,m5:=unlist(str_split(md5,',')),by=.(usp,ufun,md5)]
-  # find function to leave all other than by.. , probably "..."
-  dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,.(m5,usp,ufun,mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3,ko)])
-  mg1total <-dk5[dk5$ko == get(ko),]
-  #filter by ko and sum abundances for each metagenome and present as heatmap.
-  
-}
+# CompareMGonKO <- function(ko,mg1, mg2,tx = tx, sp = SpName){
+#   taxon<-funtaxall[grep(sp,funtaxall[,get(tx)])]
+#   drops <- c("usp","ufun","md5") 
+#   d5<-taxon[,m5:=unlist(str_split(md5,',')),by=.(usp,ufun,md5)]
+#   # find function to leave all other than by.. , probably "..."
+#   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,.(m5,usp,ufun,mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3,ko)])
+#   mg1total <-dk5[dk5$ko == get(ko),]
+#   #filter by ko and sum abundances for each metagenome and present as heatmap.
+#   
+# }
 
 koTaxaMetagenome<-function(sp.li, mgm, kon) {
-  d<-getSpecieFromAbundMD5(d.bm,sp = sp.li,aggregate = FALSE)
+  cat(mgm, "\n")
+  d<-getSpecieFromAbundMD5_2(d.bm,sp = sp.li,aggregate = FALSE)
+  cat(names(d), "\n")
+  indC<-which(names(d)%in%mgm)
   d5<-d[,list(m5=unlist(str_split(md5,',')),mgm),by=.(usp,ufun,md5)]
+  cat(names(d5),"\n")
   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,.(m5,usp,ufun,mgm,ko)])
   adk5<-aggregate(.~ko,as.data.frame(dk5[,-c(1:3)]),FUN=sum)
   rownames(adk5)<-adk5$ko
-  pv.out <- pathview(gene.data = adk5[,c(1,8,3,10)+1], pathway.id = gsub('^K','',kon),
-                     species = "ko", out.suffix = paste0(sp.l,".ko.plankton"), kegg.native = T,
-                     limit = list(gene=range(as.vector(as.matrix(adk5[,c(1,8,3,10)+1]))),cpd=1))
+  pv.out <- pathview(gene.data = adk5, pathway.id = gsub('^K','',kon),
+                     species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
+                     limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
 }
 
-funtree <- read.delim("subsys.txt", header = FALSE, quote = "")
-funtree <- funtree[,-5]
-colnames(funtree) <- c("FUN4", "FUN3", "FUN2", "FUN1")
-funtaxall <- merge(taxall, funtree, by.x = 'ufun', by.y = 'FUN1')[,.(usp,species,genus,family,order,class,phylum,domain,md5,ufun,FUN2,FUN3,FUN4,mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3)]
+# funtree <- read.delim("subsys.txt", header = FALSE, quote = "")
+# funtree <- funtree[,-5]
+# colnames(funtree) <- c("FUN4", "FUN3", "FUN2", "FUN1")
+# funtaxall <- merge(taxall, funtree, by.x = 'ufun', by.y = 'FUN1')[,.(usp,species,genus,family,order,class,phylum,domain,md5,ufun,FUN2,FUN3,FUN4,mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3)]
 
 ui <- fluidPage(
   titlePanel("METAGENOMIC ANALYSIS by ASAR"),
@@ -110,11 +120,11 @@ ui <- fluidPage(
   selectInput(inputId = "funlevel2", label = "Choose functional Level",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "ufun")
   , width = 3),
   sidebarPanel(
-    selectInput(inputId = "SpecieN", "Choose Specie", as.vector(unique(taxall[,"genus"])), selected = NULL),
+    selectInput(inputId = "SpecieN", "Choose Specie", as.vector(unique(d.bm[,"usp"])), selected = NULL),
     selectInput(inputId = "Metagenomes", label = "Select Multiple Metagenome Samples", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
-    selectInput(inputId = "KONames", "Choose KEGG pathway", as.vector(unique(adk5[,"ko"])), selected = "KO0001", selectize = FALSE),
-    actionButton("KOnames", "GO"),
-    uiOutput("KONames")
+    selectInput(inputId = "KONames", "Choose KEGG pathway", as.vector(unique(d.kres[,"ko"])), selected = NULL)
+    # imageOutput("image1")
+    # uiOutput("KONames")
     ),
 
   mainPanel(
@@ -179,11 +189,10 @@ server <- function(input, output) {
   d3heatmap(plot)})
   
   output$image1 <- renderImage({
-    outfile <- tempfile(fileext = ".png")
     sp.li<- sp.l()
     kon<- kn()
     mgm <-mg()
-    ima <- koTaxaMetagenome(sp.l, mg, kn)
+    koTaxaMetagenome(sp.li, mgm, kon)
   })
   
 }
