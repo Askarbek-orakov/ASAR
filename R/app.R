@@ -84,15 +84,21 @@ returnAppropriateObj<-function(obj, norm, log){
 # }
 
 koTaxaMetagenome<-function(sp.li, mgm, kon) {
+  cat("koTaxaMetagenome\n")
   cat(mgm, "\n")
+  cat(sp.li, "\n")
+  cat(kon, "\n")
   d<-getSpecieFromAbundMD5_2(d.bm,sp = sp.li,aggregate = FALSE)
   cat(names(d), "\n")
-  indC<-which(names(d)%in%mgm)
-  d5<-d[,list(m5=unlist(str_split(md5,',')),mgm),by=.(usp,ufun,md5)]
+  indC<-which(names(d)%in%c('md5',mgm))
+  d5.1<-d[,list(m5=unlist(str_split(md5,','))),by=.(usp,ufun,md5)]
+  d5<-merge(d5.1,d[,..indC],by='md5')
   cat(names(d5),"\n")
-  dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,.(m5,usp,ufun,mgm,ko)])
-  adk5<-aggregate(.~ko,as.data.frame(dk5[,-c(1:3)]),FUN=sum)
+  dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
+  indC<-which(names(dk5)%in%c('ko',mgm))
+  adk5<-aggregate(.~ko,as.data.frame(dk5[,..indC]),FUN=sum)
   rownames(adk5)<-adk5$ko
+  adk5<-adk5[,-1]
   pv.out <- pathview(gene.data = adk5, pathway.id = gsub('^K','',kon),
                      species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
                      limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
