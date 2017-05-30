@@ -83,11 +83,11 @@ returnAppropriateObj<-function(obj, norm, log){
 #   
 # }
 
-pathImage<-function(sp.li, mgm, pathw) {
+pathImage<-function(sp.li, mgm, pathwi) {
   cat("pathImage\n")
   cat(mgm, "\n")
   cat(sp.li, "\n")
-  cat(pathw, "\n")
+  cat(pathwi, "\n")
   d<-getSpecieFromAbundMD5_2(d.bm,sp = sp.li,aggregate = FALSE)
   cat(names(d), "\n")
   indC<-which(names(d)%in%c('md5',mgm))
@@ -99,27 +99,32 @@ pathImage<-function(sp.li, mgm, pathw) {
   adk5<-aggregate(.~ko,as.data.frame(dk5[,..indC]),FUN=sum)
   rownames(adk5)<-adk5$ko
   adk5<-adk5[,-1]
-  pathview(gene.data = adk5, pathway.id = pathw,
+  pathview(gene.data = adk5, pathway.id = pathwi,
                      species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
                      limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
+  #plotPNG(func = pathview(gene.data = adk5, pathway.id = pathwi,species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T, limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1)), filename = tempfile(fileext = ".png"), width = 400, height = 400, res = 72)
 }
 
-pathwayHeatmap<-function(sp.li, mgm) {
+pathwayHeatmap<-function(sp.l, mg) {
   cat("pathwayHeatmap\n")
-  cat(mgm, "\n")
-  cat(sp.li, "\n")
-  d<-getSpecieFromAbundMD5_2(d.bm,sp = sp.li,aggregate = FALSE)
+  cat(mg, "\n")
+  cat(sp.l, "\n")
+  d<-getSpecieFromAbundMD5_2(d.bm,sp = sp.l,aggregate = FALSE)
   cat(names(d), "\n")
-  indC<-which(names(d)%in%c('md5',mgm))
+  indC<-which(names(d)%in%c('md5',mg))
   d5.1<-d[,list(m5=unlist(str_split(md5,','))),by=.(usp,ufun,md5)]
   d5<-merge(d5.1,d[,..indC],by='md5')
   cat(names(d5),"\n")
   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
-  indC<-which(names(dk5)%in%c('ko',mgm))
-  adk5<-aggregate(.~ko,as.data.frame(dk5[,..indC]),FUN=sum)
-  rownames(adk5)<-adk5$ko
-  adk5<-adk5[,-1]
-  mutate(adk5, pathwayID = paste(as.character(gsub('^path:','',matrix(keggLink("pathway", "ko"), ncol=2, byrow=TRUE)[,2])), collapse = ","))
+  indC<-which(names(dk5)%in%c('ko',mg))
+  adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'usp', 'ufun', 'annotation')]),FUN=sum)
+  # rownames(adk5)<-adk5$ko
+  # adk5<-adk5[,-1]
+  lastcol<- ncol(adk5)+1
+  for (y in 1:nrow(adk5)){adk5[y,lastcol] <- paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", adk5[y,"ko"]), ncol=2, byrow=TRUE)[,2])), collapse = ",")}
+  colnames(adk5)[4] <- "pathwayID"
+  #for (y in 1:nrow(adk5)){adk5[y] <- mutate(adk5, pathwayID = paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", adk5[y,"ko"]), ncol=2, byrow=TRUE)[,2])), collapse = ","))}
+  adk5<-adk5[,list(pat=unlist(str_split(pathwayID,','))),by=.(ko)]
 }
 
 getPathwayList <- function(sp.li, mgm) {
@@ -134,7 +139,8 @@ getPathwayList <- function(sp.li, mgm) {
   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
   kos <- unique(dk5[,"ko"])
   eloop <- NULL
-  for (y in 1:nrow(kos)){eloop[y] <- paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", kos[y,"ko"]), ncol=2, byrow=TRUE)[,2])), collapse = ",")}
+  eloop<-paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", kos$ko), ncol=2, byrow=TRUE)[,2])))
+  #for (y in 1:nrow(kos)){eloop[y] <- paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", kos[y,"ko"]), ncol=2, byrow=TRUE)[,2])), collapse = ",")}
   unikos <-unique(unlist(str_split(eloop,',')))
   #indC<-which(names(dk5)%in%c('ko',mgm))
   #adk5<-aggregate(.~ko,as.data.frame(dk5[,..indC]),FUN=sum)
@@ -167,18 +173,14 @@ ui <- fluidPage(
   , width = 3),
   sidebarPanel(
     selectInput(inputId = "SpecieN", "Choose Specie", as.vector(unique(d.bm[,"usp"])), selected = NULL),
+    selectInput(inputId = "Metagenomes", label = "Select Multiple Metagenome Samples", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE)
+  ,  width = 3),
+  sidebarPanel(
     selectInput(inputId = "Metagenomes", label = "Select Multiple Metagenome Samples", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
+    selectInput(inputId = "SpecieN", "Choose Specie", as.vector(unique(d.bm[,"usp"])), selected = NULL),
     actionButton("path", "GO"),
     uiOutput("PathwayID")
-    #selectInput(inputId = "KONames", "Choose KEGG pathway", as.vector(unique(d.kres[,"ko"])), selected = NULL)
-    # imageOutput("image1")
-    # uiOutput("KONames")
-    # htmlOutput("image1")
-    ),
-  # sidebarPanel(
-  #   selectInput(inputId = "SpecieN", "Choose Specie", as.vector(unique(d.bm[,"usp"])), selected = NULL),
-  #   selectInput(inputId = "Metagenomes", label = "Select Multiple Metagenome Samples", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE)
-  # ),
+    , width = 3),
 
   mainPanel(
     tabsetPanel(
@@ -213,7 +215,6 @@ server <- function(input, output) {
   funName <- reactive({input$FunctionName})
   
   sp.l<- reactive({input$SpecieN})
-  #kn<- reactive({input$KONames})
   mg <-reactive({input$Metagenomes})
   pathw <- reactive({input$PathwayID})
   
@@ -248,12 +249,23 @@ server <- function(input, output) {
   plot <- plotSP(funtaxall[ , !(names(funtaxall) %in% drops), with = FALSE], sp = SpName, tx = tx, tx2 = tx2, fun = fun, fN = FunName)
   d3heatmap(plot)})
   
-  output$image1 <- renderUI({
+  output$plot3 <- renderD3heatmap({
+  sp.l <- sp.l()
+  mg <-mg()
+  d<-getSpecieFromAbundMD5_2(d.bm,sp=sp.l,aggregate=FALSE)
+  obj<-as.matrix(d[,-1])
+  rownames(obj)<-d$pathwayID
+  colnames(obj)<-d$mg
+  mat3 <- plotHeatmap(obj,100,norm = FALSE,trace = "none", col = heatmapCols)
+  d3heatmap(mat3)
+  }) 
+  
+  output$image1 <- renderImage({
     sp.li<- sp.l()
-    pathw<- pathw()
+    pathwi<- pathw()
     mgm <-mg()
-    pathImage(sp.li, mgm, pathw)
-  })
+    pathImage(sp.li, mgm, pathwi)
+  }, deleteFile = TRUE)
   
 }
 shinyApp(ui = ui, server = server)
