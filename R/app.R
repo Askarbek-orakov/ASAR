@@ -164,6 +164,25 @@ getPathwayList <- function(sp.li, mgm) {
 ui <- fluidPage(
   titlePanel("METAGENOMIC ANALYSIS by ASAR"),
   sidebarPanel(
+    conditionalPanel(condition = "input.condition==1",
+                     selectInput(inputId = "taxlevel", label = "Choose Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain"), selected = "usp", selectize = FALSE),
+                     actionButton("do", "GO"),
+                     uiOutput("taxNames"),
+                     p("For Taxonomic Content analysis I want taxon chosen above to be separated by :"),
+                     selectInput(inputId = "taxlevel2", label = "Choose Another Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum"), selected = "usp")
+                     ),
+    conditionalPanel(condition = "input.condition==2",
+                     
+                     ),
+    conditionalPanel(condition = "input.condition==3",
+                     
+                     ),
+    conditionalPanel(condition = "input.condition==4",
+                     
+                     ),
+    conditionalPanel(condition = "input.condition==5",
+                     
+                     ),
   selectInput(inputId = "taxlevel", label = "Choose Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain"), selected = "usp", selectize = FALSE),
   actionButton("do", "GO"),
   uiOutput("taxNames"),
@@ -192,12 +211,12 @@ ui <- fluidPage(
 
   mainPanel(
     tabsetPanel(
-      tabPanel("Functional Heatmap", d3heatmapOutput("plot1", width = "100%", height = "1500px")), 
-      tabPanel("Functional Table", tableOutput("table1")), 
-      tabPanel("Taxonomic Content Heatmap", d3heatmapOutput("plot2", width = "100%", height = "1500px")),
-      tabPanel("Pathway Abundance Heatmap", d3heatmapOutput("plot3",width = "100%", height = "400px")),
-      tabPanel("KEGG Pathway Map", imageOutput("image1",width = "100%", height = "400px"))
-      ), width = 9)
+      tabPanel("Functional Heatmap", d3heatmapOutput("plot1", width = "100%", height = "1500px"), value = 1), 
+      tabPanel("Functional Table", tableOutput("table1"), value = 2), 
+      tabPanel("Taxonomic Content Heatmap", d3heatmapOutput("plot2", width = "100%", height = "1500px"), value = 3),
+      tabPanel("Pathway Abundance Heatmap", d3heatmapOutput("plot3",width = "100%", height = "400px"), value = 4),
+      tabPanel("KEGG Pathway Map", imageOutput("image1",width = "100%", height = "400px"), value = 5)
+      ), id= "condition",  width = 9)
 )
 server <- function(input, output) {
   observeEvent(input$do, { 
