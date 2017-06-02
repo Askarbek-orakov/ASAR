@@ -119,8 +119,6 @@ pathwayHeatmap<-function(sp.lis, mgms) {
   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
   indC<-which(names(dk5)%in%c('ko',mgms))
   adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'usp', 'ufun', 'annotation')]),FUN=sum)
-  # rownames(adk5)<-adk5$ko
-  # adk5<-adk5[,-1]
   lastcol<- ncol(adk5)+1
   for (y in 1:nrow(adk5)){adk5[y,lastcol] <- paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", adk5[y,"ko"]), ncol=2, byrow=TRUE)[,2])), collapse = ",")}
   colnames(adk5)[lastcol] <- "pathwayID"
@@ -147,16 +145,21 @@ getPathwayList <- function(sp.li, mgm) {
   cat(names(d5),"\n")
   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
   kos <- unique(dk5[,"ko"])
-  eloop <- NULL
-  eloop<-paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", kos$ko), ncol=2, byrow=TRUE)[,2])))
-  #for (y in 1:nrow(kos)){eloop[y] <- paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", kos[y,"ko"]), ncol=2, byrow=TRUE)[,2])), collapse = ",")}
-  unikos <-unique(unlist(str_split(eloop,',')))
-  #indC<-which(names(dk5)%in%c('ko',mgm))
-  #adk5<-aggregate(.~ko,as.data.frame(dk5[,..indC]),FUN=sum)
-  #rownames(adk5)<-adk5$ko
-  #adk5<-adk5[,-1]
-  #mutate(dk5, pathwayID = paste(as.character(gsub('^path:','',matrix(keggLink("pathway", "ko"), ncol=2, byrow=TRUE)[,2])), collapse = ","))
-  #as.vector(unique(adk5[,"pathwayID"]))
+  #Since, if num of KOs are more than 500, (function kegglink)it shows error 403. That is why we are doing following:
+  if(nrow(kos)>300){
+    unikos <- NULL
+    kossep <- NULL
+    i <- ceiling(nrow(kos)/300)
+    for (x in 1:i){
+      kossep[[x]]<-kos[((x-1)*300+1):(x*300)]
+      unikos[[x]]<-unique(unlist(str_split(paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", kossep[[x]]$ko), ncol=2, byrow=TRUE)[,2]))),',')))
+    }
+    unikos<-as.character(unique(unlist(unikos)))
+  }else{
+    eloop <- NULL
+    eloop<-paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", kos$ko), ncol=2, byrow=TRUE)[,2])))
+    unikos <-unique(unlist(str_split(eloop,',')))
+  }
 }
 
 # funtree <- read.delim("subsys.txt", header = FALSE, quote = "")
@@ -187,7 +190,7 @@ ui <- fluidPage(
     ,  width = 3),
   
   sidebarPanel(
-    selectInput(inputId = "Metagenomes", label = "Select Multiple Metagenome Samples", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
+    selectInput(inputId = "Metagenomes", label = "Select Maximum of 5 Metagenome Samples(increase in sample number slows down the process)", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
     selectInput(inputId = "SpecieN", "Choose Specie", as.vector(unique(d.bm[,"usp"])), selected = NULL),
     actionButton("path", "GO"),
     uiOutput("PathwayID")
@@ -267,8 +270,7 @@ server <- function(input, output) {
   input$goButton
   sp.lis <- sp.lis()
   mgms <-mgms()
-  a8<-pathwayHeatmap(sp.lis, mgms)
-  obj<-as.matrix(a8)
+  obj<-pathwayHeatmap(sp.lis, mgms)
   mat3 <- plotHeatmap(obj,100,norm = TRUE,trace = "none", col = heatmapCols)
   d3heatmap(mat3)
   }) 
@@ -281,9 +283,9 @@ server <- function(input, output) {
     cat(paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"))
     list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
          contentType = 'png',
-         width = "100%", 
-         height = "400px",
-         alt = "This is alternate text")
+         # width = "100%", 
+         # height = "400px",
+         alt = "Please wait... We are generating KEGG MAP and saving it in your working directory!")
   }, deleteFile = FALSE)
   
 }
