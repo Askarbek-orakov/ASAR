@@ -272,7 +272,7 @@ server <- function(input, output) {
   mgms <-mgms()
   obj<-pathwayHeatmap(sp.lis, mgms)
   mat3 <- plotHeatmap(obj,100,norm = TRUE,trace = "none", col = heatmapCols)
-  d3heatmap(mat3)
+  d3heatmap(mat3,Rowv = FALSE,Colv=TRUE)
   }) 
   
   output$Pathway <- renderImage({
