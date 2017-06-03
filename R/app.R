@@ -201,7 +201,7 @@ ui <- fluidPage(
       tabPanel("Functional Heatmap", d3heatmapOutput("plot1", width = "100%", height = "1500px")), 
       tabPanel("Functional Table", tableOutput("table1")), 
       tabPanel("Taxonomic Content Heatmap", d3heatmapOutput("plot2", width = "100%", height = "1500px")),
-      tabPanel("Pathway Abundance Heatmap", d3heatmapOutput("plot3",width = "100%", height = "400px")),
+      tabPanel("Pathway Abundance Heatmap", d3heatmapOutput("plot3",width = "100%", height = "1500px")),
       tabPanel("KEGG Pathway Map", imageOutput("Pathway",width = "100%", height = "400px"))
       ), width = 9)
 )
@@ -271,8 +271,8 @@ server <- function(input, output) {
   sp.lis <- sp.lis()
   mgms <-mgms()
   obj<-pathwayHeatmap(sp.lis, mgms)
-  mat3 <- plotHeatmap(obj,100,norm = TRUE,trace = "none", col = heatmapCols)
-  d3heatmap(mat3,Rowv = FALSE,Colv=FALSE, scale = "row")
+  mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none", col = heatmapCols)
+  d3heatmap(mat3,Rowv = FALSE,Colv=FALSE)
   }) 
   
   output$Pathway <- renderImage({
