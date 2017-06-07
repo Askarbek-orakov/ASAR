@@ -148,9 +148,9 @@ our.merge <- function() {
   #ko <- load.kodata.from.file()
   for(i in 1:length(fannot)){
     f<-fannot[[i]]
-    #f$`query sequence id`<-gsub('\\|KO$','',f$`query sequence id`)
+    f$`query sequence id`<-gsub('\\|KO$','',f$`query sequence id`)
     s<-sannot[[i]]
-    #s$`query sequence id`<-gsub('\\|SEED$','',s$`query sequence id`)
+    s$`query sequence id`<-gsub('\\|SEED$','',s$`query sequence id`)
     d.k<-unique(ko[[i]][,list(`hit m5nr id (md5sum)`,`semicolon separated list of annotations`)])
     #creates 3rd column with accession number itself only
     d.k1<-d.k[,list(`semicolon separated list of annotations`,ko=unlist(gsub('accession=\\[K([0-9]+)\\].*','K\\1',unlist(str_split(`semicolon separated list of annotations`,';'))))),by=.(`hit m5nr id (md5sum)`)]
