@@ -48,12 +48,11 @@ plotHeatmap<-function(obj,n,norm=TRUE,log=TRUE,fun=sd,...){
   otuIndices = otusToKeep[order(otuStats, decreasing = TRUE)[1:min(c(n,dim(mat)[1]))]]
   mat2 = mat[otuIndices, ]}
 
-plotSP<-function(d3,sp,tx,tx2,fN, fun, fun2){
+plotSP<-function(d3,sp,tx,tx2,fN, fun){
   d<-getSpecieFromAbund(d3,sp = sp, tx = tx, fN=fN, fun=fun, aggregate = FALSE)
   d.sp<- ddply(d, tx2, numcolwise(sum))
   obj<-as.matrix(d.sp[,-1])
   rownames(obj)<-d.sp[,tx2]
-  colnames(obj)<-mdt$MGN
   if(dim(obj)[1]>1){
     res<-plotHeatmap(obj,100,trace = "none", col = heatmapCols,norm=FALSE)
   }else{
@@ -298,6 +297,7 @@ server <- function(input, output) {
   
   output$plot2 <- renderD3heatmap({SpName <- spName()
   fun <- fun()
+  fun2 <- fun2()
   FunName <- funName()
   tx <- txa()
   tx2 <- txa2()
@@ -306,7 +306,11 @@ server <- function(input, output) {
   drops <- drops[drops!= tx2]
   drops <- drops[drops!= fun]
   plot <- plotSP(funtaxall[ , !(names(funtaxall) %in% drops), with = FALSE], sp = SpName, tx = tx, tx2 = tx2, fun = fun, fN = FunName)
-  d3heatmap(plot)})
+  if(!dim(plot)[1]>1){d3heatmap(plot,Rowv = FALSE)
+  }else{
+    d3heatmap(plot)
+    }
+  })
   
   output$plot3 <- renderD3heatmap({
   input$goButton
