@@ -102,7 +102,6 @@ pathImage<-function(sp.li, mgm, pathwi) {
   pathview(gene.data = adk5, pathway.id = pathwi,
                      species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
                      limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
-  #plotPNG(func = pathview(gene.data = adk5, pathway.id = pathwi,species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T, limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1)), filename = tempfile(fileext = ".png"), width = 400, height = 400, res = 72)
 }
 
 pathwayHeatmap<-function(sp.lis, mgms) {
@@ -118,8 +117,6 @@ pathwayHeatmap<-function(sp.lis, mgms) {
   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
   indC<-which(names(dk5)%in%c('ko',mgms))
   adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'usp', 'ufun', 'annotation')]),FUN=sum)
-  # rownames(adk5)<-adk5$ko
-  # adk5<-adk5[,-1]
   lastcol<- ncol(adk5)+1
   for (y in 1:nrow(adk5)){adk5[y,lastcol] <- paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", adk5[y,"ko"]), ncol=2, byrow=TRUE)[,2])), collapse = ",")}
   colnames(adk5)[lastcol] <- "pathwayID"
@@ -130,7 +127,9 @@ pathwayHeatmap<-function(sp.lis, mgms) {
   a6<-merge(adk6,adk5[,..indC],by='ko')
   a7<-aggregate(.~pat,as.data.frame(a6[,-c('ko')]),FUN=sum)
   rownames(a7)<-a7$pat
-  a7<- a7[,-1]
+  a8<- as.matrix(a7[,-1])
+  rownames(a8) <- a7$pat
+  return(a8)
 }
 
 getPathwayList <- function(sp.li, mgm) {
@@ -144,16 +143,21 @@ getPathwayList <- function(sp.li, mgm) {
   cat(names(d5),"\n")
   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
   kos <- unique(dk5[,"ko"])
-  eloop <- NULL
-  eloop<-paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", kos$ko), ncol=2, byrow=TRUE)[,2])))
-  #for (y in 1:nrow(kos)){eloop[y] <- paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", kos[y,"ko"]), ncol=2, byrow=TRUE)[,2])), collapse = ",")}
-  unikos <-unique(unlist(str_split(eloop,',')))
-  #indC<-which(names(dk5)%in%c('ko',mgm))
-  #adk5<-aggregate(.~ko,as.data.frame(dk5[,..indC]),FUN=sum)
-  #rownames(adk5)<-adk5$ko
-  #adk5<-adk5[,-1]
-  #mutate(dk5, pathwayID = paste(as.character(gsub('^path:','',matrix(keggLink("pathway", "ko"), ncol=2, byrow=TRUE)[,2])), collapse = ","))
-  #as.vector(unique(adk5[,"pathwayID"]))
+  #Since, if num of KOs are more than 500, (function kegglink)it shows error 403. That is why we are doing following:
+  if(nrow(kos)>300){
+    unikos <- NULL
+    kossep <- NULL
+    i <- ceiling(nrow(kos)/300)
+    for (x in 1:i){
+      kossep[[x]]<-kos[((x-1)*300+1):(x*300)]
+      unikos[[x]]<-unique(unlist(str_split(paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", kossep[[x]]$ko), ncol=2, byrow=TRUE)[,2]))),',')))
+    }
+    unikos<-as.character(unique(unlist(unikos)))
+  }else{
+    eloop <- NULL
+    eloop<-paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", kos$ko), ncol=2, byrow=TRUE)[,2])))
+    unikos <-unique(unlist(str_split(eloop,',')))
+  }
 }
 
 # funtree <- read.delim("subsys.txt", header = FALSE, quote = "")
@@ -164,53 +168,85 @@ getPathwayList <- function(sp.li, mgm) {
 ui <- fluidPage(
   titlePanel("METAGENOMIC ANALYSIS by ASAR"),
   sidebarPanel(
-    conditionalPanel(condition = "input.condition=='Functional Heatmap'",
+    conditionalPanel(condition = "input.conditionedPanels==1",
                      selectInput(inputId = "taxlevel", label = "Choose Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain"), selected = "usp", selectize = FALSE),
                      actionButton("do", "GO"),
                      uiOutput("taxNames"),
                      p("For Taxonomic Content analysis I want taxon chosen above to be separated by :"),
                      selectInput(inputId = "taxlevel2", label = "Choose Another Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum"), selected = "usp")
-                     ),
-    conditionalPanel(condition = "input.condition=='Functional Table'",
-                     selectInput(inputId = "taxlevel", label = "Choose Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain"), selected = "usp", selectize = FALSE),
-                     actionButton("do", "GO"),
-                     uiOutput("taxNames"),
-                     p("For Taxonomic Content analysis I want taxon chosen above to be separated by :"),
-                     selectInput(inputId = "taxlevel2", label = "Choose Another Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum"), selected = "usp"),
+    ),
+    
+    conditionalPanel(condition = "input.conditionedPanels==2",
                      selectInput(inputId = "funlevel", label = "Choose Functional Level",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "FUN4", selectize = FALSE),
                      actionButton("fundo", "GO"),
                      uiOutput("funNames"),
                      p("Aggregate selected function by next functional level:"),
                      selectInput(inputId = "funlevel2", label = "Choose functional Level",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "ufun")
-                     ),
-    conditionalPanel(condition = "input.condition=='Taxonomic Content Heatmap'",
-                     selectInput(inputId = "funlevel", label = "Choose Functional Level",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "FUN4", selectize = FALSE),
-                     actionButton("fundo", "GO"),
-                     uiOutput("funNames"),
-                     p("Aggregate selected function by next functional level:"),
-                     selectInput(inputId = "funlevel2", label = "Choose functional Level",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "ufun")
-                     ),
-    conditionalPanel(condition = "input.condition=='Pathway Abundance Heatmap'",
-                     selectInput(inputId = "SpecieNames", "Choose Specie", as.vector(unique(d.bm[,"usp"])), selected = NULL),
+    ),
+    
+    conditionalPanel(condition = "input.conditionedPanels==3",
+                     selectInput(inputId = "SpecieNames", "Choose Specie", as.vector(unique(d.bm[,"usp"]))),
                      selectInput(inputId = "Metagenome", label = "Select Multiple Metagenome Samples", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
-                     actionButton("goButton", "Go!")
-                     ),
-    conditionalPanel(condition = "input.condition=='KEGG Pathway Map'",
-                     selectInput(inputId = "Metagenomes", label = "Select Multiple Metagenome Samples", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
+                     actionButton("goButton", "GO")
+    ),
+    
+    conditionalPanel(condition = "input.conditionedPanels==4",
+                     selectInput(inputId = "Metagenomes", label = "Select Maximum of 5 Metagenome Samples(increase in sample number slows down the process)", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
                      selectInput(inputId = "SpecieN", "Choose Specie", as.vector(unique(d.bm[,"usp"])), selected = NULL),
                      actionButton("path", "GO"),
                      uiOutput("PathwayID")
-                     ),width = 3),
+    ),
+    width = 3),
+  
   mainPanel(
     tabsetPanel(
-      tabPanel("Functional Heatmap", d3heatmapOutput("plot1", width = "100%", height = "1500px")), 
-      tabPanel("Functional Table", tableOutput("table1")), 
-      tabPanel("Taxonomic Content Heatmap", d3heatmapOutput("plot2", width = "100%", height = "1500px")),
-      tabPanel("Pathway Abundance Heatmap", d3heatmapOutput("plot3",width = "100%", height = "400px")),
-      tabPanel("KEGG Pathway Map", imageOutput("image1",width = "100%", height = "400px")),
-      id= "condition"
-      ),  width = 9)
+      tabPanel("Functional Heatmap", d3heatmapOutput("plot1", width = "100%", height = "1500px"), value = 1), 
+      tabPanel("Functional Table", tableOutput("table1"), value = 1), 
+      tabPanel("Taxonomic Content Heatmap", d3heatmapOutput("plot2", width = "100%", height = "1500px"), value = 2),
+      tabPanel("Pathway Abundance Heatmap", d3heatmapOutput("plot3",width = "100%", height = "1500px"), value = 3),
+      tabPanel("KEGG Pathway Map", imageOutput("Pathway",width = "100%", height = "400px"), value = 4),
+      id = "conditionedPanels"
+    ), width = 9)
 )
+  
+#   sidebarPanel(
+#   selectInput(inputId = "taxlevel", label = "Choose Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain"), selected = "usp", selectize = FALSE),
+#   actionButton("do", "GO"),
+#   uiOutput("taxNames"),
+#   p("For Taxonomic Content analysis I want taxon chosen above to be separated by :"),
+#   selectInput(inputId = "taxlevel2", label = "Choose Another Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum"), selected = "usp"),
+#   width = 3),
+#   
+#   sidebarPanel(
+#   selectInput(inputId = "funlevel", label = "Choose Functional Level",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "FUN4", selectize = FALSE),
+#   actionButton("fundo", "GO"),
+#   uiOutput("funNames"),
+#   p("Aggregate selected function by next functional level:"),
+#   selectInput(inputId = "funlevel2", label = "Choose functional Level",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "ufun")
+#   , width = 3),
+#   
+#   sidebarPanel(
+#     selectInput(inputId = "SpecieNames", "Choose Specie", as.vector(unique(d.bm[,"usp"]))),
+#     selectInput(inputId = "Metagenome", label = "Select Multiple Metagenome Samples", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
+#     actionButton("goButton", "GO")
+#     ,  width = 3),
+#   
+#   sidebarPanel(
+#     selectInput(inputId = "Metagenomes", label = "Select Maximum of 5 Metagenome Samples(increase in sample number slows down the process)", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
+#     selectInput(inputId = "SpecieN", "Choose Specie", as.vector(unique(d.bm[,"usp"])), selected = NULL),
+#     actionButton("path", "GO"),
+#     uiOutput("PathwayID")
+#     , width = 3),
+# 
+#   mainPanel(
+#     tabsetPanel(
+#       tabPanel("Functional Heatmap", d3heatmapOutput("plot1", width = "100%", height = "1500px")), 
+#       tabPanel("Functional Table", tableOutput("table1")), 
+#       tabPanel("Taxonomic Content Heatmap", d3heatmapOutput("plot2", width = "100%", height = "1500px")),
+#       tabPanel("Pathway Abundance Heatmap", d3heatmapOutput("plot3",width = "100%", height = "1500px")),
+#       tabPanel("KEGG Pathway Map", imageOutput("Pathway",width = "100%", height = "400px"))
+#       ), width = 9)
+# )
 server <- function(input, output) {
   observeEvent(input$do, { 
     output$taxNames <- renderUI({x <- input$taxlevel
@@ -276,19 +312,23 @@ server <- function(input, output) {
   input$goButton
   sp.lis <- sp.lis()
   mgms <-mgms()
-  a7<-pathwayHeatmap(sp.lis, mgms)
-  obj<-as.matrix(a7)
-  rownames(obj)<-a7$pat
-  mat3 <- plotHeatmap(obj,200,norm = TRUE,trace = "none", col = heatmapCols)
-  d3heatmap(mat3)
+  obj<-pathwayHeatmap(sp.lis, mgms)
+  mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none", col = heatmapCols)
+  d3heatmap(mat3,Rowv = FALSE,Colv=FALSE)
   }) 
   
-  output$image1 <- renderImage({
+  output$Pathway <- renderImage({
     sp.li<- sp.l()
     pathwi<- pathw()
     mgm <-mg()
     pathImage(sp.li, mgm, pathwi)
-  }, deleteFile = TRUE)
+    cat(paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"))
+    list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
+         contentType = 'png',
+         # width = "100%", 
+         # height = "400px",
+         alt = "Please wait... We are generating KEGG MAP and saving it in your working directory!")
+  }, deleteFile = FALSE)
   
 }
 shinyApp(ui = ui, server = server)
