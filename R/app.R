@@ -72,16 +72,6 @@ returnAppropriateObj<-function(obj, norm, log){
   }
   return(res)
 }
-# CompareMGonKO <- function(ko,mg1, mg2,tx = tx, sp = SpName){
-#   taxon<-funtaxall[grep(sp,funtaxall[,get(tx)])]
-#   drops <- c("usp","ufun","md5") 
-#   d5<-taxon[,m5:=unlist(str_split(md5,',')),by=.(usp,ufun,md5)]
-#   # find function to leave all other than by.. , probably "..."
-#   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,.(m5,usp,ufun,mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3,ko)])
-#   mg1total <-dk5[dk5$ko == get(ko),]
-#   #filter by ko and sum abundances for each metagenome and present as heatmap.
-#   
-# }
 
 pathImage<-function(sp.li, mgm, pathwi) {
   cat("pathImage\n")
@@ -169,30 +159,30 @@ ui <- fluidPage(
   titlePanel("METAGENOMIC ANALYSIS by ASAR"),
   sidebarPanel(
     conditionalPanel(condition = "input.conditionedPanels==1",
-                     selectInput(inputId = "taxlevel", label = "Choose Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain"), selected = "usp", selectize = FALSE),
+                     selectInput(inputId = "taxlevel", label = "Choose Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain"), selectize = FALSE),
                      actionButton("do", "GO"),
                      uiOutput("taxNames"),
                      p("For Taxonomic Content analysis I want taxon chosen above to be separated by :"),
-                     selectInput(inputId = "taxlevel2", label = "Choose Another Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum"), selected = "usp")
+                     selectInput(inputId = "taxlevel2", label = "Choose Another Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum"))
     ),
     
     conditionalPanel(condition = "input.conditionedPanels==2",
-                     selectInput(inputId = "funlevel", label = "Choose Functional Level",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "FUN4", selectize = FALSE),
+                     selectInput(inputId = "funlevel", label = "Choose Functional Level",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selectize = FALSE),
                      actionButton("fundo", "GO"),
                      uiOutput("funNames"),
                      p("Aggregate selected function by next functional level:"),
-                     selectInput(inputId = "funlevel2", label = "Choose functional Level",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "ufun")
+                     selectInput(inputId = "funlevel2", label = "Choose functional Level",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"))
     ),
     
     conditionalPanel(condition = "input.conditionedPanels==3",
                      selectInput(inputId = "SpecieNames", "Choose Specie", as.vector(unique(d.bm[,"usp"]))),
-                     selectInput(inputId = "Metagenome", label = "Select Multiple Metagenome Samples", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
+                     selectInput(inputId = "Metagenome", label = "Select Multiple Metagenome Samples", choices = c(colnames(d.bm[,-c(1:3)])), selectize = TRUE, multiple = TRUE),
                      actionButton("goButton", "GO")
     ),
     
     conditionalPanel(condition = "input.conditionedPanels==4",
-                     selectInput(inputId = "Metagenomes", label = "Select Maximum of 5 Metagenome Samples(increase in sample number slows down the process)", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
-                     selectInput(inputId = "SpecieN", "Choose Specie", as.vector(unique(d.bm[,"usp"])), selected = NULL),
+                     selectInput(inputId = "Metagenomes", label = "Select Maximum of 5 Metagenome Samples(increase in sample number slows down the process)", choices = c(colnames(d.bm[,-c(1:3)])), selectize = TRUE, multiple = TRUE),
+                     selectInput(inputId = "SpecieN", "Choose Specie", as.vector(unique(d.bm[,"usp"]))),
                      actionButton("path", "GO"),
                      uiOutput("PathwayID")
     ),
@@ -208,45 +198,7 @@ ui <- fluidPage(
       id = "conditionedPanels"
     ), width = 9)
 )
-  
-#   sidebarPanel(
-#   selectInput(inputId = "taxlevel", label = "Choose Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain"), selected = "usp", selectize = FALSE),
-#   actionButton("do", "GO"),
-#   uiOutput("taxNames"),
-#   p("For Taxonomic Content analysis I want taxon chosen above to be separated by :"),
-#   selectInput(inputId = "taxlevel2", label = "Choose Another Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum"), selected = "usp"),
-#   width = 3),
-#   
-#   sidebarPanel(
-#   selectInput(inputId = "funlevel", label = "Choose Functional Level",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "FUN4", selectize = FALSE),
-#   actionButton("fundo", "GO"),
-#   uiOutput("funNames"),
-#   p("Aggregate selected function by next functional level:"),
-#   selectInput(inputId = "funlevel2", label = "Choose functional Level",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "ufun")
-#   , width = 3),
-#   
-#   sidebarPanel(
-#     selectInput(inputId = "SpecieNames", "Choose Specie", as.vector(unique(d.bm[,"usp"]))),
-#     selectInput(inputId = "Metagenome", label = "Select Multiple Metagenome Samples", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
-#     actionButton("goButton", "GO")
-#     ,  width = 3),
-#   
-#   sidebarPanel(
-#     selectInput(inputId = "Metagenomes", label = "Select Maximum of 5 Metagenome Samples(increase in sample number slows down the process)", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
-#     selectInput(inputId = "SpecieN", "Choose Specie", as.vector(unique(d.bm[,"usp"])), selected = NULL),
-#     actionButton("path", "GO"),
-#     uiOutput("PathwayID")
-#     , width = 3),
-# 
-#   mainPanel(
-#     tabsetPanel(
-#       tabPanel("Functional Heatmap", d3heatmapOutput("plot1", width = "100%", height = "1500px")), 
-#       tabPanel("Functional Table", tableOutput("table1")), 
-#       tabPanel("Taxonomic Content Heatmap", d3heatmapOutput("plot2", width = "100%", height = "1500px")),
-#       tabPanel("Pathway Abundance Heatmap", d3heatmapOutput("plot3",width = "100%", height = "1500px")),
-#       tabPanel("KEGG Pathway Map", imageOutput("Pathway",width = "100%", height = "400px"))
-#       ), width = 9)
-# )
+ 
 server <- function(input, output) {
   observeEvent(input$do, { 
     output$taxNames <- renderUI({x <- input$taxlevel
