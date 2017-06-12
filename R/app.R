@@ -95,6 +95,16 @@ returnAppropriateObj<-function(obj, norm, log){
   }
   return(res)
 }
+# CompareMGonKO <- function(ko,mg1, mg2,tx = tx, sp = SpName){
+#   taxon<-funtaxall[grep(sp,funtaxall[,get(tx)])]
+#   drops <- c("usp","ufun","md5") 
+#   d5<-taxon[,m5:=unlist(str_split(md5,',')),by=.(usp,ufun,md5)]
+#   # find function to leave all other than by.. , probably "..."
+#   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,.(m5,usp,ufun,mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3,ko)])
+#   mg1total <-dk5[dk5$ko == get(ko),]
+#   #filter by ko and sum abundances for each metagenome and present as heatmap.
+#   
+# }
 
 pathImage<-function(sp.li, mgm, pathwi) {
   cat("pathImage\n")
@@ -194,7 +204,8 @@ ui <- fluidPage(
                      
                      selectInput(inputId = "mg1", label = "Choose one metagenome sample", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = FALSE),
                      
-                     actionButton("bh1", "Build heatmap!")
+                     actionButton("bh1", "Build heatmap!"),
+                     sliderInput("pix1", "height", value = 400, min = 100, max = 1000)
     ),
     conditionalPanel(condition = "input.conditionedPanels==2",
                      selectInput(inputId = "mg2", label = "Choose one/several metagenome sample", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
@@ -208,7 +219,8 @@ ui <- fluidPage(
                      actionButton("do2", "GO"),
                      uiOutput("taxNames2"),
                      
-                     actionButton("bh2", "Build heatmap!")
+                     actionButton("bh2", "Build heatmap!"),
+                     sliderInput("pix2", "height", value = 400, min = 100, max = 1000)
     ),
     conditionalPanel(condition = "input.conditionedPanels==3",
                      selectInput(inputId = "mg3", label = "Choose one/several metagenome sample", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
@@ -222,7 +234,8 @@ ui <- fluidPage(
                      actionButton("fundo3", "GO"),
                      uiOutput("funNames3"),
                      
-                     actionButton("bh3", "Build heatmap!")
+                     actionButton("bh3", "Build heatmap!"),
+                     sliderInput("pix3", "height", value = 400, min = 100, max = 1000)
     ),
     conditionalPanel(condition = "input.conditionedPanels==4",
                      selectInput(inputId = "SpecieNames", "Choose Specie", as.vector(unique(d.bm[,"usp"]))),
@@ -240,9 +253,9 @@ ui <- fluidPage(
   
   mainPanel(
     tabsetPanel(
-      tabPanel("F&T", d3heatmapOutput("plot1"), value = 1), 
-      tabPanel("F&M", d3heatmapOutput("plot2", width = "100%", height = "1500px"), value = 2),
-      tabPanel("T&M", d3heatmapOutput("plot3", width = "100%", height = "1500px"), value = 3),
+      tabPanel("F&T", uiOutput("dynamic1"), value = 1), 
+      tabPanel("F&M", uiOutput("dynamic2"), value = 2),
+      tabPanel("T&M", uiOutput("dynamic3"), value = 3),
       tabPanel("Pathway Abundance Heatmap", d3heatmapOutput("plot4",width = "100%", height = "1500px"), value = 4),
       tabPanel("KEGG Pathway Map", imageOutput("Pathway",width = "100%", height = "400px"), value = 5),
       id = "conditionedPanels"
@@ -299,6 +312,11 @@ server <- function(input, output) {
       d3heatmap(obj,Rowv = FALSE,Colv=FALSE)
     })})
   
+  output$dynamic1 <- renderUI({
+    
+    d3heatmapOutput("plot1", height = paste0(input$pix1, "px"))
+  })
+  
   observeEvent(input$bh2, {
     output$plot2 <- renderD3heatmap({
       tl2_1 <- input$tl2_1
@@ -320,6 +338,12 @@ server <- function(input, output) {
       }
       d3heatmap(obj,Rowv = FALSE,Colv=FALSE)
     })})
+  
+  output$dynamic2 <- renderUI({
+    
+    d3heatmapOutput("plot2", height = paste0(input$pix2, "px"))
+  })
+  
   observeEvent(input$bh3, {
     output$plot3 <- renderD3heatmap({
       tl3_1 <- input$tl3_1
@@ -340,15 +364,17 @@ server <- function(input, output) {
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
       d3heatmap(res,Rowv = FALSE,Colv=FALSE)
-    })
+    })})
+  
+  output$dynamic3 <- renderUI({
+    
+    d3heatmapOutput("plot3", height = paste0(input$pix3, "px"))
   })
+  
   observeEvent(input$path, {
     output$PathwayID <- renderUI({y <- input$SpecieN
-    if (is.null(y)){
-      return()} 
     x <- input$Metagenomes
-    if (is.null(x)){
-      return()} else {selectInput(inputId = "PathwayID", label = "Input Pathway ID", as.vector(getPathwayList(sp.li =  y, mgm =  x)))}
+    selectInput(inputId = "PathwayID", label = "Input Pathway ID", as.vector(getPathwayList(sp.li =  y, mgm =  x)))
     })})
   
   # txa <- reactive({input$taxlevel})
