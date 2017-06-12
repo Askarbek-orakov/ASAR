@@ -90,8 +90,8 @@ pathImage<-function(sp.li, mgm, pathwi) {
   rownames(adk5)<-adk5$ko
   adk5<-adk5[,-1]
   pathview(gene.data = adk5, pathway.id = pathwi,
-                     species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
-                     limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
+           species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
+           limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
 }
 
 pathwayHeatmap<-function(sp.lis, mgms) {
@@ -175,13 +175,13 @@ ui <- fluidPage(
     ),
     
     conditionalPanel(condition = "input.conditionedPanels==3",
-                     selectInput(inputId = "SpecieNames", "Choose Specie", as.vector(unique(d.bm[,"usp"]))),
-                     selectInput(inputId = "Metagenome", label = "Select Multiple Metagenome Samples", choices = c(colnames(d.bm[,-c(1:3)])), selectize = TRUE, multiple = TRUE),
+                    selectInput(inputId = "SpecieNames", "Choose Specie", as.vector(unique(d.bm[,"usp"]))),
+                    selectInput(inputId = "Metagenome", label = "Select Multiple Metagenome Samples", choices = c(colnames(d.bm[,-c(1:3)])), selectize = TRUE, multiple = TRUE),
                      actionButton("goButton", "GO")
     ),
     
     conditionalPanel(condition = "input.conditionedPanels==4",
-                     selectInput(inputId = "Metagenomes", label = "Select Maximum of 5 Metagenome Samples(increase in sample number slows down the process)", choices = c(colnames(d.bm[,-c(1:3)])), selectize = TRUE, multiple = TRUE),
+                     selectInput(inputId = "Metagenomes", label = "Select Multiple Metagenome Samples", choices = c(colnames(d.bm[,-c(1:3)])), selectize = TRUE, multiple = TRUE),
                      selectInput(inputId = "SpecieN", "Choose Specie", as.vector(unique(d.bm[,"usp"]))),
                      actionButton("path", "GO"),
                      uiOutput("PathwayID")
@@ -198,20 +198,25 @@ ui <- fluidPage(
       id = "conditionedPanels"
     ), width = 9)
 )
- 
+
 server <- function(input, output) {
   observeEvent(input$do, { 
     output$taxNames <- renderUI({x <- input$taxlevel
-    selectInput(inputId = "SpecieName", label = "Input Specie Name", as.vector(unique(taxall[,get(x)])))
+    if (is.null(x)){
+      return()} else{selectInput(inputId = "SpecieName", label = "Input Specie Name", as.vector(unique(taxall[,get(x)])))}
     })})
   observeEvent(input$fundo, { 
     output$funNames <- renderUI({y <- input$funlevel
-    selectInput(inputId = "FunctionName", label = "Input Function Name", as.vector(unique(funtaxall[,get(y)])))
+    if (is.null(x)){
+      return()} else{selectInput(inputId = "FunctionName", label = "Input Function Name", as.vector(unique(funtaxall[,get(y)])))}
     })})
   observeEvent(input$path, {
     output$PathwayID <- renderUI({y <- input$SpecieN
+    if (is.null(y)){
+      return()} 
     x <- input$Metagenomes
-    selectInput(inputId = "PathwayID", label = "Input Pathway ID", as.vector(getPathwayList(sp.li =  y, mgm =  x)))
+    if (is.null(x)){
+      return()} else {selectInput(inputId = "PathwayID", label = "Input Pathway ID", as.vector(getPathwayList(sp.li =  y, mgm =  x)))}
     })})
   
   txa <- reactive({input$taxlevel})
@@ -231,55 +236,77 @@ server <- function(input, output) {
   
   output$plot1 <- renderD3heatmap({SpName <- spName()
   tx <- txa()
-  d<-getSpecieFromAbundMD5(taxall,tx = tx, sp = SpName,aggregate = TRUE)
-  obj<-as.matrix(d[,-1])
-  rownames(obj)<-d$ufun
-  colnames(obj)<-mdt$MGN
-  mat2 <- plotHeatmap(obj,100,norm = FALSE,trace = "none", col = heatmapCols)
-  d3heatmap(mat2)
+  if (is.null(SpName)){
+    return()} else if (is.null(tx)){
+      return()} else {
+        d<-getSpecieFromAbundMD5(taxall,tx = tx, sp = SpName,aggregate = TRUE)
+        obj<-as.matrix(d[,-1])
+        rownames(obj)<-d$ufun
+        colnames(obj)<-mdt$MGN
+        mat2 <- plotHeatmap(obj,100,norm = FALSE,trace = "none", col = heatmapCols)
+        d3heatmap(mat2) }
   }) 
   
   output$table1 <- renderTable({SpName <- spName()
   tx <- txa()
-  d<-getSpecieFromAbundMD5(taxall,tx=tx, sp = SpName,aggregate = TRUE)
-  obj<-as.matrix(d[,-1])
-  rownames(obj)<-d$ufun
-  colnames(obj)<-mdt$MGN
-  mat2<-plotHeatmap(obj,100,trace = "none", col = heatmapCols)
+  tx <- txa()
+  if (is.null(SpName)){
+    return()} else if (is.null(y)){
+      return()} else {
+        d<-getSpecieFromAbundMD5(taxall,tx=tx, sp = SpName,aggregate = TRUE)
+        obj<-as.matrix(d[,-1])
+        rownames(obj)<-d$ufun
+        colnames(obj)<-mdt$MGN
+        mat2<-plotHeatmap(obj,100,trace = "none", col = heatmapCols) }
   })
   
   output$plot2 <- renderD3heatmap({SpName <- spName()
   fun <- fun()
   FunName <- funName()
-  tx <- txa()
   tx2 <- txa2()
-  drops <- c("usp", "species", "genus", "family", "order", "class", "phylum", "domain", "md5", "ufun", "FUN2", "FUN3", "FUN4")
-  drops <- drops[drops!= tx]
-  drops <- drops[drops!= tx2]
-  drops <- drops[drops!= fun]
-  plot <- plotSP(funtaxall[ , !(names(funtaxall) %in% drops), with = FALSE], sp = SpName, tx = tx, tx2 = tx2, fun = fun, fN = FunName)
-  d3heatmap(plot)})
+  tx <- txa()
+  if (is.null(SpName)){
+    return()} else if (is.null(fun)){
+      return()} else if (is.null(FunName)){
+        return()} else if (is.null(tx2)){
+          return()} else if (is.null(tx)){
+            return()} else {
+              drops <- c("usp", "species", "genus", "family", "order", "class", "phylum", "domain", "md5", "ufun", "FUN2", "FUN3", "FUN4")
+              drops <- drops[drops!= tx]
+              drops <- drops[drops!= tx2]
+              drops <- drops[drops!= fun]
+              plot <- plotSP(funtaxall[ , !(names(funtaxall) %in% drops), with = FALSE], sp = SpName, tx = tx, tx2 = tx2, fun = fun, fN = FunName)
+              d3heatmap(plot, Rowv = FALSE,Colv=FALSE)}
+  })
   
   output$plot3 <- renderD3heatmap({
-  input$goButton
-  sp.lis <- sp.lis()
-  mgms <-mgms()
-  obj<-pathwayHeatmap(sp.lis, mgms)
-  mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none", col = heatmapCols)
-  d3heatmap(mat3,Rowv = FALSE,Colv=FALSE)
+    input$goButton
+    sp.lis <- sp.lis()
+    mgms <-mgms()
+    if (is.null(sp.lis)){
+        return()} else if (is.null(mgms)){
+          return()}else {
+            obj<-pathwayHeatmap(sp.lis, mgms)
+            mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none", col = heatmapCols)
+            d3heatmap(mat3,Rowv = FALSE,Colv=FALSE)}
   }) 
   
   output$Pathway <- renderImage({
     sp.li<- sp.l()
     pathwi<- pathw()
     mgm <-mg()
-    pathImage(sp.li, mgm, pathwi)
-    cat(paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"))
-    list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
-         contentType = 'png',
-         # width = "100%", 
-         # height = "400px",
-         alt = "Please wait... We are generating KEGG MAP and saving it in your working directory!")
+    if (is.null(sp.l)){
+      return()} else if (is.null(pathwi)){
+        return()} else if (is.null(mgm)){
+          return()} else {
+            pathImage(sp.li, mgm, pathwi)
+            cat(paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"))
+            list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
+                 contentType = 'png',
+                 # width = "100%", 
+                 # height = "400px",
+                 alt = "Please wait... We are generating KEGG MAP and saving it in your working directory!")
+          }
   }, deleteFile = FALSE)
   
 }
