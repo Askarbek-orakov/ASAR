@@ -17,6 +17,30 @@ library(d3heatmap)
 library(KEGGREST)
 library(png)  # For writePNG function
 load("pathview.Rdata") 
+
+Intfuntax <- function(funtax, t1, tn, f1, fn, t2=NULL, f2=NULL){
+  result <- funtax[grep(tn, funtax[,get(t1)])]
+  result2 <- result[grep(fn, result[,get(f1)])]
+  if(!is.null(t2)&!is.null(f2)){
+    result2<- ddply(result2, c(t2,f2), numcolwise(sum))
+  }else{
+    if(!is.null(t2)){
+      result2<- ddply(result2, t2, numcolwise(sum))
+    }
+    if(!is.null(f2)){
+      result2<- ddply(result2, f2, numcolwise(sum))
+    }}
+  return(result2)
+}
+make2d <- function(funtax){
+  obj <- matrix(nrow = length(unique(funtax[,2])), ncol = length(unique(funtax[,1])))
+  colnames(obj) <- unique(funtax[,1])
+  rownames(obj) <- unique(funtax[,2])
+  for (x in 1:nrow(funtax)){
+    obj[as.character(funtax[x,2]), as.character(funtax[x,1])]<- funtax[x,3]
+  }
+  return(obj)
+}
 getSpecieFromAbund<-function(d.bm,sp = sp, tx=tx, fun=fun, fN=fN, aggregate=FALSE){
   es<-d.bm[grep(sp,d.bm[,get(tx)])]
   d.res <- es[grep(fN,d.bm[,get(fun)])]
@@ -54,7 +78,7 @@ plotSP<-function(d3,sp,tx,tx2,fN, fun){
   obj<-as.matrix(d.sp[,-1])
   rownames(obj)<-d.sp[,tx2]
   if(dim(obj)[1]>1){
-    res<-plotHeatmap(obj,100,trace = "none", col = heatmapCols,norm=FALSE)
+    res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
   }else{
     res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
   }
@@ -99,8 +123,8 @@ pathImage<-function(sp.li, mgm, pathwi) {
   rownames(adk5)<-adk5$ko
   adk5<-adk5[,-1]
   pathview(gene.data = adk5, pathway.id = pathwi,
-                     species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
-                     limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
+           species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
+           limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
 }
 
 pathwayHeatmap<-function(sp.lis, mgms) {
@@ -168,28 +192,55 @@ ui <- fluidPage(
   titlePanel("METAGENOMIC ANALYSIS by ASAR"),
   sidebarPanel(
     conditionalPanel(condition = "input.conditionedPanels==1",
-                     selectInput(inputId = "taxlevel", label = "Choose Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain"), selected = "usp", selectize = FALSE),
-                     actionButton("do", "GO"),
-                     uiOutput("taxNames"),
-                     p("For Taxonomic Content analysis I want taxon chosen above to be separated by :"),
-                     selectInput(inputId = "taxlevel2", label = "Choose Another Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum"), selected = "usp")
+                     selectInput(inputId = "tl1_1", label = "Choose taxlevel 1",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain"), selected = "usp", selectize = FALSE),
+                     actionButton("do1", "GO"),
+                     uiOutput("taxNames1"),
+                     selectInput(inputId = "tl1_2", label = "Aggregation taxlevel 2",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum"), selected = "usp"),
+                     
+                     selectInput(inputId = "fl1_1", label = "Choose funLevel 1",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "FUN4", selectize = FALSE),
+                     actionButton("fundo1", "GO"),
+                     uiOutput("funNames1"),
+                     selectInput(inputId = "fl1_2", label = "Choose funLevel 2",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "ufun"),
+                     
+                     selectInput(inputId = "mg1", label = "Choose one metagenome sample", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = FALSE),
+                     
+                     actionButton("bh1", "Build heatmap!")
     ),
-    
     conditionalPanel(condition = "input.conditionedPanels==2",
-                     selectInput(inputId = "funlevel", label = "Choose Functional Level",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "FUN4", selectize = FALSE),
-                     actionButton("fundo", "GO"),
-                     uiOutput("funNames"),
-                     p("Aggregate selected function by next functional level:"),
-                     selectInput(inputId = "funlevel2", label = "Choose functional Level",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "ufun")
+                     selectInput(inputId = "mg2", label = "Choose one/several metagenome sample", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
+                     
+                     selectInput(inputId = "fl2_1", label = "Choose funLevel 1",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "FUN4", selectize = FALSE),
+                     actionButton("fundo2", "GO"),
+                     uiOutput("funNames2"),
+                     selectInput(inputId = "fl2_2", label = "Choose funLevel 2",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "ufun"),
+                     
+                     selectInput(inputId = "tl2_1", label = "Choose taxlevel",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain"), selected = "usp", selectize = FALSE),
+                     actionButton("do2", "GO"),
+                     uiOutput("taxNames2"),
+                     
+                     actionButton("bh2", "Build heatmap!")
     ),
-    
     conditionalPanel(condition = "input.conditionedPanels==3",
+                     selectInput(inputId = "mg3", label = "Choose one/several metagenome sample", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
+                     
+                     selectInput(inputId = "tl3_1", label = "Choose taxlevel 1",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain"), selected = "usp", selectize = FALSE),
+                     actionButton("do3", "GO"),
+                     uiOutput("taxNames3"),
+                     selectInput(inputId = "tl3_2", label = "Aggregate taxlevel 2",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum"), selected = "usp"),
+                     
+                     selectInput(inputId = "fl3_1", label = "Choose funlevel",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "FUN4", selectize = FALSE),
+                     actionButton("fundo3", "GO"),
+                     uiOutput("funNames3"),
+                     
+                     actionButton("bh3", "Build heatmap!")
+    ),
+    conditionalPanel(condition = "input.conditionedPanels==4",
                      selectInput(inputId = "SpecieNames", "Choose Specie", as.vector(unique(d.bm[,"usp"]))),
                      selectInput(inputId = "Metagenome", label = "Select Multiple Metagenome Samples", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
                      actionButton("goButton", "GO")
     ),
     
-    conditionalPanel(condition = "input.conditionedPanels==4",
+    conditionalPanel(condition = "input.conditionedPanels==5",
                      selectInput(inputId = "Metagenomes", label = "Select Maximum of 5 Metagenome Samples(increase in sample number slows down the process)", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
                      selectInput(inputId = "SpecieN", "Choose Specie", as.vector(unique(d.bm[,"usp"])), selected = NULL),
                      actionButton("path", "GO"),
@@ -199,76 +250,122 @@ ui <- fluidPage(
   
   mainPanel(
     tabsetPanel(
-      tabPanel("Functional Heatmap", d3heatmapOutput("plot1", width = "100%", height = "1500px"), value = 1), 
-      tabPanel("Functional Table", tableOutput("table1"), value = 1), 
-      tabPanel("Taxonomic Content Heatmap", d3heatmapOutput("plot2", width = "100%", height = "1500px"), value = 2),
-      tabPanel("Pathway Abundance Heatmap", d3heatmapOutput("plot3",width = "100%", height = "1500px"), value = 3),
-      tabPanel("KEGG Pathway Map", imageOutput("Pathway",width = "100%", height = "400px"), value = 4),
+      tabPanel("F&T", d3heatmapOutput("plot1"), value = 1), 
+      tabPanel("F&M", d3heatmapOutput("plot2", width = "100%", height = "1500px"), value = 2),
+      tabPanel("T&M", d3heatmapOutput("plot3", width = "100%", height = "1500px"), value = 3),
+      tabPanel("Pathway Abundance Heatmap", d3heatmapOutput("plot4",width = "100%", height = "1500px"), value = 4),
+      tabPanel("KEGG Pathway Map", imageOutput("Pathway",width = "100%", height = "400px"), value = 5),
       id = "conditionedPanels"
     ), width = 9)
 )
-  
-#   sidebarPanel(
-#   selectInput(inputId = "taxlevel", label = "Choose Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain"), selected = "usp", selectize = FALSE),
-#   actionButton("do", "GO"),
-#   uiOutput("taxNames"),
-#   p("For Taxonomic Content analysis I want taxon chosen above to be separated by :"),
-#   selectInput(inputId = "taxlevel2", label = "Choose Another Taxonomic Level",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum"), selected = "usp"),
-#   width = 3),
-#   
-#   sidebarPanel(
-#   selectInput(inputId = "funlevel", label = "Choose Functional Level",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "FUN4", selectize = FALSE),
-#   actionButton("fundo", "GO"),
-#   uiOutput("funNames"),
-#   p("Aggregate selected function by next functional level:"),
-#   selectInput(inputId = "funlevel2", label = "Choose functional Level",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "ufun")
-#   , width = 3),
-#   
-#   sidebarPanel(
-#     selectInput(inputId = "SpecieNames", "Choose Specie", as.vector(unique(d.bm[,"usp"]))),
-#     selectInput(inputId = "Metagenome", label = "Select Multiple Metagenome Samples", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
-#     actionButton("goButton", "GO")
-#     ,  width = 3),
-#   
-#   sidebarPanel(
-#     selectInput(inputId = "Metagenomes", label = "Select Maximum of 5 Metagenome Samples(increase in sample number slows down the process)", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE),
-#     selectInput(inputId = "SpecieN", "Choose Specie", as.vector(unique(d.bm[,"usp"])), selected = NULL),
-#     actionButton("path", "GO"),
-#     uiOutput("PathwayID")
-#     , width = 3),
-# 
-#   mainPanel(
-#     tabsetPanel(
-#       tabPanel("Functional Heatmap", d3heatmapOutput("plot1", width = "100%", height = "1500px")), 
-#       tabPanel("Functional Table", tableOutput("table1")), 
-#       tabPanel("Taxonomic Content Heatmap", d3heatmapOutput("plot2", width = "100%", height = "1500px")),
-#       tabPanel("Pathway Abundance Heatmap", d3heatmapOutput("plot3",width = "100%", height = "1500px")),
-#       tabPanel("KEGG Pathway Map", imageOutput("Pathway",width = "100%", height = "400px"))
-#       ), width = 9)
-# )
+
 server <- function(input, output) {
-  observeEvent(input$do, { 
-    output$taxNames <- renderUI({x <- input$taxlevel
-    selectInput(inputId = "SpecieName", label = "Input Specie Name", as.vector(unique(taxall[,get(x)])))
+  observeEvent(input$do1, { 
+    output$taxNames1 <- renderUI({x <- input$tl1_1
+    selectInput(inputId = "tn1", label = "Select taxon", as.vector(unique(funtaxall[,get(x)])))
     })})
-  observeEvent(input$fundo, { 
-    output$funNames <- renderUI({y <- input$funlevel
-    selectInput(inputId = "FunctionName", label = "Input Function Name", as.vector(unique(funtaxall[,get(y)])))
+  observeEvent(input$fundo1, { 
+    output$funNames1 <- renderUI({y <- input$fl1_1
+    selectInput(inputId = "fn1", label = "Select function", as.vector(unique(funtaxall[,get(y)])))
     })})
+  
+  observeEvent(input$do2, { 
+    output$taxNames2 <- renderUI({x <- input$tl2_1
+    selectInput(inputId = "tn2", label = "Select taxon", as.vector(unique(funtaxall[,get(x)])), selected = NULL)
+    })})
+  observeEvent(input$fundo2, { 
+    output$funNames2 <- renderUI({y <- input$fl2_1
+    selectInput(inputId = "fn2", label = "Select function", as.vector(unique(funtaxall[,get(y)])), selected = NULL)
+    })})
+  
+  observeEvent(input$do3, { 
+    output$taxNames3 <- renderUI({x <- input$tl3_1
+    selectInput(inputId = "tn3", label = "Select taxon", as.vector(unique(funtaxall[,get(x)])), selected = NULL)
+    })})
+  observeEvent(input$fundo3, { 
+    output$funNames3 <- renderUI({y <- input$fl3_1
+    selectInput(inputId = "fn3", label = "Select function", as.vector(unique(funtaxall[,get(y)])), selected = NULL)
+    })})
+  
+  observeEvent(input$bh1, {
+    output$plot1 <- renderD3heatmap({
+      tl1_1 <- input$tl1_1
+      tl1_2 <- input$tl1_2
+      tn1   <- input$tn1
+      fl1_1 <- input$fl1_1
+      fl1_2 <- input$fl1_2
+      fn1   <- input$fn1
+      mg1   <- input$mg1
+      keepcols<-which(names(funtaxall)%in%c(tl1_1, tl1_2, fl1_1, fl1_2, mg1))
+      funtax <- funtaxall[,..keepcols]
+      funtax <- Intfuntax(funtax,tl1_1,tn1,fl1_1,fn1,t2 = tl1_2,f2 = fl1_2)
+      obj <- make2d(funtax)
+      obj[is.na(obj)] <- 0
+      if(dim(obj)[1]>1){
+        res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
+      }else{
+        res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
+      }
+      d3heatmap(obj,Rowv = FALSE,Colv=FALSE)
+    })})
+  
+  observeEvent(input$bh2, {
+    output$plot2 <- renderD3heatmap({
+      tl2_1 <- input$tl2_1
+      tn2   <- input$tn2
+      fl2_1 <- input$fl2_1
+      fl2_2 <- input$fl2_2
+      fn2   <- input$fn2
+      mg2   <- input$mg2
+      keepcols<-which(names(funtaxall)%in%c(tl2_1, fl2_1, fl2_2, mg2))
+      funtax <- funtaxall[,..keepcols]
+      funtax <- Intfuntax(funtax,tl2_1,tn2,fl2_1,fn2,f2 = fl2_2)
+      obj <- as.matrix(funtax[,-c(1)])
+      rownames(obj)<-funtax[,fl2_2]
+      colnames(obj)<-as.character(mg2)
+      if(dim(obj)[1]>1){
+        res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
+      }else{
+        res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
+      }
+      d3heatmap(obj,Rowv = FALSE,Colv=FALSE)
+    })})
+  observeEvent(input$bh3, {
+    output$plot3 <- renderD3heatmap({
+      tl3_1 <- input$tl3_1
+      tl3_2 <- input$tl3_2
+      tn3   <- input$tn3
+      fl3_1 <- input$fl3_1
+      fn3   <- input$fn3
+      mg3   <- input$mg3
+      keepcols<-which(names(funtaxall)%in%c(tl3_1, tl3_2, fl3_1, mg3))
+      funtax <- funtaxall[,..keepcols]
+      funtax <- Intfuntax(funtax,tl3_1,tn3,fl3_1,fn3,t2 = tl3_2)
+      obj <- as.matrix(funtax[,-1])
+      rownames(obj)<-funtax[,tl3_2]
+      colnames(obj)<-as.character(mg3)
+      if(dim(obj)[1]>1){
+        res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
+      }else{
+        res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
+      }
+      d3heatmap(res,Rowv = FALSE,Colv=FALSE)
+    })
+  })
   observeEvent(input$path, {
     output$PathwayID <- renderUI({y <- input$SpecieN
     x <- input$Metagenomes
     selectInput(inputId = "PathwayID", label = "Input Pathway ID", as.vector(getPathwayList(sp.li =  y, mgm =  x)))
     })})
   
-  txa <- reactive({input$taxlevel})
-  txa2 <- reactive({input$taxlevel2})
-  spName <- reactive({input$SpecieName})
-  
-  fun <- reactive({input$funlevel})
-  fun2 <- reactive({input$funlevel2})
-  funName <- reactive({input$FunctionName})
-  
+  # txa <- reactive({input$taxlevel})
+  # txa2 <- reactive({input$taxlevel2})
+  # spName <- reactive({input$SpecieName})
+  # 
+  # fun <- reactive({input$funlevel})
+  # fun2 <- reactive({input$funlevel2})
+  # funName <- reactive({input$FunctionName})
+  # 
   sp.lis<- reactive({input$SpecieNames})
   mgms <-reactive({input$Metagenome})
   
@@ -276,49 +373,46 @@ server <- function(input, output) {
   mg <-reactive({input$Metagenomes})
   pathw <- reactive({input$PathwayID})
   
-  output$plot1 <- renderD3heatmap({SpName <- spName()
-  tx <- txa()
-  d<-getSpecieFromAbundMD5(taxall,tx = tx, sp = SpName,aggregate = TRUE)
-  obj<-as.matrix(d[,-1])
-  rownames(obj)<-d$ufun
-  colnames(obj)<-mdt$MGN
-  mat2 <- plotHeatmap(obj,100,norm = FALSE,trace = "none", col = heatmapCols)
-  d3heatmap(mat2)
-  }) 
+  # output$plot1 <- renderD3heatmap({SpName <- spName()
+  # tx <- txa()
+  # d<-getSpecieFromAbundMD5(taxall,tx = tx, sp = SpName,aggregate = TRUE)
+  # obj<-as.matrix(d[,-1])
+  # rownames(obj)<-d$ufun
+  # colnames(obj)<-mdt$MGN
+  # mat2 <- plotHeatmap(obj,100,norm = FALSE,trace = "none", col = heatmapCols)
+  # d3heatmap(mat2)
+  # }) 
   
-  output$table1 <- renderTable({SpName <- spName()
-  tx <- txa()
-  d<-getSpecieFromAbundMD5(taxall,tx=tx, sp = SpName,aggregate = TRUE)
-  obj<-as.matrix(d[,-1])
-  rownames(obj)<-d$ufun
-  colnames(obj)<-mdt$MGN
-  mat2<-plotHeatmap(obj,100,trace = "none", col = heatmapCols)
-  })
+  # output$table1 <- renderTable({SpName <- spName()
+  # tx <- txa()
+  # d<-getSpecieFromAbundMD5(taxall,tx=tx, sp = SpName,aggregate = TRUE)
+  # obj<-as.matrix(d[,-1])
+  # rownames(obj)<-d$ufun
+  # colnames(obj)<-mdt$MGN
+  # mat2<-plotHeatmap(obj,100,trace = "none", col = heatmapCols)
+  # })
   
-  output$plot2 <- renderD3heatmap({SpName <- spName()
-  fun <- fun()
-  fun2 <- fun2()
-  FunName <- funName()
-  tx <- txa()
-  tx2 <- txa2()
-  drops <- c("usp", "species", "genus", "family", "order", "class", "phylum", "domain", "md5", "ufun", "FUN2", "FUN3", "FUN4")
-  drops <- drops[drops!= tx]
-  drops <- drops[drops!= tx2]
-  drops <- drops[drops!= fun]
-  plot <- plotSP(funtaxall[ , !(names(funtaxall) %in% drops), with = FALSE], sp = SpName, tx = tx, tx2 = tx2, fun = fun, fN = FunName)
-  if(!dim(plot)[1]>1){d3heatmap(plot,Rowv = FALSE)
-  }else{
-    d3heatmap(plot)
-    }
-  })
-  
-  output$plot3 <- renderD3heatmap({
-  input$goButton
-  sp.lis <- sp.lis()
-  mgms <-mgms()
-  obj<-pathwayHeatmap(sp.lis, mgms)
-  mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none", col = heatmapCols)
-  d3heatmap(mat3,Rowv = FALSE,Colv=FALSE)
+  # output$plot2 <- renderD3heatmap({SpName <- spName()
+  # fun <- fun()
+  # fun2 <- fun2()
+  # FunName <- funName()
+  # tx <- txa()
+  # tx2 <- txa2()
+  # drops <- c("usp", "species", "genus", "family", "order", "class", "phylum", "domain", "md5", "ufun", "FUN2", "FUN3", "FUN4")
+  # drops <- drops[drops!= tx]
+  # drops <- drops[drops!= tx2]
+  # drops <- drops[drops!= fun]
+  # plot <- plotSP(funtaxall[ , !(names(funtaxall) %in% drops), with = FALSE], sp = SpName, tx = tx, tx2 = tx2, fun = fun, fN = FunName)
+  # d3heatmap(plot,Rowv = FALSE,Colv=FALSE)
+  # })
+  # 
+  output$plot4 <- renderD3heatmap({
+    input$goButton
+    sp.lis <- sp.lis()
+    mgms <-mgms()
+    obj<-pathwayHeatmap(sp.lis, mgms)
+    mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none", col = heatmapCols)
+    d3heatmap(mat3,Rowv = FALSE,Colv=FALSE)
   }) 
   
   output$Pathway <- renderImage({
