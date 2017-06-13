@@ -17,6 +17,7 @@ library(d3heatmap)
 library(KEGGREST)
 library(png)  # For writePNG function
 load("pathview.Rdata") 
+load("d.kres.Rdata") 
 Intfuntax <- function(funtax, t1, tn, f1, fn, t2=NULL, f2=NULL){
   result2 <- funtax[grep(tn, funtax[,get(t1)])]
   result2 <- result2[grep(fn, result[,get(f1)])]
