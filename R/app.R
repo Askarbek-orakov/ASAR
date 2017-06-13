@@ -17,7 +17,6 @@ library(d3heatmap)
 library(KEGGREST)
 library(png)  # For writePNG function
 load("pathview.Rdata") 
-
 Intfuntax <- function(funtax, t1, tn, f1, fn, t2=NULL, f2=NULL){
   result <- funtax[grep(tn, funtax[,get(t1)])]
   result2 <- result[grep(fn, result[,get(f1)])]
@@ -55,7 +54,6 @@ getSpecieFromAbundMD5<-function(taxall, tx=tx, sp = SpName, aggregate=FALSE){
   if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-c(1,2)],FUN = sum)
   return(d.res)
 }
-
 getSpecieFromAbundMD5_2<-function(d.bm,sp=SpName,aggregate=FALSE){
   d.res<-d.bm[grep(sp,d.bm$usp),]
   if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-c(1,3)],FUN = sum)
@@ -70,8 +68,8 @@ plotHeatmap<-function(obj,n,norm=TRUE,log=TRUE,fun=sd,...){
     otuStats = apply(mat[otusToKeep, ], 1, fun)
   }
   otuIndices = otusToKeep[order(otuStats, decreasing = TRUE)[1:min(c(n,dim(mat)[1]))]]
-  mat2 = mat[otuIndices, ]}
-
+  mat2 = mat[otuIndices, ]
+}
 plotSP<-function(d3,sp,tx,tx2,fN, fun){
   d<-getSpecieFromAbund(d3,sp = sp, tx = tx, fN=fN, fun=fun, aggregate = FALSE)
   d.sp<- ddply(d, tx2, numcolwise(sum))
@@ -95,17 +93,6 @@ returnAppropriateObj<-function(obj, norm, log){
   }
   return(res)
 }
-# CompareMGonKO <- function(ko,mg1, mg2,tx = tx, sp = SpName){
-#   taxon<-funtaxall[grep(sp,funtaxall[,get(tx)])]
-#   drops <- c("usp","ufun","md5") 
-#   d5<-taxon[,m5:=unlist(str_split(md5,',')),by=.(usp,ufun,md5)]
-#   # find function to leave all other than by.. , probably "..."
-#   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,.(m5,usp,ufun,mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3,ko)])
-#   mg1total <-dk5[dk5$ko == get(ko),]
-#   #filter by ko and sum abundances for each metagenome and present as heatmap.
-#   
-# }
-
 pathImage<-function(sp.li, mgm, pathwi) {
   cat("pathImage\n")
   cat(mgm, "\n")
@@ -127,11 +114,11 @@ pathImage<-function(sp.li, mgm, pathwi) {
            limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
 }
 
-pathwayHeatmap<-function(sp.lis, mgms) {
+pathwayHeatmap<-function(taxall,sp.lis, mgms) {
   cat("pathwayHeatmap\n")
   cat(mgms, "\n")
   cat(sp.lis, "\n")
-  d<-getSpecieFromAbundMD5_2(d.bm,sp = sp.lis,aggregate = FALSE)
+  d<-getSpecieFromAbundMD5_2(taxall,sp = sp.lis,aggregate = FALSE)
   cat(names(d), "\n")
   indC<-which(names(d)%in%c('md5',mgms))
   d5.1<-d[,list(m5=unlist(str_split(md5,','))),by=.(usp,ufun,md5)]
@@ -182,12 +169,6 @@ getPathwayList <- function(sp.li, mgm) {
     unikos <-unique(unlist(str_split(eloop,',')))
   }
 }
-
-# funtree <- read.delim("subsys.txt", header = FALSE, quote = "")
-# funtree <- funtree[,-5]
-# colnames(funtree) <- c("FUN4", "FUN3", "FUN2", "FUN1")
-# funtaxall <- merge(taxall, funtree, by.x = 'ufun', by.y = 'FUN1')[,.(usp,species,genus,family,order,class,phylum,domain,md5,ufun,FUN2,FUN3,FUN4,mgm4714659.3,mgm4714661.3,mgm4714663.3,mgm4714665.3,mgm4714667.3,mgm4714669.3,mgm4714671.3,mgm4714673.3,mgm4714675.3,mgm4714677.3,mgm4714679.3)]
-
 ui <- fluidPage(
   titlePanel("METAGENOMIC ANALYSIS by ASAR"),
   sidebarPanel(
@@ -224,13 +205,11 @@ ui <- fluidPage(
                      selectInput(inputId = "SpecieNames", "Choose Specie", as.vector(unique(d.bm[,"usp"]))),
                      actionButton("goButton", "GO")
     ),
-    
     conditionalPanel(condition = "input.conditionedPanels==5",
                      selectInput(inputId = "SpecieN", "Choose Specie", as.vector(unique(d.bm[,"usp"])), selected = NULL),
                      actionButton("path", "GO"),
                      uiOutput("PathwayID")
-    ),
-    width = 3),
+    ),width = 3),
   
   mainPanel(
     tabsetPanel(
@@ -282,7 +261,6 @@ server <- function(input, output) {
       }
       d3heatmap(obj,Rowv = FALSE,Colv=FALSE)
     })
-  
   output$dynamic1 <- renderUI({
     d3heatmapOutput("plot1", height = paste0(input$pix1, "px"))
   })
@@ -307,7 +285,6 @@ server <- function(input, output) {
       }
       d3heatmap(obj,Rowv = FALSE,Colv=FALSE)
     })
-  
   output$dynamic2 <- renderUI({
     d3heatmapOutput("plot2", height = paste0(input$pix2, "px"))
   })
@@ -332,45 +309,33 @@ server <- function(input, output) {
       }
       d3heatmap(res,Rowv = FALSE,Colv=FALSE)
     })
-  
   output$dynamic3 <- renderUI({
     d3heatmapOutput("plot3", height = paste0(input$pix3, "px"))
   })
   
   observeEvent(input$path, {
     output$PathwayID <- renderUI({y <- input$SpecieN
-    x <- input$Metagenomes
+    x <- mgall()
     selectInput(inputId = "PathwayID", label = "Input Pathway ID", as.vector(getPathwayList(sp.li =  y, mgm =  x)))
     })})
-  
-  # txa <- reactive({input$taxlevel})
-  # txa2 <- reactive({input$taxlevel2})
-  # spName <- reactive({input$SpecieName})
-  # 
-  # fun <- reactive({input$funlevel})
-  # fun2 <- reactive({input$funlevel2})
-  # funName <- reactive({input$FunctionName})
-  # 
+
   sp.lis<- reactive({input$SpecieNames})
-  mgms <-reactive({input$mgall})
-  
   sp.l<- reactive({input$SpecieN})
-  mg <-reactive({input$mgall})
   pathw <- reactive({input$PathwayID})
   
+  observeEvent(input$goButton, {
   output$plot4 <- renderD3heatmap({
-    input$goButton
     sp.lis <- sp.lis()
-    mgms <-mgms()
-    obj<-pathwayHeatmap(sp.lis, mgms)
+    mgall <-mgall()
+    obj<-pathwayHeatmap(d.bm, sp.lis, mgall)
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none", col = heatmapCols)
     d3heatmap(mat3,Rowv = FALSE,Colv=FALSE)
-  }) 
+  })})
   
   output$Pathway <- renderImage({
     sp.li<- sp.l()
     pathwi<- pathw()
-    mgm <-mg()
+    mgm <-mgall()
     pathImage(sp.li, mgm, pathwi)
     cat(paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"))
     list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
