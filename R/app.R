@@ -20,7 +20,7 @@ load("pathview.Rdata")
 load("d.kres.Rdata") 
 Intfuntax <- function(funtax, t1, tn, f1, fn, t2=NULL, f2=NULL){
   result2 <- funtax[grep(tn, funtax[,get(t1)])]
-  result2 <- result2[grep(fn, result[,get(f1)])]
+  result2 <- result2[grep(fn, result2[,get(f1)])]
   if(!is.null(t2)&!is.null(f2)){
     result2<- ddply(result2, c(t2,f2), numcolwise(sum))
   }else{
