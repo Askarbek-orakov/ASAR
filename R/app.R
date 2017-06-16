@@ -13,9 +13,11 @@ library(plyr)
 library(pathview)
 library(stringr)
 library(biomformat)
-library(d3heatmap)
 library(KEGGREST)
 library(png)  # For writePNG function
+library(devtools)
+install_github("Alanocallaghan/d3heatmap") #It has color key/color bar
+library(d3heatmap)
 load("pathview.Rdata") 
 Intfuntax <- function(funtax, t1, tn, f1, fn, t2=NULL, f2=NULL){
   result <- funtax[grep(tn, funtax[,get(t1)])]
@@ -188,6 +190,9 @@ ui <- fluidPage(
     conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==2 || input.conditionedPanels==3",
                      selectInput(inputId = "fl1", label = "Choose funLevel 1",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "FUN4", selectize = FALSE),
                      uiOutput("funNames")
+                     # selectInput("pal", "Color palette",selected = 'BrBG',
+                     #             rownames(subset(brewer.pal.info, category %in% c("seq", "div")))),
+                     # uiOutput("ui")
     ),
     conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==2",
                      selectInput(inputId = "fl2", label = "Choose funLevel 2",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "ufun")
@@ -218,7 +223,8 @@ ui <- fluidPage(
       tabPanel("T&M", uiOutput("dynamic3"), value = 3),
       tabPanel("Pathway Abundance Heatmap", d3heatmapOutput("plot4",width = "100%", height = "1500px"), value = 4),
       tabPanel("KEGG Pathway Map", imageOutput("Pathway",width = "100%", height = "400px"), value = 5),
-      id = "conditionedPanels"
+      id = "conditionedPanels", 
+      tabPanel("Metadata", dataTableOutput("table1"))
     ), width = 9)
 )
 
@@ -232,6 +238,7 @@ server <- function(input, output) {
     fl2   <-reactive({input$fl2})
     tn    <-reactive({input$tn})
     fn    <-reactive({input$fn})
+    pal   <-reactive({input$pal})
     
     output$taxNames <- renderUI({x <- input$tl1
     selectInput(inputId = "tn", label = "Select taxon", as.vector(unique(funtaxall[,get(x)])))
@@ -259,7 +266,7 @@ server <- function(input, output) {
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
-      d3heatmap(obj,Rowv = FALSE,Colv=FALSE)
+      d3heatmap(obj)
     })
   output$dynamic1 <- renderUI({
     d3heatmapOutput("plot1", height = paste0(input$pix1, "px"))
@@ -283,7 +290,7 @@ server <- function(input, output) {
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
-      d3heatmap(obj,Rowv = FALSE,Colv=FALSE)
+      d3heatmap(obj)
     })
   output$dynamic2 <- renderUI({
     d3heatmapOutput("plot2", height = paste0(input$pix2, "px"))
@@ -307,7 +314,7 @@ server <- function(input, output) {
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
-      d3heatmap(res,Rowv = FALSE,Colv=FALSE)
+      d3heatmap(res)
     })
   output$dynamic3 <- renderUI({
     d3heatmapOutput("plot3", height = paste0(input$pix3, "px"))
@@ -329,7 +336,7 @@ server <- function(input, output) {
     mgall <-mgall()
     obj<-pathwayHeatmap(d.bm, sp.lis, mgall)
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none", col = heatmapCols)
-    d3heatmap(mat3,Rowv = FALSE,Colv=FALSE)
+    d3heatmap(mat3)
   })})
   
   output$Pathway <- renderImage({
@@ -345,5 +352,6 @@ server <- function(input, output) {
          alt = "Please wait... We are generating KEGG MAP and saving it in your working directory!")
   }, deleteFile = FALSE)
   
+  output$table1 <- renderDataTable(as.matrix(mdt))
 }
 shinyApp(ui = ui, server = server)
