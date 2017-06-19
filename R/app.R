@@ -180,7 +180,7 @@ ui <- fluidPage(
     conditionalPanel(condition = "input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 || input.conditionedPanels==5",
                      selectInput(inputId = "mgall", label = metagenomeone, choices = metagenome1n, selected = metagenome1selected, selectize = TRUE, multiple = TRUE)),
     conditionalPanel(condition = "input.conditionedPanels==1",
-                     selectInput(inputId = "mg1", label = metagenometwo, choices = metagenome2n, selected = metagenome1selected, selectize = FALSE)),
+                     selectInput(inputId = "mg1", label = metagenometwo, choices = metagenome2n, selected = metagenome2selected, selectize = FALSE)),
     conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==2 || input.conditionedPanels==3",
                      selectInput(inputId = "tl1", label = taxone, choices = tax1n, selected = tax1selected, selectize = FALSE),
                      uiOutput("taxNames")),
