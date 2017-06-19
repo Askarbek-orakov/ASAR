@@ -16,9 +16,10 @@ library(biomformat)
 library(KEGGREST)
 library(png)  # For writePNG function
 library(devtools)
-install_github("Alanocallaghan/d3heatmap") #It has color key/color bar
+#install_github("Alanocallaghan/d3heatmap") #It has color key/color bar
 library(d3heatmap)
 load("pathview.Rdata") 
+source("global.R")
 Intfuntax <- function(funtax, t1, tn, f1, fn, t2=NULL, f2=NULL){
   result <- funtax[grep(tn, funtax[,get(t1)])]
   result2 <- result[grep(fn, result[,get(f1)])]
@@ -172,13 +173,13 @@ getPathwayList <- function(sp.li, mgm) {
   }
 }
 ui <- fluidPage(
-  titlePanel("METAGENOMIC ANALYSIS by ASAR"),
+  titlePanel(maintitle),
   sidebarPanel(
     conditionalPanel(condition = "input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 || input.conditionedPanels==5",
-                     selectInput(inputId = "mgall", label = "Choose metagenome samples", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE)
+                     selectInput(inputId = "mgall", label = "Choose metagenome samples", choices = c(colnames(d.bm[,-c(1:3)])), selected = sel, selectize = TRUE, multiple = TRUE)
     ),
     conditionalPanel(condition = "input.conditionedPanels==1",
-                     selectInput(inputId = "mg1", label = "Choose one metagenome sample", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = FALSE)
+                     selectInput(inputId = "mg1", label = "Choose one metagenome sample", choices = c(colnames(d.bm[,-c(1:3)])), selected = sell, selectize = FALSE)
     ),
     conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==2 || input.conditionedPanels==3",
                      selectInput(inputId = "tl1", label = "Choose taxlevel 1",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain"), selected = "genus", selectize = FALSE),
@@ -207,14 +208,15 @@ ui <- fluidPage(
                      sliderInput("pix3", "height", value = 400, min = 100, max = 1000)
     ),
     conditionalPanel(condition = "input.conditionedPanels==4",
-                     selectInput(inputId = "SpecieNames", "Choose Specie", as.vector(unique(d.bm[,"usp"]))),
+                     selectInput(inputId = "SpecieNames", "Choose Specie", as.vector(unique(d.bm[,"usp"])), selected = selle),
                      actionButton("goButton", "GO")
     ),
     conditionalPanel(condition = "input.conditionedPanels==5",
-                     selectInput(inputId = "SpecieN", "Choose Specie", as.vector(unique(d.bm[,"usp"])), selected = NULL),
+                     selectInput(inputId = "SpecieN", "Choose Specie", as.vector(unique(d.bm[,"usp"])), selected = selle),
                      actionButton("path", "GO"),
                      uiOutput("PathwayID")
-    ),width = 3),
+    ),
+    width = 3),
   
   mainPanel(
     tabsetPanel(
@@ -241,11 +243,11 @@ server <- function(input, output) {
     pal   <-reactive({input$pal})
     
     output$taxNames <- renderUI({x <- input$tl1
-    selectInput(inputId = "tn", label = "Select taxon", as.vector(unique(funtaxall[,get(x)])))
+    selectInput(inputId = "tn", label = "Select taxon", as.vector(unique(funtaxall[,get(x)])), selected = sellec) 
     })
   
     output$funNames <- renderUI({y <- input$fl1
-    selectInput(inputId = "fn", label = "Select function", as.vector(unique(funtaxall[,get(y)])))
+    selectInput(inputId = "fn", label = "Select function", as.vector(unique(funtaxall[,get(y)])), selected = sellect)
     })
   
     output$plot1 <- renderD3heatmap({
@@ -329,7 +331,7 @@ server <- function(input, output) {
   sp.lis<- reactive({input$SpecieNames})
   sp.l<- reactive({input$SpecieN})
   pathw <- reactive({input$PathwayID})
-  
+
   observeEvent(input$goButton, {
   output$plot4 <- renderD3heatmap({
     sp.lis <- sp.lis()
@@ -349,7 +351,7 @@ server <- function(input, output) {
          contentType = 'png',
          # width = "100%", 
          # height = "400px",
-         alt = "Please wait... We are generating KEGG MAP and saving it in your working directory!")
+         alt = "Wrong Input!")
   }, deleteFile = FALSE)
   
   output$table1 <- renderDataTable(as.matrix(mdt))
