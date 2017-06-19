@@ -20,6 +20,7 @@ library(devtools)
 library(d3heatmap)
 load("pathview.Rdata") 
 source("global.R")
+
 Intfuntax <- function(funtax, t1, tn, f1, fn, t2=NULL, f2=NULL){
   result <- funtax[grep(tn, funtax[,get(t1)])]
   result2 <- result[grep(fn, result[,get(f1)])]
@@ -172,51 +173,37 @@ getPathwayList <- function(sp.li, mgm) {
     unikos <-unique(unlist(str_split(eloop,',')))
   }
 }
+
 ui <- fluidPage(
   titlePanel(maintitle),
   sidebarPanel(
     conditionalPanel(condition = "input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 || input.conditionedPanels==5",
-                     selectInput(inputId = "mgall", label = "Choose metagenome samples", choices = c(colnames(d.bm[,-c(1:3)])), selected = sel, selectize = TRUE, multiple = TRUE)
-    ),
+                     selectInput(inputId = "mgall", label = metagenomeone, choices = metagenome1n, selected = metagenome1selected, selectize = TRUE, multiple = TRUE)),
     conditionalPanel(condition = "input.conditionedPanels==1",
-                     selectInput(inputId = "mg1", label = "Choose one metagenome sample", choices = c(colnames(d.bm[,-c(1:3)])), selected = sell, selectize = FALSE)
-    ),
+                     selectInput(inputId = "mg1", label = metagenometwo, choices = metagenome2n, selected = metagenome1selected, selectize = FALSE)),
     conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==2 || input.conditionedPanels==3",
-                     selectInput(inputId = "tl1", label = "Choose taxlevel 1",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain"), selected = "genus", selectize = FALSE),
-                     uiOutput("taxNames")
-    ),
+                     selectInput(inputId = "tl1", label = taxone, choices = tax1n, selected = tax1selected, selectize = FALSE),
+                     uiOutput("taxNames")),
     conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==3",
-                     selectInput(inputId = "tl2", label = "Aggregation taxlevel 2",c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum"), selected = "usp")
-    ),
+                     selectInput(inputId = "tl2", label = taxtwo, choices = tax2n, selected = tax2selected)),
     conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==2 || input.conditionedPanels==3",
-                     selectInput(inputId = "fl1", label = "Choose funLevel 1",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "FUN4", selectize = FALSE),
-                     uiOutput("funNames")
-                     # selectInput("pal", "Color palette",selected = 'BrBG',
-                     #             rownames(subset(brewer.pal.info, category %in% c("seq", "div")))),
-                     # uiOutput("ui")
-    ),
+                     selectInput(inputId = "fl1", label = funcone, choices = func1n, selected = func1selected, selectize = FALSE),
+                     uiOutput("funNames")),
     conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==2",
-                     selectInput(inputId = "fl2", label = "Choose funLevel 2",c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4"), selected = "ufun")
-    ),
+                     selectInput(inputId = "fl2", label = functwo, choices = func2n, selected = func2selected)),
     conditionalPanel(condition = "input.conditionedPanels==1",
-                     sliderInput("pix1", "height", value = 400, min = 100, max = 1000)
-    ),
+                     sliderInput("pix1", "height", value = 400, min = 100, max = 1000)),
     conditionalPanel(condition = "input.conditionedPanels==2",
-                     sliderInput("pix2", "height", value = 400, min = 100, max = 1000)
-    ),
+                     sliderInput("pix2", "height", value = 400, min = 100, max = 1000)),
     conditionalPanel(condition = "input.conditionedPanels==3",
-                     sliderInput("pix3", "height", value = 400, min = 100, max = 1000)
-    ),
+                     sliderInput("pix3", "height", value = 400, min = 100, max = 1000)),
     conditionalPanel(condition = "input.conditionedPanels==4",
-                     selectInput(inputId = "SpecieNames", "Choose Specie", as.vector(unique(d.bm[,"usp"])), selected = selle),
-                     actionButton("goButton", "GO")
-    ),
+                     selectInput(inputId = "SpecieNames", label = specieone , choices = specie1n, selected = specie1sellected),
+                     actionButton("goButton", "GO")),
     conditionalPanel(condition = "input.conditionedPanels==5",
-                     selectInput(inputId = "SpecieN", "Choose Specie", as.vector(unique(d.bm[,"usp"])), selected = selle),
+                     selectInput(inputId = "SpecieN", label = specieone, choices = specie1n, selected = specie1sellected),
                      actionButton("path", "GO"),
-                     uiOutput("PathwayID")
-    ),
-    width = 3),
+                     uiOutput("PathwayID")), width = 3),
   
   mainPanel(
     tabsetPanel(
@@ -243,13 +230,13 @@ server <- function(input, output) {
     pal   <-reactive({input$pal})
     
     output$taxNames <- renderUI({x <- input$tl1
-    selectInput(inputId = "tn", label = "Select taxon", as.vector(unique(funtaxall[,get(x)])), selected = sellec) 
+    selectInput(inputId = "tn", label = taxthree, choices = as.vector(unique(funtaxall[,get(x)])), selected = as.character(funtaxall$genus[(nrow(funtaxall)/2)])) 
     })
-  
+    
     output$funNames <- renderUI({y <- input$fl1
-    selectInput(inputId = "fn", label = "Select function", as.vector(unique(funtaxall[,get(y)])), selected = sellect)
+    selectInput(inputId = "fn", label = functhree, choices = as.vector(unique(funtaxall[,get(y)])), selected = as.character(funtaxall$FUN4[(nrow(funtaxall)/2)]))
     })
-  
+    
     output$plot1 <- renderD3heatmap({
       tl1 <- tl1()
       tl2 <- tl2()
@@ -325,7 +312,7 @@ server <- function(input, output) {
   observeEvent(input$path, {
     output$PathwayID <- renderUI({y <- input$SpecieN
     x <- mgall()
-    selectInput(inputId = "PathwayID", label = "Input Pathway ID", as.vector(getPathwayList(sp.li =  y, mgm =  x)))
+    selectInput(inputId = "PathwayID", label = pathwayone, as.vector(getPathwayList(sp.li =  y, mgm =  x)))
     })})
 
   sp.lis<- reactive({input$SpecieNames})
@@ -351,7 +338,7 @@ server <- function(input, output) {
          contentType = 'png',
          # width = "100%", 
          # height = "400px",
-         alt = "Wrong Input!")
+         alt = "Press GO to select Pathway!")
   }, deleteFile = FALSE)
   
   output$table1 <- renderDataTable(as.matrix(mdt))
