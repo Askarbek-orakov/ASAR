@@ -1,7 +1,5 @@
 #colors of the heatmap
-#names: titles, panel names
-# default mgm, sp, fl, pid, txl,
-# 
+
 # library(shiny)
 # library(pander)
 # library(knitr)

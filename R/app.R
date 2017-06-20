@@ -273,7 +273,7 @@ server <- function(input, output) {
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,f2 = fl2)
       obj <- as.matrix(funtax[,-c(1)])
       rownames(obj)<-funtax[,fl2]
-      colnames(obj)<-as.character(mg2)
+      colnames(obj)<-as.character(mdt[c(gsub('mgm','',mg2)), 3])
       if(dim(obj)[1]>1){
         res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
       }else{
@@ -297,7 +297,7 @@ server <- function(input, output) {
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2)
       obj <- as.matrix(funtax[,-1])
       rownames(obj)<-funtax[,tl2]
-      colnames(obj)<-as.character(mg3)
+      colnames(obj)<-as.character(mdt[c(gsub('mgm','',mg3)), 3])
       if(dim(obj)[1]>1){
         res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
       }else{
