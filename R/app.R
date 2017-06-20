@@ -324,6 +324,7 @@ server <- function(input, output) {
     sp.lis <- sp.lis()
     mgall <-mgall()
     obj<-pathwayHeatmap(d.bm, sp.lis, mgall)
+    colnames(obj)<- mdt[c(gsub('mgm','', mgall)), 3]
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none", col = heatmapCols)
     d3heatmap(mat3)
   })})
