@@ -22,8 +22,8 @@ load("pathview.Rdata")
 source("global.R")
 
 Intfuntax <- function(funtax, t1, tn, f1, fn, t2=NULL, f2=NULL){
-  result <- funtax[grep(tn, funtax[,get(t1)])]
-  result2 <- result[grep(fn, result[,get(f1)])]
+  result2 <- funtax[grep(tn, funtax[,get(t1)])]
+  result2 <- result2[grep(fn, result[,get(f1)])]
   if(!is.null(t2)&!is.null(f2)){
     result2<- ddply(result2, c(t2,f2), numcolwise(sum))
   }else{
@@ -97,12 +97,12 @@ returnAppropriateObj<-function(obj, norm, log){
   }
   return(res)
 }
-pathImage<-function(sp.li, mgm, pathwi) {
+pathImage<-function(funtax, sp.li, mgm, pathwi) {
   cat("pathImage\n")
   cat(mgm, "\n")
   cat(sp.li, "\n")
   cat(pathwi, "\n")
-  d<-getSpecieFromAbundMD5_2(d.bm,sp = sp.li,aggregate = FALSE)
+  d<-getSpecieFromAbundMD5_2(funtax,sp = sp.li,aggregate = FALSE)
   cat(names(d), "\n")
   indC<-which(names(d)%in%c('md5',mgm))
   d5.1<-d[,list(m5=unlist(str_split(md5,','))),by=.(usp,ufun,md5)]
@@ -146,10 +146,10 @@ pathwayHeatmap<-function(taxall,sp.lis, mgms) {
   return(a8)
 }
 
-getPathwayList <- function(sp.li, mgm) {
+getPathwayList <- function(funtax, sp.li, mgm) {
   cat(mgm, "\n")
   cat(sp.li, "\n")
-  d<-getSpecieFromAbundMD5_2(d.bm,sp = sp.li,aggregate = FALSE)
+  d<-getSpecieFromAbundMD5_2(funtax,sp = sp.li,aggregate = FALSE)
   cat(names(d), "\n")
   indC<-which(names(d)%in%c('md5',mgm))
   d5.1<-d[,list(m5=unlist(str_split(md5,','))),by=.(usp,ufun,md5)]
@@ -178,7 +178,8 @@ ui <- fluidPage(
   titlePanel(maintitle),
   sidebarPanel(
     conditionalPanel(condition = "input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 || input.conditionedPanels==5",
-                     selectInput(inputId = "mgall", label = metagenomeone, choices = metagenome1n, selected = metagenome1selected, selectize = TRUE, multiple = TRUE)),
+                     selectInput(inputId = "mgall", label = "Choose metagenome samples", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE)
+    ),#setNames(rownames(mdt), mdt[,"MGN"])
     conditionalPanel(condition = "input.conditionedPanels==1",
                      selectInput(inputId = "mg1", label = metagenometwo, choices = metagenome2n, selected = metagenome2selected, selectize = FALSE)),
     conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==2 || input.conditionedPanels==3",
@@ -198,10 +199,10 @@ ui <- fluidPage(
     conditionalPanel(condition = "input.conditionedPanels==3",
                      sliderInput("pix3", "height", value = 400, min = 100, max = 1000)),
     conditionalPanel(condition = "input.conditionedPanels==4",
-                     selectInput(inputId = "SpecieNames", label = specieone , choices = specie1n, selected = specie1sellected),
-                     actionButton("goButton", "GO")),
+                     actionButton("goButton", "GO"),
+                     sliderInput("pix4", "height", value = 400, min = 100, max = 1000)
+    ),
     conditionalPanel(condition = "input.conditionedPanels==5",
-                     selectInput(inputId = "SpecieN", label = specieone, choices = specie1n, selected = specie1sellected),
                      actionButton("path", "GO"),
                      uiOutput("PathwayID")), width = 3),
   
@@ -210,7 +211,7 @@ ui <- fluidPage(
       tabPanel("F&T", uiOutput("dynamic1"), value = 1), 
       tabPanel("F&M", uiOutput("dynamic2"), value = 2),
       tabPanel("T&M", uiOutput("dynamic3"), value = 3),
-      tabPanel("Pathway Abundance Heatmap", d3heatmapOutput("plot4",width = "100%", height = "1500px"), value = 4),
+      tabPanel("Pathway Abundance Heatmap", uiOutput("dynamic4"), value = 4),
       tabPanel("KEGG Pathway Map", imageOutput("Pathway",width = "100%", height = "400px"), value = 5),
       id = "conditionedPanels", 
       tabPanel("Metadata", dataTableOutput("table1"))
@@ -227,7 +228,6 @@ server <- function(input, output) {
     fl2   <-reactive({input$fl2})
     tn    <-reactive({input$tn})
     fn    <-reactive({input$fn})
-    pal   <-reactive({input$pal})
     
     output$taxNames <- renderUI({x <- input$tl1
     selectInput(inputId = "tn", label = taxthree, choices = as.vector(unique(funtaxall[,get(x)])), selected = as.character(funtaxall$genus[(nrow(funtaxall)/2)])) 
@@ -310,30 +310,50 @@ server <- function(input, output) {
   })
   
   observeEvent(input$path, {
-    output$PathwayID <- renderUI({y <- input$SpecieN
-    x <- mgall()
-    selectInput(inputId = "PathwayID", label = pathwayone, as.vector(getPathwayList(sp.li =  y, mgm =  x)))
+    output$PathwayID <- renderUI({
+      tn <- tn()
+      tl1 <- tl1()
+      mgall <- mgall()
+      keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
+      funtax <- funtaxall[,..keepcols]
+      colnames(funtax) <- c("usp","md5","ufun", mgall)
+      selectInput(inputId = "PathwayID", label = "Input Pathway ID", as.vector(getPathwayList(funtax, sp.li =  tn, mgm =  mgall)))
     })})
 
-  sp.lis<- reactive({input$SpecieNames})
-  sp.l<- reactive({input$SpecieN})
+  #sp.lis<- reactive({input$SpecieNames})
+  #sp.l<- reactive({input$SpecieN})
   pathw <- reactive({input$PathwayID})
 
   observeEvent(input$goButton, {
   output$plot4 <- renderD3heatmap({
-    sp.lis <- sp.lis()
+    tl1 <- tl1()
+    tn  <- tn() 
     mgall <-mgall()
+<<<<<<< .merge_file_r8qEFi
     obj<-pathwayHeatmap(d.bm, sp.lis, mgall)
     colnames(obj)<- mdt[c(gsub('mgm','', mgall)), 3]
+=======
+    keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
+    funtax <- funtaxall[,..keepcols]
+    colnames(funtax) <- c("usp","md5","ufun", mgall)
+    obj<-pathwayHeatmap(funtax, tn, mgall)
+>>>>>>> .merge_file_dURGyh
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none", col = heatmapCols)
     d3heatmap(mat3)
   })})
-  
+  output$dynamic4 <- renderUI({
+    d3heatmapOutput("plot4", height = paste0(input$pix1, "px"))
+  })
+  observeEvent(input$path, {
   output$Pathway <- renderImage({
-    sp.li<- sp.l()
+    sp.li<- tn()
+    tl1 <- tl1()
     pathwi<- pathw()
-    mgm <-mgall()
-    pathImage(sp.li, mgm, pathwi)
+    mgall <-mgall()
+    keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
+    funtax <- funtaxall[,..keepcols]
+    colnames(funtax) <- c("usp","md5","ufun", mgall)
+    pathImage(funtax, sp.li, mgall, pathwi)
     cat(paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"))
     list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
          contentType = 'png',
