@@ -174,7 +174,7 @@ ui <- fluidPage(
   sidebarPanel(
     conditionalPanel(condition = "input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 || input.conditionedPanels==5",
                      selectInput(inputId = "mgall", label = "Choose metagenome samples", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE)
-    ),
+    ),#setNames(rownames(mdt), mdt[,"MGN"])
     conditionalPanel(condition = "input.conditionedPanels==1",
                      selectInput(inputId = "mg1", label = "Choose one metagenome sample", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = FALSE)
     ),
@@ -258,6 +258,7 @@ server <- function(input, output) {
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
+      cat(mg1, "\n")
       d3heatmap(obj,Rowv = FALSE,Colv=FALSE)
     })
   output$dynamic1 <- renderUI({
@@ -306,6 +307,7 @@ server <- function(input, output) {
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
+      
       d3heatmap(res,Rowv = FALSE,Colv=FALSE)
     })
   output$dynamic3 <- renderUI({
