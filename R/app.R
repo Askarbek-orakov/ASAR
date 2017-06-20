@@ -23,7 +23,7 @@ source("global.R")
 
 Intfuntax <- function(funtax, t1, tn, f1, fn, t2=NULL, f2=NULL){
   result2 <- funtax[grep(tn, funtax[,get(t1)])]
-  result2 <- result2[grep(fn, result[,get(f1)])]
+  result2 <- result2[grep(fn, result2[,get(f1)])]
   if(!is.null(t2)&!is.null(f2)){
     result2<- ddply(result2, c(t2,f2), numcolwise(sum))
   }else{
@@ -176,13 +176,15 @@ getPathwayList <- function(funtax, sp.li, mgm) {
 
 ui <- fluidPage(
   titlePanel(maintitle),
+  shinythemes::themeSelector(),
+  navbarPage(theme = "simplex", ""),
   sidebarPanel(
     conditionalPanel(condition = "input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 || input.conditionedPanels==5",
-                     selectInput(inputId = "mgall", label = "Choose metagenome samples", choices = c(colnames(d.bm[,-c(1:3)])), selected = NULL, selectize = TRUE, multiple = TRUE)
+                     selectInput(inputId = "mgall", label = metagenomeone, choices = metagenome1n, selected = metagenome1selected, selectize = TRUE, multiple = TRUE)
     ),#setNames(rownames(mdt), mdt[,"MGN"])
     conditionalPanel(condition = "input.conditionedPanels==1",
                      selectInput(inputId = "mg1", label = metagenometwo, choices = metagenome2n, selected = metagenome2selected, selectize = FALSE)),
-    conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==2 || input.conditionedPanels==3",
+    conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4",
                      selectInput(inputId = "tl1", label = taxone, choices = tax1n, selected = tax1selected, selectize = FALSE),
                      uiOutput("taxNames")),
     conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==3",
@@ -204,7 +206,9 @@ ui <- fluidPage(
     ),
     conditionalPanel(condition = "input.conditionedPanels==5",
                      actionButton("path", "GO"),
-                     uiOutput("PathwayID")), width = 3),
+                     uiOutput("PathwayID")),
+    # downloadButton('downloadData', 'Download'),
+    width = 3),
   
   mainPanel(
     tabsetPanel(
@@ -228,6 +232,10 @@ server <- function(input, output) {
     fl2   <-reactive({input$fl2})
     tn    <-reactive({input$tn})
     fn    <-reactive({input$fn})
+    
+    # output$downloadData <- downloadHandler(
+    #   filename = "pv.out", content = pv.out , contentType = 'image/png'
+    # )
     
     output$taxNames <- renderUI({x <- input$tl1
     selectInput(inputId = "tn", label = taxthree, choices = as.vector(unique(funtaxall[,get(x)])), selected = as.character(funtaxall$genus[(nrow(funtaxall)/2)])) 
@@ -329,22 +337,18 @@ server <- function(input, output) {
     tl1 <- tl1()
     tn  <- tn() 
     mgall <-mgall()
-<<<<<<< .merge_file_r8qEFi
-    obj<-pathwayHeatmap(d.bm, sp.lis, mgall)
-    colnames(obj)<- mdt[c(gsub('mgm','', mgall)), 3]
-=======
     keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
     colnames(funtax) <- c("usp","md5","ufun", mgall)
     obj<-pathwayHeatmap(funtax, tn, mgall)
->>>>>>> .merge_file_dURGyh
+    colnames(obj)<-as.character(mdt[c(gsub('mgm','',mgall)), 3])
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none", col = heatmapCols)
     d3heatmap(mat3)
   })})
   output$dynamic4 <- renderUI({
     d3heatmapOutput("plot4", height = paste0(input$pix1, "px"))
   })
-  observeEvent(input$path, {
+    
   output$Pathway <- renderImage({
     sp.li<- tn()
     tl1 <- tl1()
