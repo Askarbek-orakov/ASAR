@@ -157,7 +157,7 @@ getpathsfromKOs <- function(KOs){
   setkey(kegg, K)
   temp <- kegg[KOs]
   temp$ko <-gsub('^ko','',temp$ko)
-  unlist(str_split(as.character(unique(temp[,"ko"])), ','))
+  unique(unlist(str_split(paste(as.character(temp[,"ko"])), ',')))
 }
 getPathwayList <- function(funtax, sp.li, mgm) {
   cat(mgm, "\n")
@@ -169,22 +169,23 @@ getPathwayList <- function(funtax, sp.li, mgm) {
   d5<-merge(d5.1,d[,..indC],by='md5')
   cat(names(d5),"\n")
   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
-  getpathsfromKOs(unique(dk5[,"ko"]))
+  kos<- unique(dk5[,"ko"])
+  #getpathsfromKOs(unique(dk5[,"ko"]))
   #Since, if num of KOs are more than 500, (function kegglink)it shows error 403. That is why we are doing following:
-  # if(nrow(kos)>300){
-  #   unikos <- NULL
-  #   kossep <- NULL
-  #   i <- ceiling(nrow(kos)/300)
-  #   for (x in 1:i){
-  #     kossep[[x]]<-kos[((x-1)*300+1):(x*300)]
-  #     unikos[[x]]<-unique(unlist(str_split(paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", kossep[[x]]$ko), ncol=2, byrow=TRUE)[,2]))),',')))
-  #   }
-  #   unikos<-as.character(unique(unlist(unikos)))
-  # }else{
-  #   eloop <- NULL
-  #   eloop<-paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", kos$ko), ncol=2, byrow=TRUE)[,2])))
-  #   unikos <-unique(unlist(str_split(eloop,',')))
-  # }
+  if(nrow(kos)>300){
+    unikos <- NULL
+    kossep <- NULL
+    i <- ceiling(nrow(kos)/300)
+    for (x in 1:i){
+      kossep[[x]]<-kos[((x-1)*300+1):(x*300)]
+      unikos[[x]]<-unique(unlist(str_split(paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", kossep[[x]]$ko), ncol=2, byrow=TRUE)[,2]))),',')))
+    }
+    unikos<-as.character(unique(unlist(unikos)))
+  }else{
+    eloop <- NULL
+    eloop<-paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", kos$ko), ncol=2, byrow=TRUE)[,2])))
+    unikos <-unique(unlist(str_split(eloop,',')))
+  }
 }
 
 ui <- fluidPage(
