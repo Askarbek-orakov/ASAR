@@ -14,11 +14,13 @@ library(pathview)
 library(stringr)
 library(biomformat)
 library(KEGGREST)
+library(shinythemes)
 library(png)  # For writePNG function
 library(devtools)
 #install_github("Alanocallaghan/d3heatmap") #It has color key/color bar
 library(d3heatmap)
-load("pathview.Rdata") 
+load("pathview.Rdata")
+load("keggmappings.Rdata")
 source("global.R")
 
 Intfuntax <- function(funtax, t1, tn, f1, fn, t2=NULL, f2=NULL){
@@ -118,6 +120,11 @@ pathImage<-function(funtax, sp.li, mgm, pathwi) {
            limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
 }
 
+getpathfromKO <- function(KO){
+  temp <- kegg[K == KO]
+  temp$ko <-gsub('^ko','',temp$ko) 
+  paste(as.character(unique(temp[,"ko"])), collapse = ",")
+}
 pathwayHeatmap<-function(taxall,sp.lis, mgms) {
   cat("pathwayHeatmap\n")
   cat(mgms, "\n")
@@ -132,7 +139,7 @@ pathwayHeatmap<-function(taxall,sp.lis, mgms) {
   indC<-which(names(dk5)%in%c('ko',mgms))
   adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'usp', 'ufun', 'annotation')]),FUN=sum)
   lastcol<- ncol(adk5)+1
-  for (y in 1:nrow(adk5)){adk5[y,lastcol] <- paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", adk5[y,"ko"]), ncol=2, byrow=TRUE)[,2])), collapse = ",")}
+  for (y in 1:nrow(adk5)){adk5[y,lastcol] <- getpathfromKO(adk5[y,"ko"])}
   colnames(adk5)[lastcol] <- "pathwayID"
   #for (y in 1:nrow(adk5)){adk5[y] <- mutate(adk5, pathwayID = paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", adk5[y,"ko"]), ncol=2, byrow=TRUE)[,2])), collapse = ","))}
   indC<-which(names(adk5)%in%c('ko', mgms))
