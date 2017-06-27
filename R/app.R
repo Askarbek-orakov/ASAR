@@ -122,14 +122,13 @@ pathImage<-function(funtax, sp.li, mgm, pathwi) {
 
 getpathfromKO <- function(KO){
   temp <- kegg[K == KO]
-  temp$ko <-gsub('^ko','',temp$ko) 
-  paste(as.character(unique(temp[,"ko"])), collapse = ",")
+  temp <- gsub('ko','',paste0(unlist(temp[,"ko"]), collapse = ","))
 }
-pathwayHeatmap<-function(taxall,sp.lis, mgms) {
+pathwayHeatmap<-function(funtax,sp.lis, mgms) {
   cat("pathwayHeatmap\n")
   cat(mgms, "\n")
   cat(sp.lis, "\n")
-  d<-getSpecieFromAbundMD5_2(taxall,sp = sp.lis,aggregate = FALSE)
+  d<-getSpecieFromAbundMD5_2(funtax,sp = sp.lis,aggregate = FALSE)
   cat(names(d), "\n")
   indC<-which(names(d)%in%c('md5',mgms))
   d5.1<-d[,list(m5=unlist(str_split(md5,','))),by=.(usp,ufun,md5)]
@@ -156,8 +155,8 @@ pathwayHeatmap<-function(taxall,sp.lis, mgms) {
 getpathsfromKOs <- function(KOs){
   setkey(kegg, K)
   temp <- kegg[KOs]
-  temp$ko <-gsub('^ko','',temp$ko)
-  unique(unlist(str_split(paste(as.character(temp[,"ko"])), ',')))
+  unlist(str_split(gsub('ko','',paste0(unlist(temp[,"ko"]), collapse = ",")), ','))
+  
 }
 getPathwayList <- function(funtax, sp.li, mgm) {
   cat(mgm, "\n")
