@@ -18,14 +18,15 @@
 # library(KEGGREST)
 # library(devtools)
 
-
-maintitle <- "METAGENOMIC ANALYSIS by ASAR"
+maintitle <- ""
 
 metagenomeone <-"Choose metagenome samples"
+#metagenome1n <- c(colnames(d.bm[,-c(1:3)]))
 metagenome1n <- setNames(c(colnames(d.bm[,-c(1:3)])), mdt$MGN)
 metagenome1selected <- c(colnames(d.bm[,5]), colnames(d.bm[,6]))
 
 metagenometwo <- "Choose one metagenome sample"
+#metagenome2n <- c(colnames(d.bm[,-c(1:3)]))
 metagenome2n <- setNames(c(colnames(d.bm[,-c(1:3)])), mdt$MGN)
 metagenome2selected <- c(colnames(d.bm[,4]))
 
