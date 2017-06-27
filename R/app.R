@@ -354,6 +354,8 @@ server <- function(input, output) {
     d3heatmapOutput("plot4", height = paste0(input$pix4, "px"))
   })
     
+  
+  
   output$Pathway <- renderImage({
     sp.li<- tn()
     tl1 <- tl1()
