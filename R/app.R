@@ -14,12 +14,13 @@ library(pathview)
 library(stringr)
 library(biomformat)
 library(KEGGREST)
-library(plotly)
+library(shinythemes)
 library(png)  # For writePNG function
 library(devtools)
 #install_github("Alanocallaghan/d3heatmap") #It has color key/color bar
 library(d3heatmap)
-load("pathview.Rdata") 
+load("pathview.Rdata")
+load("keggmappings.Rdata")
 source("global.R")
 
 Intfuntax <- function(funtax, t1, tn, f1, fn, t2=NULL, f2=NULL){
@@ -114,16 +115,20 @@ pathImage<-function(funtax, sp.li, mgm, pathwi) {
   adk5<-aggregate(.~ko,as.data.frame(dk5[,..indC]),FUN=sum)
   rownames(adk5)<-adk5$ko
   adk5<-adk5[,-1]
-  pathview(gene.data = log2(adk5+1), pathway.id = pathwi,
-           species = "ko", out.suffix = paste0(sp.li,".log2.ko"), kegg.native = T,
-           limit = list(gene=range(as.vector(as.matrix(log2(adk5+1))),cpd=1)))
+  pathview(gene.data = adk5, pathway.id = pathwi,
+           species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
+           limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
 }
 
-pathwayHeatmap<-function(taxall,sp.lis, mgms) {
+getpathfromKO <- function(KO){
+  temp <- kegg[K == KO]
+  temp <- gsub('ko','',paste0(unlist(temp[,"ko"]), collapse = ","))
+}
+pathwayHeatmap<-function(funtax,sp.lis, mgms) {
   cat("pathwayHeatmap\n")
   cat(mgms, "\n")
   cat(sp.lis, "\n")
-  d<-getSpecieFromAbundMD5_2(taxall,sp = sp.lis,aggregate = FALSE)
+  d<-getSpecieFromAbundMD5_2(funtax,sp = sp.lis,aggregate = FALSE)
   cat(names(d), "\n")
   indC<-which(names(d)%in%c('md5',mgms))
   d5.1<-d[,list(m5=unlist(str_split(md5,','))),by=.(usp,ufun,md5)]
@@ -133,7 +138,7 @@ pathwayHeatmap<-function(taxall,sp.lis, mgms) {
   indC<-which(names(dk5)%in%c('ko',mgms))
   adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'usp', 'ufun', 'annotation')]),FUN=sum)
   lastcol<- ncol(adk5)+1
-  for (y in 1:nrow(adk5)){adk5[y,lastcol] <- paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", adk5[y,"ko"]), ncol=2, byrow=TRUE)[,2])), collapse = ",")}
+  for (y in 1:nrow(adk5)){adk5[y,lastcol] <- getpathfromKO(adk5[y,"ko"])}
   colnames(adk5)[lastcol] <- "pathwayID"
   #for (y in 1:nrow(adk5)){adk5[y] <- mutate(adk5, pathwayID = paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", adk5[y,"ko"]), ncol=2, byrow=TRUE)[,2])), collapse = ","))}
   indC<-which(names(adk5)%in%c('ko', mgms))
@@ -147,6 +152,12 @@ pathwayHeatmap<-function(taxall,sp.lis, mgms) {
   return(a8)
 }
 
+getpathsfromKOs <- function(KOs){
+  setkey(kegg, K)
+  temp <- kegg[KOs]
+  unlist(str_split(gsub('ko','',paste0(unlist(temp[,"ko"]), collapse = ",")), ','))
+  
+}
 getPathwayList <- function(funtax, sp.li, mgm) {
   cat(mgm, "\n")
   cat(sp.li, "\n")
@@ -157,7 +168,8 @@ getPathwayList <- function(funtax, sp.li, mgm) {
   d5<-merge(d5.1,d[,..indC],by='md5')
   cat(names(d5),"\n")
   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
-  kos <- unique(dk5[,"ko"])
+  kos<- unique(dk5[,"ko"])
+  #getpathsfromKOs(unique(dk5[,"ko"]))
   #Since, if num of KOs are more than 500, (function kegglink)it shows error 403. That is why we are doing following:
   if(nrow(kos)>300){
     unikos <- NULL
@@ -178,14 +190,14 @@ getPathwayList <- function(funtax, sp.li, mgm) {
 ui <- fluidPage(
   titlePanel(maintitle),
   shinythemes::themeSelector(),
-  navbarPage(theme = "simplex", "METAGENOMIC ANALYSIS"),
+  navbarPage(theme = "simplex", ""),
   sidebarPanel(
     conditionalPanel(condition = "input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 || input.conditionedPanels==5",
                      selectInput(inputId = "mgall", label = metagenomeone, choices = metagenome1n, selected = metagenome1selected, selectize = TRUE, multiple = TRUE)
     ),#setNames(rownames(mdt), mdt[,"MGN"])
     conditionalPanel(condition = "input.conditionedPanels==1",
                      selectInput(inputId = "mg1", label = metagenometwo, choices = metagenome2n, selected = metagenome2selected, selectize = FALSE)),
-    conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4|| input.conditionedPanels==5",
+    conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4",
                      selectInput(inputId = "tl1", label = taxone, choices = tax1n, selected = tax1selected, selectize = FALSE),
                      uiOutput("taxNames")),
     conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==3",
@@ -208,11 +220,12 @@ ui <- fluidPage(
     conditionalPanel(condition = "input.conditionedPanels==5",
                      actionButton("path", "GO"),
                      uiOutput("PathwayID")),
+    # downloadButton('downloadData', 'Download'),
     width = 3),
   
   mainPanel(
     tabsetPanel(
-      tabPanel("F&T", uiOutput("dynamic1"), value = 1), #downloadButton(outputId = "down", label = "Download the plot"),
+      tabPanel("F&T", uiOutput("dynamic1"), value = 1), 
       tabPanel("F&M", uiOutput("dynamic2"), value = 2),
       tabPanel("T&M", uiOutput("dynamic3"), value = 3),
       tabPanel("Pathway Abundance Heatmap", uiOutput("dynamic4"), value = 4),
@@ -223,7 +236,7 @@ ui <- fluidPage(
 )
 
 server <- function(input, output) {
-
+  
     mgall <-reactive({input$mgall})
     mg1   <-reactive({input$mg1})
     tl1   <-reactive({input$tl1})
@@ -232,6 +245,10 @@ server <- function(input, output) {
     fl2   <-reactive({input$fl2})
     tn    <-reactive({input$tn})
     fn    <-reactive({input$fn})
+    
+    # output$downloadData <- downloadHandler(
+    #   filename = "pv.out", content = pv.out , contentType = 'image/png'
+    # )
     
     output$taxNames <- renderUI({x <- input$tl1
     selectInput(inputId = "tn", label = taxthree, choices = as.vector(unique(funtaxall[,get(x)])), selected = as.character(funtaxall$genus[(nrow(funtaxall)/2)])) 
@@ -259,20 +276,12 @@ server <- function(input, output) {
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
-      d3heatmap(res, Rowv = FALSE, Colv = FALSE) 
+      d3heatmap(obj)
     })
   output$dynamic1 <- renderUI({
     d3heatmapOutput("plot1", height = paste0(input$pix1, "px"))
   })
   
-  # output$down <- downloadHandler(
-  #   filename = "plot.png",
-  #   content <- function(file) {
-  #     png(file)
-  #     print(plotInput())
-  #     dev.off()
-  #   })
-   
     output$plot2 <- renderD3heatmap({
       tl1 <- tl1()
       tn  <- tn()
@@ -285,14 +294,13 @@ server <- function(input, output) {
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,f2 = fl2)
       obj <- as.matrix(funtax[,-c(1)])
       rownames(obj)<-funtax[,fl2]
-      # colnames(obj)<-as.character(mg2)
-      colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
+      colnames(obj)<-as.character(mdt[c(gsub('mgm','',mg2)), 3])
       if(dim(obj)[1]>1){
         res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
-      d3heatmap(res) #Rowv = FALSE, Colv = FALSE
+      d3heatmap(obj)
     })
   output$dynamic2 <- renderUI({
     d3heatmapOutput("plot2", height = paste0(input$pix2, "px"))
@@ -310,14 +318,13 @@ server <- function(input, output) {
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2)
       obj <- as.matrix(funtax[,-1])
       rownames(obj)<-funtax[,tl2]
-      #colnames(obj)<-as.character(mg3)
-      colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
+      colnames(obj)<-as.character(mdt[c(gsub('mgm','',mg3)), 3])
       if(dim(obj)[1]>1){
         res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
-      d3heatmap(res) # Rowv = FALSE, Colv = FALSE
+      d3heatmap(res)
     })
   output$dynamic3 <- renderUI({
     d3heatmapOutput("plot3", height = paste0(input$pix3, "px"))
@@ -345,17 +352,16 @@ server <- function(input, output) {
     mgall <-mgall()
     keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
+    colnames(funtax) <- c("usp","md5","ufun", mgall)
     obj<-pathwayHeatmap(funtax, tn, mgall)
-    colnames(obj)<-as.character(mdt[c(gsub('mgm','',colnames(obj))), 3])
+    colnames(obj)<-as.character(mdt[c(gsub('mgm','',mgall)), 3])
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none", col = heatmapCols)
-    d3heatmap(mat3) # Rowv = FALSE, Colv = FALSE
+    d3heatmap(mat3)
   })})
   output$dynamic4 <- renderUI({
     d3heatmapOutput("plot4", height = paste0(input$pix4, "px"))
   })
     
-  
-  
   output$Pathway <- renderImage({
     sp.li<- tn()
     tl1 <- tl1()
@@ -363,6 +369,7 @@ server <- function(input, output) {
     mgall <-mgall()
     keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
+    colnames(funtax) <- c("usp","md5","ufun", mgall)
     pathImage(funtax, sp.li, mgall, pathwi)
     cat(paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"))
     list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
