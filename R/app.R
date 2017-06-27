@@ -276,7 +276,7 @@ server <- function(input, output) {
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
-      d3heatmap(obj)
+      d3heatmap(res, Colv = FALSE, Rowv = FALSE)
     })
   output$dynamic1 <- renderUI({
     d3heatmapOutput("plot1", height = paste0(input$pix1, "px"))
@@ -294,13 +294,13 @@ server <- function(input, output) {
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,f2 = fl2)
       obj <- as.matrix(funtax[,-c(1)])
       rownames(obj)<-funtax[,fl2]
-      colnames(obj)<-as.character(mdt[c(gsub('mgm','',mg2)), 3])
+      colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
       if(dim(obj)[1]>1){
         res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
-      d3heatmap(obj)
+      d3heatmap(res)
     })
   output$dynamic2 <- renderUI({
     d3heatmapOutput("plot2", height = paste0(input$pix2, "px"))
@@ -318,7 +318,7 @@ server <- function(input, output) {
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2)
       obj <- as.matrix(funtax[,-1])
       rownames(obj)<-funtax[,tl2]
-      colnames(obj)<-as.character(mdt[c(gsub('mgm','',mg3)), 3])
+      colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
       if(dim(obj)[1]>1){
         res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
       }else{
@@ -337,7 +337,8 @@ server <- function(input, output) {
       mgall <- mgall()
       keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
       funtax <- funtaxall[,..keepcols]
-      colnames(funtax) <- c("usp","md5","ufun", mgall)
+      names(funtax)[names(funtax) == tl1] <- 'usp'
+      # colnames(funtax) <- c("usp","md5","ufun", mgall)
       selectInput(inputId = "PathwayID", label = "Input Pathway ID", as.vector(getPathwayList(funtax, sp.li =  tn, mgm =  mgall)))
     })})
 
@@ -352,9 +353,9 @@ server <- function(input, output) {
     mgall <-mgall()
     keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
-    colnames(funtax) <- c("usp","md5","ufun", mgall)
+    names(funtax)[names(funtax) == tl1] <- 'usp'
     obj<-pathwayHeatmap(funtax, tn, mgall)
-    colnames(obj)<-as.character(mdt[c(gsub('mgm','',mgall)), 3])
+    colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none", col = heatmapCols)
     d3heatmap(mat3)
   })})
@@ -369,7 +370,8 @@ server <- function(input, output) {
     mgall <-mgall()
     keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
-    colnames(funtax) <- c("usp","md5","ufun", mgall)
+    names(funtax)[names(funtax) == tl1] <- 'usp'
+    # colnames(funtax) <- c("usp","md5","ufun", mgall)
     pathImage(funtax, sp.li, mgall, pathwi)
     cat(paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"))
     list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
