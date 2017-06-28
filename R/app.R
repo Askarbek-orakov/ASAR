@@ -276,7 +276,9 @@ server <- function(input, output) {
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
-      d3heatmap(res, Colv = FALSE, Rowv = FALSE)
+      res[is.na(res)] <- 0
+      d3heatmap(res) #, Colv = FALSE, Rowv = FALSE
+      #have to make so that if row has NA/0 values for all coumns, then cut it off from the table used for heatmap
     })
   output$dynamic1 <- renderUI({
     d3heatmapOutput("plot1", height = paste0(input$pix1, "px"))
