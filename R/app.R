@@ -190,7 +190,7 @@ getPathwayList <- function(funtax, sp.li, mgm) {
 ui <- fluidPage(
   titlePanel(maintitle),
   shinythemes::themeSelector(),
-  navbarPage(theme = "simplex", ""),
+  # navbarPage(theme = "simplex", ""),
   sidebarPanel(
     conditionalPanel(condition = "input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 || input.conditionedPanels==5",
                      selectInput(inputId = "mgall", label = metagenomeone, choices = metagenome1n, selected = metagenome1selected, selectize = TRUE, multiple = TRUE)
@@ -302,7 +302,9 @@ server <- function(input, output) {
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
-      d3heatmap(res)
+      res[is.na(res)] <- 0
+      d3heatmap(res) 
+      #have to make so that if row has NA/0 values for all coumns, then cut it off from the table used for heatmap
     })
   output$dynamic2 <- renderUI({
     d3heatmapOutput("plot2", height = paste0(input$pix2, "px"))
@@ -326,7 +328,9 @@ server <- function(input, output) {
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
-      d3heatmap(res)
+      res[is.na(res)] <- 0
+      d3heatmap(res) 
+      #have to make so that if row has NA/0 values for all coumns, then cut it off from the table used for heatmap
     })
   output$dynamic3 <- renderUI({
     d3heatmapOutput("plot3", height = paste0(input$pix3, "px"))
@@ -359,6 +363,7 @@ server <- function(input, output) {
     obj<-pathwayHeatmap(funtax, tn, mgall)
     colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none", col = heatmapCols)
+    mat3[is.na(mat3)] <- 0
     d3heatmap(mat3)
   })})
   output$dynamic4 <- renderUI({
