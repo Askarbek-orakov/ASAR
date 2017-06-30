@@ -17,8 +17,10 @@ library(KEGGREST)
 library(shinythemes)
 library(png)  # For writePNG function
 library(devtools)
-#install_github("Alanocallaghan/d3heatmap") #It has color key/color bar
+install_github("Alanocallaghan/d3heatmap") #It has color key/color bar
 library(d3heatmap)
+library(gplots)
+library(RColorBrewer)
 load("pathview.Rdata")
 load("keggmappings.Rdata")
 source("global.R")
@@ -276,8 +278,10 @@ server <- function(input, output) {
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
-      res[is.na(res)] <- 0
-      d3heatmap(res) #, Colv = FALSE, Rowv = FALSE
+      res[is.na(res)] <- 0 
+      #cols <- colorRampPalette(brewer.pal(10, "RdBu"))(256)
+      d3heatmap(res) #colors = rev(cols)
+      #, Colv = FALSE, Rowv = FALSE
       #have to make so that if row has NA/0 values for all coumns, then cut it off from the table used for heatmap
     })
   output$dynamic1 <- renderUI({
