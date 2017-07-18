@@ -108,20 +108,18 @@ returnAppropriateObj<-function(obj, norm, log){
   }
   return(res)
 }
-pathImage<-function(funtax, sp.li, mgm, pathwi) {
-  cat("pathImage\n")
-  cat(mgm, "\n")
-  cat(sp.li, "\n")
-  cat(pathwi, "\n")
-  d<-getSpecieFromAbundMD5_2(funtax,sp = sp.li,aggregate = FALSE)
-  cat(names(d), "\n")
-  indC<-which(names(d)%in%c('md5',mgm))
+
+get_ko_data <- function(funtax, taxon, metagenomes) {
+  d<-getSpecieFromAbundMD5_2(funtax,sp = taxon,aggregate = FALSE)
+  indC<-which(names(d)%in%c('md5',metagenomes))
   d5.1<-d[,list(m5=unlist(str_split(md5,','))),by=.(usp,ufun,md5)]
   d5<-merge(d5.1,d[,..indC],by='md5')
-  cat(names(d5),"\n")
   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
-  indC<-which(names(dk5)%in%c('ko',mgm))
-  adk5<-aggregate(.~ko,as.data.frame(dk5[,..indC]),FUN=sum)
+  adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'usp', 'ufun', 'annotation')]),FUN=sum)
+}
+
+pathImage<-function(funtax, sp.li, mgm, pathwi) {
+  adk5<-get_ko_data(funtax, sp.li, mgm)
   rownames(adk5)<-adk5$ko
   adk5<-adk5[,-1]
   pathview(gene.data = adk5, pathway.id = pathwi,
@@ -129,27 +127,20 @@ pathImage<-function(funtax, sp.li, mgm, pathwi) {
            limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
 }
 
+filter_stats <- function(funtax, taxon, metagenomes, sd_cutoff) {
+  adk5 <- get_ko_data(funtax, taxon, metagenomes)
+  indM <- which(names(adk5)%in%c(metagenomes))
+  adk5 <- as.data.table(adk5)
+  dk6 <- data.frame(ID = adk5[,"ko"], Means=rowMeans(adk5[,..indM]), SD=rowSds(as.matrix(adk5[,..indM])))
+  dk7 <- adk5[which((dk6$Means!=0) & (dk6$SD>sd_cutoff)),]
+}
+
 getpathfromKO <- function(KO){
   temp <- kegg[K == KO]
   temp <- gsub('ko','',paste0(unlist(temp[,"ko"]), collapse = ","))
 }
-pathwayHeatmap<-function(funtax,sp.lis, mgms) {
-  cat("pathwayHeatmap\n")
-  cat(mgms, "\n")
-  cat(sp.lis, "\n")
-  d<-getSpecieFromAbundMD5_2(funtax,sp = sp.lis,aggregate = FALSE)
-  cat(names(d), "\n")
-  indC<-which(names(d)%in%c('md5',mgms))
-  d5.1<-d[,list(m5=unlist(str_split(md5,','))),by=.(usp,ufun,md5)]
-  d5<-merge(d5.1,d[,..indC],by='md5')
-  cat(names(d5),"\n")
-  dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
-  indC<-which(names(dk5)%in%c('ko',mgms))
-  adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'usp', 'ufun', 'annotation')]),FUN=sum)
-  indM <- which(names(adk5)%in%c(mgms))
-  adk5 <- as.data.table(adk5)
-  dk6 <- data.frame(ID = adk5[,"ko"], Means=rowMeans(adk5[,..indM]), SD=rowSds(as.matrix(adk5[,..indM])))
-  adk5 <- adk5[which((dk6$Means!=0) & (dk6$SD>ko_sd)),]
+pathwayHeatmap<-function(funtax,sp.lis, mgms, ko_sd) {
+  adk5 <- filter_stats(funtax, sp.lis, mgms, ko_sd)
   lastcol<- ncol(adk5)+1
   for (y in 1:nrow(adk5)){adk5[y,"pathwayID"] <- getpathfromKO(adk5[y,"ko"])}
   indC<-which(names(adk5)%in%c('ko', mgms))
@@ -169,21 +160,9 @@ getpathsfromKOs <- function(KOs){
   unlist(str_split(gsub('ko','',paste0(unlist(temp[,"ko"]), collapse = ",")), ','))
   
 }
+
 getPathwayList <- function(funtax, sp.li, mgm, ko_sd) {
-  cat(mgm, "\n")
-  cat(sp.li, "\n")
-  d<-getSpecieFromAbundMD5_2(funtax,sp = sp.li,aggregate = FALSE)
-  cat(names(d), "\n")
-  indC<-which(names(d)%in%c('md5',mgm))
-  d5.1<-d[,list(m5=unlist(str_split(md5,','))),by=.(usp,ufun,md5)]
-  d5<-merge(d5.1,d[,..indC],by='md5')
-  cat(names(d5),"\n")
-  dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
-  adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'usp', 'ufun', 'annotation')]),FUN=sum)
-  indM <- which(names(adk5)%in%c(mgm))
-  adk5 <- as.data.table(adk5)
-  dk6 <- data.frame(ID = adk5[,"ko"], Means=rowMeans(adk5[,..indM]), SD=rowSds(as.matrix(adk5[,..indM])))
-  dk7 <- adk5[which((dk6$Means!=0) & (dk6$SD>ko_sd)),]
+  dk7 <- filter_stats(funtax, sp.li, mgm, ko_sd)
   kos<- unique(dk7[,"ko"])
   getpathsfromKOs(unique(dk5[,"ko"]))
 }
@@ -366,10 +345,11 @@ server <- function(input, output) {
     tl1 <- tl1()
     tn  <- tn() 
     mgall <-mgall()
+    ko_sd <- ko_sd()
     keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
     names(funtax)[names(funtax) == tl1] <- 'usp'
-    obj<-pathwayHeatmap(funtax, tn, mgall)
+    obj<-pathwayHeatmap(funtax, tn, mgall, ko_sd)
     colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none", col = heatmapCols)
     mat3[is.na(mat3)] <- 0
