@@ -256,16 +256,16 @@ server <- function(input, output) {
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2,f2 = fl2)
       obj <- make2d(funtax)
       obj[is.na(obj)] <- 0
+      rowmean <- data.frame(Means=rowMeans(obj))
+      colmean <- data.frame(Means=colMeans(obj))
+      obj <- obj[which(rowmean$Means!=0),which(colmean$Means!=0)]
       if(dim(obj)[1]>1){
         res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
       res[is.na(res)] <- 0 
-      #cols <- colorRampPalette(brewer.pal(10, "RdBu"))(256)
-      d3heatmap(res) #colors = rev(cols)
-      #, Colv = FALSE, Rowv = FALSE
-      #have to make so that if row has NA/0 values for all coumns, then cut it off from the table used for heatmap
+      d3heatmap(res) 
     })
   output$dynamic1 <- renderUI({
     d3heatmapOutput("plot1", height = paste0(input$pix1, "px"))
@@ -284,6 +284,8 @@ server <- function(input, output) {
       obj <- as.matrix(funtax[,-c(1)])
       rownames(obj)<-funtax[,fl2]
       colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
+      dk6 <- data.frame(Means=rowMeans(obj))
+      obj <- obj[which(dk6$Means!=0),]
       if(dim(obj)[1]>1){
         res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
       }else{
@@ -291,7 +293,6 @@ server <- function(input, output) {
       }
       res[is.na(res)] <- 0
       d3heatmap(res) 
-      #have to make so that if row has NA/0 values for all coumns, then cut it off from the table used for heatmap
     })
   output$dynamic2 <- renderUI({
     d3heatmapOutput("plot2", height = paste0(input$pix2, "px"))
@@ -310,6 +311,8 @@ server <- function(input, output) {
       obj <- as.matrix(funtax[,-1])
       rownames(obj)<-funtax[,tl2]
       colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
+      dk6 <- data.frame(Means=rowMeans(obj))
+      obj <- obj[which(dk6$Means!=0),]
       if(dim(obj)[1]>1){
         res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
       }else{
@@ -317,7 +320,6 @@ server <- function(input, output) {
       }
       res[is.na(res)] <- 0
       d3heatmap(res) 
-      #have to make so that if row has NA/0 values for all coumns, then cut it off from the table used for heatmap
     })
   output$dynamic3 <- renderUI({
     d3heatmapOutput("plot3", height = paste0(input$pix3, "px"))
@@ -336,8 +338,6 @@ server <- function(input, output) {
       selectInput(inputId = "PathwayID", label = "Input Pathway ID", as.vector(getPathwayList(funtax, sp.li =  tn, mgm =  mgall, ko_sd = ko_sd)))
     })})
 
-  #sp.lis<- reactive({input$SpecieNames})
-  #sp.l<- reactive({input$SpecieN})
   pathw <- reactive({input$PathwayID})
 
   observeEvent(input$goButton, {
