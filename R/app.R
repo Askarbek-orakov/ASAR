@@ -17,7 +17,7 @@ library(KEGGREST)
 library(shinythemes)
 library(png)  # For writePNG function
 library(devtools)
-install_github("Alanocallaghan/d3heatmap") #It has color key/color bar
+#install_github("Alanocallaghan/d3heatmap") #It has color key/color bar
 library(d3heatmap)
 library(gplots)
 library(RColorBrewer)
@@ -117,9 +117,9 @@ pathImage<-function(funtax, sp.li, mgm, pathwi) {
   adk5<-aggregate(.~ko,as.data.frame(dk5[,..indC]),FUN=sum)
   rownames(adk5)<-adk5$ko
   adk5<-adk5[,-1]
-  pathview(gene.data = adk5, pathway.id = pathwi,
+  pathview(gene.data = log2(adk5+1), pathway.id = pathwi,
            species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
-           limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
+           limit = list(gene=range(as.vector(as.matrix(log2(adk5+1)))),cpd=1))
 }
 
 getpathfromKO <- function(KO){
@@ -192,7 +192,7 @@ getPathwayList <- function(funtax, sp.li, mgm) {
 ui <- fluidPage(
   titlePanel(maintitle),
   shinythemes::themeSelector(),
-  # navbarPage(theme = "simplex", ""),
+  navbarPage(theme = "simplex", "Metagenomic Analysis"),
   sidebarPanel(
     conditionalPanel(condition = "input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 || input.conditionedPanels==5",
                      selectInput(inputId = "mgall", label = metagenomeone, choices = metagenome1n, selected = metagenome1selected, selectize = TRUE, multiple = TRUE)

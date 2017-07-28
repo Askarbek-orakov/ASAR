@@ -48,7 +48,7 @@ Read.ko <- function(ids) {
     d1<-fread(c(sid, '.3.ko'))
     dd<-ddply(.data = d1[1:11],.(query.sequence.id,hit.m5nr.id..md5sum.,alignment.length.,e.value),.fun = extractOTU)
     seed.df<-rbind(seed.df,cbind(data.frame(mgrast.id=rep(sid,dim(dd)[1])),dd))
-    save(seed.df,file = 'SEED.RData')
+    save(seed.df,file = 'KO.RData')
   }
 }
 
