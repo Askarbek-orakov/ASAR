@@ -194,11 +194,31 @@ ui <- fluidPage(
       tabPanel("Pathway Abundance Heatmap", uiOutput("dynamic4"), value = 4),
       tabPanel("KEGG Pathway Map", imageOutput("Pathway",width = "100%", height = "400px"), value = 5),
       id = "conditionedPanels", 
+      tabPanel("Settings", selectInput(inputId = "set_taxlevel1" , label = set_taxone, choices = tax1n, selected = tax1selected),
+               selectInput(inputId = "set_taxlevel2", label = set_taxtwo, choices = tax2n, selected = tax2selected),
+               selectInput(inputId = "set_funlevel1", label = set_funcone, choices = func1n, selected = func1selected),
+               selectInput(inputId = "set_funlevel2", label = set_functwo, choices = func2n, selected = func2selected),
+               actionButton("save_changes", "Save Changes")),
       tabPanel("Metadata", dataTableOutput("table1"))
     ), width = 9)
 )
 
-server <- function(input, output) {
+server <- function(input, output, session) {
+  
+  #Settings
+  # themes, colorPalette,
+  set_taxlevel1 <-reactive({input$set_taxlevel1})
+  set_taxlevel2 <-reactive({input$set_taxlevel2})
+  set_funlevel1 <-reactive({input$set_funlevel1})
+  set_funlevel2 <-reactive({input$set_funlevel2})
+  # save_taxlevel1 <-set_taxlevel1()
+  # save_taxlevel2 <-set_taxlevel2()
+  # save_funlevel1 <-set_funlevel1()
+  # save_funlevel2 <-set_funlevel2()
+  # save(save_taxlevel1,save_taxlevel2,save_funlevel1,save_funlevel2, file = "Settings.Rdata")
+  # 
+  
+  
     mgall <-reactive({input$mgall})
     mg1   <-reactive({input$mg1})
     tl1   <-reactive({input$tl1})
@@ -351,5 +371,21 @@ server <- function(input, output) {
   }, deleteFile = FALSE)
   
   output$table1 <- renderDataTable(as.matrix(mdt))
+  
+  observeEvent(input$save_changes, {
+    tax1selected <-set_taxlevel1()
+    tax2selected <-set_taxlevel2()
+    func1selected <-set_funlevel1()
+    func2selected <-set_funlevel2()
+    save(tax1selected, tax2selected, func1selected, func2selected, file = "Settings.Rdata")
+  })
+  #session$onSessionEnded(function(){
+    #tax1selected <-set_taxlevel1()
+    #tax2selected <-set_taxlevel2()
+    #func1selected <-set_funlevel1()
+    #func2selected <-set_funlevel2()
+    #save(tax1selected, tax2selected, func1selected, func2selected, file = "Settings.Rdata")
+    #save(input$set_taxlevel1, input$set_taxlevel2, input$set_funlevel1, input$set_funlevel2, file = "Settings.Rdata")
+  #})
 }
 shinyApp(ui = ui, server = server)

@@ -54,4 +54,10 @@ specieone <- "Choose Specie"
 specie1n <- as.vector(unique(d.bm[,"usp"]))
 specie1sellected <- c(d.bm$usp[(nrow(d.bm)/2)])
 
+#Settings
+set_taxone <- "taxlevel 1"
+set_taxtwo <- "taxlevel 2"
+set_funcone <- "funlevel 1"
+set_functwo <- "funlevel 2"
 
+load("Settings.Rdata")
