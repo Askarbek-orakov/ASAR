@@ -25,6 +25,13 @@ load("pathview.Rdata")
 load("keggmappings.Rdata")
 source("global.R")
 
+mergeMetagenomes <- function(funtax, newName, prevNames){
+  indC<-which(names(funtax)%in%c(prevNames))
+  funtax$y <- rowSums(funtax[,..indC])
+  names(funtax)[names(funtax) == 'y'] <- newName
+  return(funtax)
+}
+
 Intfuntax <- function(funtax, t1, tn, f1, fn, t2=NULL, f2=NULL){
   result2 <- funtax[grep(tn, funtax[,get(t1)])]
   result2 <- result2[grep(fn, result2[,get(f1)])]
@@ -101,20 +108,18 @@ returnAppropriateObj<-function(obj, norm, log){
   }
   return(res)
 }
-pathImage<-function(funtax, sp.li, mgm, pathwi) {
-  cat("pathImage\n")
-  cat(mgm, "\n")
-  cat(sp.li, "\n")
-  cat(pathwi, "\n")
-  d<-getSpecieFromAbundMD5_2(funtax,sp = sp.li,aggregate = FALSE)
-  cat(names(d), "\n")
-  indC<-which(names(d)%in%c('md5',mgm))
+
+get_ko_data <- function(funtax, taxon, metagenomes) {
+  d<-getSpecieFromAbundMD5_2(funtax,sp = taxon,aggregate = FALSE)
+  indC<-which(names(d)%in%c('md5',metagenomes))
   d5.1<-d[,list(m5=unlist(str_split(md5,','))),by=.(usp,ufun,md5)]
   d5<-merge(d5.1,d[,..indC],by='md5')
-  cat(names(d5),"\n")
   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
-  indC<-which(names(dk5)%in%c('ko',mgm))
-  adk5<-aggregate(.~ko,as.data.frame(dk5[,..indC]),FUN=sum)
+  adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'usp', 'ufun', 'annotation')]),FUN=sum)
+}
+
+pathImage<-function(funtax, sp.li, mgm, pathwi) {
+  adk5<-get_ko_data(funtax, sp.li, mgm)
   rownames(adk5)<-adk5$ko
   adk5<-adk5[,-1]
   pathview(gene.data = log2(adk5+1), pathway.id = pathwi,
@@ -122,27 +127,22 @@ pathImage<-function(funtax, sp.li, mgm, pathwi) {
            limit = list(gene=range(as.vector(as.matrix(log2(adk5+1)))),cpd=1))
 }
 
+filter_stats <- function(funtax, taxon, metagenomes, sd_cutoff) {
+  adk5 <- get_ko_data(funtax, taxon, metagenomes)
+  indM <- which(names(adk5)%in%c(metagenomes))
+  adk5 <- as.data.table(adk5)
+  dk6 <- data.frame(ID = adk5[,"ko"], Means=rowMeans(adk5[,..indM]), SD=rowSds(as.matrix(adk5[,..indM])))
+  dk7 <- adk5[which((dk6$Means!=0) & (dk6$SD>sd_cutoff)),]
+}
+
 getpathfromKO <- function(KO){
   temp <- kegg[K == KO]
   temp <- gsub('ko','',paste0(unlist(temp[,"ko"]), collapse = ","))
 }
-pathwayHeatmap<-function(funtax,sp.lis, mgms) {
-  cat("pathwayHeatmap\n")
-  cat(mgms, "\n")
-  cat(sp.lis, "\n")
-  d<-getSpecieFromAbundMD5_2(funtax,sp = sp.lis,aggregate = FALSE)
-  cat(names(d), "\n")
-  indC<-which(names(d)%in%c('md5',mgms))
-  d5.1<-d[,list(m5=unlist(str_split(md5,','))),by=.(usp,ufun,md5)]
-  d5<-merge(d5.1,d[,..indC],by='md5')
-  cat(names(d5),"\n")
-  dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
-  indC<-which(names(dk5)%in%c('ko',mgms))
-  adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'usp', 'ufun', 'annotation')]),FUN=sum)
+pathwayHeatmap<-function(funtax,sp.lis, mgms, ko_sd) {
+  adk5 <- filter_stats(funtax, sp.lis, mgms, ko_sd)
   lastcol<- ncol(adk5)+1
-  for (y in 1:nrow(adk5)){adk5[y,lastcol] <- getpathfromKO(adk5[y,"ko"])}
-  colnames(adk5)[lastcol] <- "pathwayID"
-  #for (y in 1:nrow(adk5)){adk5[y] <- mutate(adk5, pathwayID = paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", adk5[y,"ko"]), ncol=2, byrow=TRUE)[,2])), collapse = ","))}
+  for (y in 1:nrow(adk5)){adk5[y,"pathwayID"] <- getpathfromKO(adk5[y,"ko"])}
   indC<-which(names(adk5)%in%c('ko', mgms))
   adk5 <- as.data.table(adk5)
   adk6<-adk5[,list(pat=unlist(str_split(pathwayID,','))),by=.(ko)]
@@ -160,33 +160,11 @@ getpathsfromKOs <- function(KOs){
   unlist(str_split(gsub('ko','',paste0(unlist(temp[,"ko"]), collapse = ",")), ','))
   
 }
-getPathwayList <- function(funtax, sp.li, mgm) {
-  cat(mgm, "\n")
-  cat(sp.li, "\n")
-  d<-getSpecieFromAbundMD5_2(funtax,sp = sp.li,aggregate = FALSE)
-  cat(names(d), "\n")
-  indC<-which(names(d)%in%c('md5',mgm))
-  d5.1<-d[,list(m5=unlist(str_split(md5,','))),by=.(usp,ufun,md5)]
-  d5<-merge(d5.1,d[,..indC],by='md5')
-  cat(names(d5),"\n")
-  dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
-  kos<- unique(dk5[,"ko"])
-  #getpathsfromKOs(unique(dk5[,"ko"]))
-  #Since, if num of KOs are more than 500, (function kegglink)it shows error 403. That is why we are doing following:
-  if(nrow(kos)>300){
-    unikos <- NULL
-    kossep <- NULL
-    i <- ceiling(nrow(kos)/300)
-    for (x in 1:i){
-      kossep[[x]]<-kos[((x-1)*300+1):(x*300)]
-      unikos[[x]]<-unique(unlist(str_split(paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", kossep[[x]]$ko), ncol=2, byrow=TRUE)[,2]))),',')))
-    }
-    unikos<-as.character(unique(unlist(unikos)))
-  }else{
-    eloop <- NULL
-    eloop<-paste(as.character(gsub('^path:ko','',matrix(keggLink("pathway", kos$ko), ncol=2, byrow=TRUE)[,2])))
-    unikos <-unique(unlist(str_split(eloop,',')))
-  }
+
+getPathwayList <- function(funtax, sp.li, mgm, ko_sd) {
+  dk7 <- filter_stats(funtax, sp.li, mgm, ko_sd)
+  kos<- unique(dk7[,"ko"])
+  getpathsfromKOs(unique(dk5[,"ko"]))
 }
 
 ui <- fluidPage(
@@ -218,10 +196,14 @@ ui <- fluidPage(
     conditionalPanel(condition = "input.conditionedPanels==4",
                      actionButton("goButton", "GO"),
                      sliderInput("pix4", "height", value = 400, min = 100, max = 1000)
-    ),
+                     ),
     conditionalPanel(condition = "input.conditionedPanels==5",
                      actionButton("path", "GO"),
-                     uiOutput("PathwayID")),
+                     uiOutput("PathwayID")
+                     ),
+    conditionalPanel(condition = "input.conditionedPanels==5 || input.conditionedPanels==4",
+                     sliderInput("ko_sd", "SD cutoff for KO terms", value = 2, min = 0, max = 20)
+                     ),
     # downloadButton('downloadData', 'Download'),
     width = 3),
   
@@ -247,6 +229,7 @@ server <- function(input, output) {
     fl2   <-reactive({input$fl2})
     tn    <-reactive({input$tn})
     fn    <-reactive({input$fn})
+    ko_sd <-reactive({input$ko_sd})
     
     # output$downloadData <- downloadHandler(
     #   filename = "pv.out", content = pv.out , contentType = 'image/png'
@@ -273,16 +256,16 @@ server <- function(input, output) {
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2,f2 = fl2)
       obj <- make2d(funtax)
       obj[is.na(obj)] <- 0
+      rowmean <- data.frame(Means=rowMeans(obj))
+      colmean <- data.frame(Means=colMeans(obj))
+      obj <- obj[which(rowmean$Means!=0),which(colmean$Means!=0)]
       if(dim(obj)[1]>1){
         res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
       res[is.na(res)] <- 0 
-      #cols <- colorRampPalette(brewer.pal(10, "RdBu"))(256)
-      d3heatmap(res) #colors = rev(cols)
-      #, Colv = FALSE, Rowv = FALSE
-      #have to make so that if row has NA/0 values for all coumns, then cut it off from the table used for heatmap
+      d3heatmap(res) 
     })
   output$dynamic1 <- renderUI({
     d3heatmapOutput("plot1", height = paste0(input$pix1, "px"))
@@ -301,6 +284,8 @@ server <- function(input, output) {
       obj <- as.matrix(funtax[,-c(1)])
       rownames(obj)<-funtax[,fl2]
       colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
+      dk6 <- data.frame(Means=rowMeans(obj))
+      obj <- obj[which(dk6$Means!=0),]
       if(dim(obj)[1]>1){
         res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
       }else{
@@ -308,7 +293,6 @@ server <- function(input, output) {
       }
       res[is.na(res)] <- 0
       d3heatmap(res) 
-      #have to make so that if row has NA/0 values for all coumns, then cut it off from the table used for heatmap
     })
   output$dynamic2 <- renderUI({
     d3heatmapOutput("plot2", height = paste0(input$pix2, "px"))
@@ -327,6 +311,8 @@ server <- function(input, output) {
       obj <- as.matrix(funtax[,-1])
       rownames(obj)<-funtax[,tl2]
       colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
+      dk6 <- data.frame(Means=rowMeans(obj))
+      obj <- obj[which(dk6$Means!=0),]
       if(dim(obj)[1]>1){
         res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
       }else{
@@ -334,7 +320,6 @@ server <- function(input, output) {
       }
       res[is.na(res)] <- 0
       d3heatmap(res) 
-      #have to make so that if row has NA/0 values for all coumns, then cut it off from the table used for heatmap
     })
   output$dynamic3 <- renderUI({
     d3heatmapOutput("plot3", height = paste0(input$pix3, "px"))
@@ -345,15 +330,14 @@ server <- function(input, output) {
       tn <- tn()
       tl1 <- tl1()
       mgall <- mgall()
+      ko_sd <- ko_sd()
       keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
       funtax <- funtaxall[,..keepcols]
       names(funtax)[names(funtax) == tl1] <- 'usp'
       # colnames(funtax) <- c("usp","md5","ufun", mgall)
-      selectInput(inputId = "PathwayID", label = "Input Pathway ID", as.vector(getPathwayList(funtax, sp.li =  tn, mgm =  mgall)))
+      selectInput(inputId = "PathwayID", label = "Input Pathway ID", as.vector(getPathwayList(funtax, sp.li =  tn, mgm =  mgall, ko_sd = ko_sd)))
     })})
 
-  #sp.lis<- reactive({input$SpecieNames})
-  #sp.l<- reactive({input$SpecieN})
   pathw <- reactive({input$PathwayID})
 
   observeEvent(input$goButton, {
@@ -361,10 +345,11 @@ server <- function(input, output) {
     tl1 <- tl1()
     tn  <- tn() 
     mgall <-mgall()
+    ko_sd <- ko_sd()
     keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
     names(funtax)[names(funtax) == tl1] <- 'usp'
-    obj<-pathwayHeatmap(funtax, tn, mgall)
+    obj<-pathwayHeatmap(funtax, tn, mgall, ko_sd)
     colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none", col = heatmapCols)
     mat3[is.na(mat3)] <- 0
