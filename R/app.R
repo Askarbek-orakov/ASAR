@@ -144,8 +144,6 @@ getPathwayList <- function(funtax, sp.li, mgm, ko_sd) {
 
 ui <- fluidPage(
   titlePanel(maintitle),
-  shinythemes::themeSelector(),
-  # navbarPage(theme = "simplex", ""),
   sidebarPanel(
     conditionalPanel(condition = "input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 || input.conditionedPanels==5",
                      selectInput(inputId = "mgall", label = metagenomeone, choices = metagenome1n, selected = metagenome1selected, selectize = TRUE, multiple = TRUE)
