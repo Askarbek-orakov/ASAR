@@ -54,8 +54,6 @@ specieone <- "Choose Specie"
 specie1n <- as.vector(unique(d.bm[,"usp"]))
 specie1sellected <- c(d.bm$usp[(nrow(d.bm)/2)])
 
-#Color Palette for Heatmaps
-currentPalette <- "Blues"
 #Settings
 set_taxone <- "taxlevel 1"
 set_taxtwo <- "taxlevel 2"

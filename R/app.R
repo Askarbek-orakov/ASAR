@@ -196,8 +196,6 @@ ui <- fluidPage(
                selectInput(inputId = "set_taxlevel2", label = set_taxtwo, choices = tax2n, selected = tax2selected),
                selectInput(inputId = "set_funlevel1", label = set_funcone, choices = func1n, selected = func1selected),
                selectInput(inputId = "set_funlevel2", label = set_functwo, choices = func2n, selected = func2selected),
-               selectInput(inputId = "colorPalette", label = "Choose color palette for heatmaps", choices = rownames(brewer.pal.info[which(brewer.pal.info$category=="seq"),]), selected = currentPalette),
-               plotOutput("paletteOutput"), 
                actionButton("save_changes", "Save Changes")),
       tabPanel("Metadata", dataTableOutput("table1"))
     ), width = 9)
@@ -211,12 +209,13 @@ server <- function(input, output, session) {
   set_taxlevel2 <-reactive({input$set_taxlevel2})
   set_funlevel1 <-reactive({input$set_funlevel1})
   set_funlevel2 <-reactive({input$set_funlevel2})
-  colorPalette <-reactive({input$colorPalette})
-  colPal <- reactive({brewer.pal(9, input$colorPalette)})
+  # save_taxlevel1 <-set_taxlevel1()
+  # save_taxlevel2 <-set_taxlevel2()
+  # save_funlevel1 <-set_funlevel1()
+  # save_funlevel2 <-set_funlevel2()
+  # save(save_taxlevel1,save_taxlevel2,save_funlevel1,save_funlevel2, file = "Settings.Rdata")
+  # 
   
-  output$paletteOutput <- renderPlot({
-    display.brewer.all(type = "seq")
-  })
   
     mgall <-reactive({input$mgall})
     mg1   <-reactive({input$mg1})
@@ -247,7 +246,6 @@ server <- function(input, output, session) {
       fl2 <- fl2()
       fn  <- fn()
       mg1 <- mg1()
-      colPal <- colPal() 
       keepcols<-which(names(funtaxall)%in%c(tl1, tl2, fl1, fl2, mg1))
       funtax <- funtaxall[,..keepcols]
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2,f2 = fl2)
@@ -257,12 +255,12 @@ server <- function(input, output, session) {
       colmean <- data.frame(Means=colMeans(obj))
       obj <- obj[which(rowmean$Means!=0),which(colmean$Means!=0)]
       if(dim(obj)[1]>1){
-        res<-plotHeatmap(obj,30,trace = "none",norm=FALSE)
+        res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
       res[is.na(res)] <- 0 
-      d3heatmap(res, scalecolors = colPal) 
+      d3heatmap(res) 
     })
   output$dynamic1 <- renderUI({
     d3heatmapOutput("plot1", height = paste0(input$pix1, "px"))
@@ -275,7 +273,6 @@ server <- function(input, output, session) {
       fl2 <- fl2()
       fn  <- fn()
       mg2 <- mgall()
-      colPal <- colPal()
       keepcols<-which(names(funtaxall)%in%c(tl1, fl1, fl2, mg2))
       funtax <- funtaxall[,..keepcols]
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,f2 = fl2)
@@ -285,12 +282,12 @@ server <- function(input, output, session) {
       dk6 <- data.frame(Means=rowMeans(obj))
       obj <- obj[which(dk6$Means!=0),]
       if(dim(obj)[1]>1){
-        res<-plotHeatmap(obj,30,trace = "none",norm=FALSE)
+        res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
       res[is.na(res)] <- 0
-      d3heatmap(res, scalecolors = colPal) 
+      d3heatmap(res) 
     })
   output$dynamic2 <- renderUI({
     d3heatmapOutput("plot2", height = paste0(input$pix2, "px"))
@@ -303,7 +300,6 @@ server <- function(input, output, session) {
       fl1 <- fl1()
       fn  <- fn()
       mg3 <- mgall()
-      colPal <- colPal()
       keepcols<-which(names(funtaxall)%in%c(tl1, tl2, fl1, mg3))
       funtax <- funtaxall[,..keepcols]
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2)
@@ -313,12 +309,12 @@ server <- function(input, output, session) {
       dk6 <- data.frame(Means=rowMeans(obj))
       obj <- obj[which(dk6$Means!=0),]
       if(dim(obj)[1]>1){
-        res<-plotHeatmap(obj,30,trace = "none",norm=FALSE)
+        res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
       res[is.na(res)] <- 0
-      d3heatmap(res, scalecolors = colPal) 
+      d3heatmap(res) 
     })
   output$dynamic3 <- renderUI({
     d3heatmapOutput("plot3", height = paste0(input$pix3, "px"))
@@ -344,15 +340,14 @@ server <- function(input, output, session) {
     tn  <- tn() 
     mgall <-mgall()
     ko_sd <- ko_sd()
-    colPal <- colPal()
     keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
     names(funtax)[names(funtax) == tl1] <- 'usp'
     obj<-pathwayHeatmap(funtax, tn, mgall, ko_sd)
     colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
-    mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none")
+    mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none", col = heatmapCols)
     mat3[is.na(mat3)] <- 0
-    d3heatmap(mat3, scalecolors = colPal)
+    d3heatmap(mat3)
   })})
   output$dynamic4 <- renderUI({
     d3heatmapOutput("plot4", height = paste0(input$pix4, "px"))
@@ -380,8 +375,15 @@ server <- function(input, output, session) {
     tax2selected <-set_taxlevel2()
     func1selected <-set_funlevel1()
     func2selected <-set_funlevel2()
-    currentPalette <- colorPalette()
-    save(tax1selected, tax2selected, func1selected, func2selected, currentPalette, file = "Settings.Rdata")
+    save(tax1selected, tax2selected, func1selected, func2selected, file = "Settings.Rdata")
   })
+  #session$onSessionEnded(function(){
+    #tax1selected <-set_taxlevel1()
+    #tax2selected <-set_taxlevel2()
+    #func1selected <-set_funlevel1()
+    #func2selected <-set_funlevel2()
+    #save(tax1selected, tax2selected, func1selected, func2selected, file = "Settings.Rdata")
+    #save(input$set_taxlevel1, input$set_taxlevel2, input$set_funlevel1, input$set_funlevel2, file = "Settings.Rdata")
+  #})
 }
 shinyApp(ui = ui, server = server)
