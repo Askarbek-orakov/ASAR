@@ -21,8 +21,9 @@ install_github("Alanocallaghan/d3heatmap") #It has color key/color bar
 library(d3heatmap)
 library(gplots)
 library(RColorBrewer)
+options(shiny.maxRequestSize=10*1024^3)
 load("pathview.Rdata")
-load("keggmappings.Rdata")
+#load("keggmappings.Rdata")
 source("global.R")
 
 mergeMetagenomes <- function(funtax, newName, prevNames){
@@ -31,7 +32,6 @@ mergeMetagenomes <- function(funtax, newName, prevNames){
   names(funtax)[names(funtax) == 'y'] <- newName
   return(funtax)
 }
-
 Intfuntax <- function(funtax, t1, tn, f1, fn, t2=NULL, f2=NULL){
   result2 <- funtax[grep(tn, funtax[,get(t1)])]
   result2 <- result2[grep(fn, result2[,get(f1)])]
@@ -54,12 +54,6 @@ make2d <- function(funtax){
     obj[as.character(funtax[x,2]), as.character(funtax[x,1])]<- funtax[x,3]
   }
   return(obj)
-}
-getSpecieFromAbund<-function(d.bm,sp = sp, tx=tx, fun=fun, fN=fN, aggregate=FALSE){
-  es<-d.bm[grep(sp,d.bm[,get(tx)])]
-  d.res <- es[grep(fN,d.bm[,get(fun)])]
-  if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-1],FUN = sum)
-  return(d.res)
 }
 getSpecieFromAbundMD5<-function(taxall, tx=tx, sp = SpName, aggregate=FALSE){
   drops <- c("domain","phylum", "class", "order", "family", "genus", "species" ,"usp" )
@@ -85,18 +79,6 @@ plotHeatmap<-function(obj,n,norm=TRUE,log=TRUE,fun=sd,...){
   otuIndices = otusToKeep[order(otuStats, decreasing = TRUE)[1:min(c(n,dim(mat)[1]))]]
   mat2 = mat[otuIndices, ]
 }
-plotSP<-function(d3,sp,tx,tx2,fN, fun){
-  d<-getSpecieFromAbund(d3,sp = sp, tx = tx, fN=fN, fun=fun, aggregate = FALSE)
-  d.sp<- ddply(d, tx2, numcolwise(sum))
-  obj<-as.matrix(d.sp[,-1])
-  rownames(obj)<-d.sp[,tx2]
-  if(dim(obj)[1]>1){
-    res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
-  }else{
-    res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
-  }
-  return(res)
-}
 returnAppropriateObj<-function(obj, norm, log){
   if(class(obj)!='matrix') stop('Obj should be a matrix')
   res<-obj
@@ -108,7 +90,6 @@ returnAppropriateObj<-function(obj, norm, log){
   }
   return(res)
 }
-
 get_ko_data <- function(funtax, taxon, metagenomes) {
   d<-getSpecieFromAbundMD5_2(funtax,sp = taxon,aggregate = FALSE)
   indC<-which(names(d)%in%c('md5',metagenomes))
@@ -117,7 +98,6 @@ get_ko_data <- function(funtax, taxon, metagenomes) {
   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
   adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'usp', 'ufun', 'annotation')]),FUN=sum)
 }
-
 pathImage<-function(funtax, sp.li, mgm, pathwi) {
   adk5<-get_ko_data(funtax, sp.li, mgm)
   rownames(adk5)<-adk5$ko
@@ -126,7 +106,6 @@ pathImage<-function(funtax, sp.li, mgm, pathwi) {
            species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
            limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
 }
-
 filter_stats <- function(funtax, taxon, metagenomes, sd_cutoff) {
   adk5 <- get_ko_data(funtax, taxon, metagenomes)
   indM <- which(names(adk5)%in%c(metagenomes))
@@ -134,7 +113,6 @@ filter_stats <- function(funtax, taxon, metagenomes, sd_cutoff) {
   dk6 <- data.frame(ID = adk5[,"ko"], Means=rowMeans(adk5[,..indM]), SD=rowSds(as.matrix(adk5[,..indM])))
   dk7 <- adk5[which((dk6$Means!=0) & (dk6$SD>sd_cutoff)),]
 }
-
 getpathfromKO <- function(KO){
   temp <- kegg[K == KO]
   temp <- gsub('ko','',paste0(unlist(temp[,"ko"]), collapse = ","))
@@ -153,14 +131,11 @@ pathwayHeatmap<-function(funtax,sp.lis, mgms, ko_sd) {
   rownames(a8) <- a7$pat
   return(a8)
 }
-
 getpathsfromKOs <- function(KOs){
   setkey(kegg, K)
   temp <- kegg[KOs]
   unlist(str_split(gsub('ko','',paste0(unlist(temp[,"ko"]), collapse = ",")), ','))
-  
 }
-
 getPathwayList <- function(funtax, sp.li, mgm, ko_sd) {
   dk7 <- filter_stats(funtax, sp.li, mgm, ko_sd)
   kos<- unique(dk7[,"ko"])
@@ -204,11 +179,15 @@ ui <- fluidPage(
     conditionalPanel(condition = "input.conditionedPanels==5 || input.conditionedPanels==4",
                      sliderInput("ko_sd", "SD cutoff for KO terms", value = 2, min = 0, max = 20)
                      ),
+    conditionalPanel(condition = "input.conditionedPanels==6",
+                     fileInput('Rdata', 'Upload previously saved Rdata file.')
+    ),
     # downloadButton('downloadData', 'Download'),
     width = 3),
   
   mainPanel(
     tabsetPanel(
+      tabPanel("Upload R Data file", value = 6),
       tabPanel("F&T", uiOutput("dynamic1"), value = 1), 
       tabPanel("F&M", uiOutput("dynamic2"), value = 2),
       tabPanel("T&M", uiOutput("dynamic3"), value = 3),
@@ -220,7 +199,6 @@ ui <- fluidPage(
 )
 
 server <- function(input, output) {
-  
     mgall <-reactive({input$mgall})
     mg1   <-reactive({input$mg1})
     tl1   <-reactive({input$tl1})
@@ -238,7 +216,6 @@ server <- function(input, output) {
     output$taxNames <- renderUI({x <- input$tl1
     selectInput(inputId = "tn", label = taxthree, choices = as.vector(unique(funtaxall[,get(x)])), selected = as.character(funtaxall$genus[(nrow(funtaxall)/2)])) 
     })
-    
     output$funNames <- renderUI({y <- input$fl1
     selectInput(inputId = "fn", label = functhree, choices = as.vector(unique(funtaxall[,get(y)])), selected = as.character(funtaxall$FUN4[(nrow(funtaxall)/2)]))
     })
@@ -334,7 +311,6 @@ server <- function(input, output) {
       keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
       funtax <- funtaxall[,..keepcols]
       names(funtax)[names(funtax) == tl1] <- 'usp'
-      # colnames(funtax) <- c("usp","md5","ufun", mgall)
       selectInput(inputId = "PathwayID", label = "Input Pathway ID", as.vector(getPathwayList(funtax, sp.li =  tn, mgm =  mgall, ko_sd = ko_sd)))
     })})
 
@@ -367,13 +343,10 @@ server <- function(input, output) {
     keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
     names(funtax)[names(funtax) == tl1] <- 'usp'
-    # colnames(funtax) <- c("usp","md5","ufun", mgall)
     pathImage(funtax, sp.li, mgall, pathwi)
     cat(paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"))
     list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
          contentType = 'png',
-         # width = "100%", 
-         # height = "400px",
          alt = "Press GO to select Pathway!")
   }, deleteFile = FALSE)
   
