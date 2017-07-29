@@ -22,7 +22,7 @@ maintitle <- ""
 load("mdt.Rdata")
 metagenomeone <-"Choose metagenome samples"
 #metagenome1n <- c(colnames(d.bm[,-c(1:3)]))
-metagenome1n <- "MGN"
+metagenome1n <- setNames(c(colnames(d.bm[,-c(1:3)])), mdt$MGN)
 metagenome1selected <- c(colnames(d.bm[,5]), colnames(d.bm[,6]))
 
 metagenometwo <- "Choose one metagenome sample"

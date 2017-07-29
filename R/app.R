@@ -323,11 +323,7 @@ server <- function(input, output, session) {
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
       res[is.na(res)] <- 0 
-<<<<<<< HEAD
-      d3heatmap(res, scalecolors = colPal) 
-=======
-      d3heatmap(res, xaxis_height = 180, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", colors = brewer.pal(9,"Blues"))
->>>>>>> cc71a2b... Heatmap to PNG/PDF and label size
+      d3heatmap(res, xaxis_height = 180, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
     })
   output$dynamic1 <- renderUI({
     d3heatmapOutput("plot1", height = paste0(input$pix1, "px"))
@@ -356,11 +352,7 @@ server <- function(input, output, session) {
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
       res[is.na(res)] <- 0
-<<<<<<< HEAD
-      d3heatmap(res, scalecolors = colPal) 
-=======
-      d3heatmap(res,  xaxis_height = 180, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px")
->>>>>>> cc71a2b... Heatmap to PNG/PDF and label size
+      d3heatmap(res,  xaxis_height = 180, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
     })
   output$dynamic2 <- renderUI({
     d3heatmapOutput("plot2", height = paste0(input$pix2, "px"))
@@ -388,11 +380,7 @@ server <- function(input, output, session) {
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
       res[is.na(res)] <- 0
-<<<<<<< HEAD
-      d3heatmap(res, scalecolors = colPal) 
-=======
-      d3heatmap(res, xaxis_height = 180, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px") 
->>>>>>> cc71a2b... Heatmap to PNG/PDF and label size
+      d3heatmap(res, xaxis_height = 180, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal) 
     })
   output$dynamic3 <- renderUI({
     d3heatmapOutput("plot3", height = paste0(input$pix3, "px"))
@@ -426,11 +414,7 @@ server <- function(input, output, session) {
     colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none")
     mat3[is.na(mat3)] <- 0
-<<<<<<< HEAD
-    d3heatmap(mat3, scalecolors = colPal)
-=======
-    d3heatmap(mat3, xaxis_height = 180, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px")
->>>>>>> cc71a2b... Heatmap to PNG/PDF and label size
+    d3heatmap(mat3, xaxis_height = 180, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
   })})
   output$dynamic4 <- renderUI({
     d3heatmapOutput("plot4", height = paste0(input$pix4, "px"))
