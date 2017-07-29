@@ -22,10 +22,14 @@ library(d3heatmap)
 library(gplots)
 library(RColorBrewer)
 options(shiny.maxRequestSize=10*1024^3)
-load("pathview.Rdata")
+#load("pathview.Rdata")
 #load("keggmappings.Rdata")
+loadRdata <- function(fname){
+  cat(names(fname),'\n')
+  load(file = fname)
+}
+loadRdata("pathview.Rdata")
 source("global.R")
-
 mergeMetagenomes <- function(funtax, newName, prevNames){
   indC<-which(names(funtax)%in%c(prevNames))
   funtax$y <- rowSums(funtax[,..indC])
@@ -147,11 +151,12 @@ getPathwayList <- function(funtax, sp.li, mgm, ko_sd) {
   getpathsfromKOs(unique(dk5[,"ko"]))
 }
 
+
 ui <- fluidPage(
   titlePanel(maintitle),
   sidebarPanel(
     conditionalPanel(condition = "input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 || input.conditionedPanels==5",
-                     selectInput(inputId = "mgall", label = metagenomeone, choices = metagenome1n, selected = metagenome1selected, selectize = TRUE, multiple = TRUE)
+                     selectInput(inputId = "mgall", label = metagenomeone, choices = setNames(c(colnames(d.bm[,-c(1:3)])), mdt$get(metagenome1n)), selected = metagenome1selected, selectize = TRUE, multiple = TRUE)
     ),#setNames(rownames(mdt), mdt[,"MGN"])
     conditionalPanel(condition = "input.conditionedPanels==1",
                      selectInput(inputId = "mg1", label = metagenometwo, choices = metagenome2n, selected = metagenome2selected, selectize = FALSE)),
@@ -183,27 +188,28 @@ ui <- fluidPage(
                      sliderInput("ko_sd", "SD cutoff for KO terms", value = 2, min = 0, max = 20)
                      ),
     conditionalPanel(condition = "input.conditionedPanels==6",
-                     fileInput('Rdata', 'Upload previously saved Rdata file.')
+                     fileInput('Infile', 'Upload previously saved Rdata file.'),
+                     actionButton("loadRdata","Load Rdata")
     ),
     # downloadButton('downloadData', 'Download'),
     width = 3),
   
   mainPanel(
     tabsetPanel(
-      tabPanel("Upload R Data file", value = 6),
       tabPanel("F&T", uiOutput("dynamic1"), value = 1), 
       tabPanel("F&M", uiOutput("dynamic2"), value = 2),
       tabPanel("T&M", uiOutput("dynamic3"), value = 3),
       tabPanel("Pathway Abundance Heatmap", uiOutput("dynamic4"), value = 4),
       tabPanel("KEGG Pathway Map", imageOutput("Pathway",width = "100%", height = "400px"), value = 5),
       id = "conditionedPanels", 
-      tabPanel("Settings", selectInput(inputId = "set_taxlevel1" , label = set_taxone, choices = tax1n, selected = tax1selected),
+      tabPanel("Settings & Upload", selectInput(inputId = "set_taxlevel1" , label = set_taxone, choices = tax1n, selected = tax1selected),
                selectInput(inputId = "set_taxlevel2", label = set_taxtwo, choices = tax2n, selected = tax2selected),
                selectInput(inputId = "set_funlevel1", label = set_funcone, choices = func1n, selected = func1selected),
                selectInput(inputId = "set_funlevel2", label = set_functwo, choices = func2n, selected = func2selected),
                selectInput(inputId = "colorPalette", label = "Choose color palette for heatmaps", choices = rownames(brewer.pal.info[which(brewer.pal.info$category=="seq"),]), selected = currentPalette),
                plotOutput("paletteOutput"), 
-               actionButton("save_changes", "Save Changes")),
+               actionButton("save_changes", "Save Changes"),
+               value = 6),
       tabPanel("Metadata", dataTableOutput("table1"))
     ), width = 9)
 )
@@ -211,7 +217,7 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   
   #Settings
-  # themes, colorPalette,
+  # themes,
   set_taxlevel1 <-reactive({input$set_taxlevel1})
   set_taxlevel2 <-reactive({input$set_taxlevel2})
   set_funlevel1 <-reactive({input$set_funlevel1})
@@ -219,6 +225,10 @@ server <- function(input, output, session) {
   colorPalette <-reactive({input$colorPalette})
   colPal <- reactive({brewer.pal(9, input$colorPalette)})
   
+  observeEvent(input$loadRdata, {
+    inFile <- input$InFile
+    loadRdata(inFile)
+  })
   output$paletteOutput <- renderPlot({
     display.brewer.all(type = "seq")
   })
