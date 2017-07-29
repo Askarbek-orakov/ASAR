@@ -39,7 +39,7 @@ Intfuntax <- function(result2, t1, tn, f1, fn, t2=NULL, f2=NULL){
   if(f1!="toplevel"){
     result2 <- result2[grep(fn, result2[,get(f1)])]
   }
-  if(!is.null(t2)&!is.null(f2)){
+  if(!is.null(t2) & !is.null(f2)){
     result2<- ddply(result2, c(t2,f2), numcolwise(sum))
   }else{
     if(!is.null(t2)){
@@ -48,7 +48,8 @@ Intfuntax <- function(result2, t1, tn, f1, fn, t2=NULL, f2=NULL){
     if(!is.null(f2)){
       result2<- ddply(result2, f2, numcolwise(sum))
     }}
-  return(result2)
+  
+  return(result2[which(!is.na(result2[,1])& !is.na(result2[,2])),])
 }
 make2d <- function(funtax){
   obj <- matrix(nrow = length(unique(funtax[,2])), ncol = length(unique(funtax[,1])))
