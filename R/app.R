@@ -183,6 +183,11 @@ ui <- fluidPage(
                      actionButton("path", "GO"),
                      uiOutput("PathwayID")
                      ),
+    conditionalPanel(condition = "input.conditionedPanels==1 ||input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4",
+                     textInput("filename","Enter file name"),
+                     radioButtons(inputId = "var3", label = "Select the file type", choices = list("png", "pdf")),
+                     downloadButton(outputId = "down", label = "Download the heatmap")
+                     ),
     conditionalPanel(condition = "input.conditionedPanels==5 || input.conditionedPanels==4",
                      sliderInput("ko_sd", "SD cutoff for KO terms", value = 2, min = 0, max = 20)
                      ),
@@ -241,9 +246,50 @@ server <- function(input, output, session) {
     fn    <-reactive({input$fn})
     ko_sd <-reactive({input$ko_sd})
     
-    # output$downloadData <- downloadHandler(
-    #   filename = "pv.out", content = pv.out , contentType = 'image/png'
-    # )
+    plotInput <- function(){
+      tl1 <- tl1()
+      tl2 <- tl2()
+      tn  <- tn()
+      fl1 <- fl1()
+      fl2 <- fl2()
+      fn  <- fn()
+      mg1 <- mg1()
+      keepcols<-which(names(funtaxall)%in%c(tl1, tl2, fl1, fl2, mg1))
+      funtax <- funtaxall[,..keepcols]
+      funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2,f2 = fl2)
+      obj <- make2d(funtax)
+      obj[is.na(obj)] <- 0
+      rowmean <- data.frame(Means=rowMeans(obj))
+      colmean <- data.frame(Means=colMeans(obj))
+      obj <- obj[which(rowmean$Means!=0),which(colmean$Means!=0)]
+      if(dim(obj)[1]>1){
+        res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
+      }else{
+        res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
+      }
+      res[is.na(res)] <- 0 
+      x <- heatmap.2(res, col = brewer.pal(9,"Blues"), sepcolor="black", sepwidth=c(0.05,0.05),
+                     key=TRUE, symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
+    }
+   
+    output$down <- downloadHandler(
+      filename =  function() {
+        paste(input$filename, input$var3, sep=".")
+      },
+      # content is a function with argument file. content writes the plot to the device
+      content = function(file) {
+        if(input$var3 == "png")
+          png(file, width = 2000, height = 1300, pointsize = 20) # open the png device
+        else
+          pdf(file) # open the pdf device
+          plotInput()
+          dev.off()
+      })
+        #widget 
+        # x <- plotInput()
+        # saveWidget(x, "test.html")
+        #ggsave(file, plot = plotInput(), device = "pdf")
+        #device = device #you can set up dimentions 
     
     output$taxNames <- renderUI({x <- input$tl1
     if(x!="toplevel"){
@@ -277,11 +323,16 @@ server <- function(input, output, session) {
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
       res[is.na(res)] <- 0 
+<<<<<<< HEAD
       d3heatmap(res, scalecolors = colPal) 
+=======
+      d3heatmap(res, xaxis_height = 180, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", colors = brewer.pal(9,"Blues"))
+>>>>>>> cc71a2b... Heatmap to PNG/PDF and label size
     })
   output$dynamic1 <- renderUI({
     d3heatmapOutput("plot1", height = paste0(input$pix1, "px"))
   })
+
   
     output$plot2 <- renderD3heatmap({
       tl1 <- tl1()
@@ -305,7 +356,11 @@ server <- function(input, output, session) {
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
       res[is.na(res)] <- 0
+<<<<<<< HEAD
       d3heatmap(res, scalecolors = colPal) 
+=======
+      d3heatmap(res,  xaxis_height = 180, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px")
+>>>>>>> cc71a2b... Heatmap to PNG/PDF and label size
     })
   output$dynamic2 <- renderUI({
     d3heatmapOutput("plot2", height = paste0(input$pix2, "px"))
@@ -333,7 +388,11 @@ server <- function(input, output, session) {
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
       res[is.na(res)] <- 0
+<<<<<<< HEAD
       d3heatmap(res, scalecolors = colPal) 
+=======
+      d3heatmap(res, xaxis_height = 180, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px") 
+>>>>>>> cc71a2b... Heatmap to PNG/PDF and label size
     })
   output$dynamic3 <- renderUI({
     d3heatmapOutput("plot3", height = paste0(input$pix3, "px"))
@@ -367,7 +426,11 @@ server <- function(input, output, session) {
     colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none")
     mat3[is.na(mat3)] <- 0
+<<<<<<< HEAD
     d3heatmap(mat3, scalecolors = colPal)
+=======
+    d3heatmap(mat3, xaxis_height = 180, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px")
+>>>>>>> cc71a2b... Heatmap to PNG/PDF and label size
   })})
   output$dynamic4 <- renderUI({
     d3heatmapOutput("plot4", height = paste0(input$pix4, "px"))
