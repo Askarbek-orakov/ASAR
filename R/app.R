@@ -32,9 +32,13 @@ mergeMetagenomes <- function(funtax, newName, prevNames){
   names(funtax)[names(funtax) == 'y'] <- newName
   return(funtax)
 }
-Intfuntax <- function(funtax, t1, tn, f1, fn, t2=NULL, f2=NULL){
-  result2 <- funtax[grep(tn, funtax[,get(t1)])]
-  result2 <- result2[grep(fn, result2[,get(f1)])]
+Intfuntax <- function(result2, t1, tn, f1, fn, t2=NULL, f2=NULL){
+  if(t1!="toplevel"){
+    result2 <- result2[grep(tn, result2[,get(t1)])]
+  }
+  if(f1!="toplevel"){
+    result2 <- result2[grep(fn, result2[,get(f1)])]
+  }
   if(!is.null(t2)&!is.null(f2)){
     result2<- ddply(result2, c(t2,f2), numcolwise(sum))
   }else{
@@ -233,11 +237,13 @@ server <- function(input, output, session) {
     # )
     
     output$taxNames <- renderUI({x <- input$tl1
+    if(x!="toplevel"){
     selectInput(inputId = "tn", label = taxthree, choices = as.vector(unique(funtaxall[,get(x)])), selected = as.character(funtaxall$genus[(nrow(funtaxall)/2)])) 
-    })
+    }})
     output$funNames <- renderUI({y <- input$fl1
-    selectInput(inputId = "fn", label = functhree, choices = as.vector(unique(funtaxall[,get(y)])), selected = as.character(funtaxall$FUN4[(nrow(funtaxall)/2)]))
-    })
+    if(y!="toplevel"){
+      selectInput(inputId = "fn", label = functhree, choices = as.vector(unique(funtaxall[,get(y)])), selected = as.character(funtaxall$FUN4[(nrow(funtaxall)/2)]))
+    }})
     
     output$plot1 <- renderD3heatmap({
       tl1 <- tl1()
@@ -257,7 +263,7 @@ server <- function(input, output, session) {
       colmean <- data.frame(Means=colMeans(obj))
       obj <- obj[which(rowmean$Means!=0),which(colmean$Means!=0)]
       if(dim(obj)[1]>1){
-        res<-plotHeatmap(obj,30,trace = "none",norm=FALSE)
+        res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
@@ -285,7 +291,7 @@ server <- function(input, output, session) {
       dk6 <- data.frame(Means=rowMeans(obj))
       obj <- obj[which(dk6$Means!=0),]
       if(dim(obj)[1]>1){
-        res<-plotHeatmap(obj,30,trace = "none",norm=FALSE)
+        res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
@@ -313,7 +319,7 @@ server <- function(input, output, session) {
       dk6 <- data.frame(Means=rowMeans(obj))
       obj <- obj[which(dk6$Means!=0),]
       if(dim(obj)[1]>1){
-        res<-plotHeatmap(obj,30,trace = "none",norm=FALSE)
+        res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
