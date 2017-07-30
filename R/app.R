@@ -184,7 +184,9 @@ ui <- fluidPage(
                      uiOutput("PathwayID")
                      ),
     conditionalPanel(condition = "input.conditionedPanels==1 ||input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4",
-                     textInput("filename","Enter file name"),
+                     textInput("filename","Enter file name")
+                     ),
+    conditionalPanel(condition = "input.conditionedPanels==1 ||input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 ||input.conditionedPanels==5 ",
                      radioButtons(inputId = "var3", label = "Select the file type", choices = list("png", "pdf"))
                      ),
     conditionalPanel(condition = "input.conditionedPanels==1",
@@ -199,12 +201,12 @@ ui <- fluidPage(
     conditionalPanel(condition = "input.conditionedPanels==4",
                      downloadButton(outputId = "down4", label = "Download the heatmap")
     ),
-    conditionalPanel(condition = "input.conditionedPanels==5",
-                     downloadButton(outputId = "down5", label = "Download the heatmap")
-    ),
     conditionalPanel(condition = "input.conditionedPanels==5 || input.conditionedPanels==4",
                      sliderInput("ko_sd", "SD cutoff for KO terms", value = 2, min = 0, max = 20)
                      ),
+    conditionalPanel(condition = "input.conditionedPanels==5",
+                     downloadButton(outputId = "down5", label = "Download KEGG map")
+    ),
     conditionalPanel(condition = "input.conditionedPanels==6",
                      fileInput('Rdata', 'Upload previously saved Rdata file.')
     ), width = 3),
@@ -500,7 +502,7 @@ server <- function(input, output, session) {
     # content is a function with argument file. content writes the plot to the device
     content = function(file) {
       if(input$var3 == "png")
-        png(file, width = 3000, height = 2300, pointsize = 35) # open the png device
+        png(file, width = 3000, height = 3000, pointsize = 35) # open the png device
       else
         pdf(file) # open the pdf device
       plotInput4()
@@ -542,9 +544,16 @@ server <- function(input, output, session) {
   })
     
 
-  plotInput5 <- function(){ 
-    x <- heatmap.2(mat3, col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
-  }
+  plotInput5 <- function(){
+    sp.li<- tn()
+    tl1 <- tl1()
+    pathwi<- pathw()
+    mgall <-mgall()
+    keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
+    funtax <- funtaxall[,..keepcols]
+    names(funtax)[names(funtax) == tl1] <- 'usp'
+    x <- pathImage(funtax, sp.li, mgall, pathwi)
+    }
   
   output$down5 <- downloadHandler(
     filename =  function() {
