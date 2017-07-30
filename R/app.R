@@ -23,13 +23,14 @@ library(d3heatmap)
 library(gplots)
 library(RColorBrewer)
 options(shiny.maxRequestSize=10*1024^3)
-#load("pathview.Rdata")
-#load("keggmappings.Rdata")
+load("mdt.Rdata")
+load("keggmappings.Rdata")
 loadRdata <- function(fname){
   cat(names(fname),'\n')
   load(file = fname)
+  return(funtaxall)
 }
-loadRdata("pathview.Rdata")
+funtaxall <- loadRdata("pathview.Rdata")
 source("global.R")
 mergeMetagenomes <- function(funtax, newName, prevNames){
   indC<-which(names(funtax)%in%c(prevNames))
@@ -151,15 +152,15 @@ getPathwayList <- function(funtax, sp.li, mgm, ko_sd) {
   kos<- unique(dk7[,"ko"])
   getpathsfromKOs(unique(dk5[,"ko"]))
 }
+cat(colnames(funtaxall)[metagenome1selected],'\n')
 
 ui <- fluidPage(
   titlePanel(maintitle),
   sidebarPanel(
     conditionalPanel(condition = "input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 || input.conditionedPanels==5",
-                     selectInput(inputId = "mgall", label = metagenomeone, choices = metagenome1n, selected = metagenome1selected, selectize = TRUE, multiple = TRUE)
-    ),#setNames(rownames(mdt), mdt[,"MGN"])
+                     selectInput(inputId = "mgall", label = metagenomeone, choices = setNames(c(colnames(funtaxall)[-c(1:13)]), mdt[,colName]), selected = c(colnames(funtaxall)[metagenome1selected]), selectize = TRUE, multiple = TRUE)),
     conditionalPanel(condition = "input.conditionedPanels==1",
-                     selectInput(inputId = "mg1", label = metagenometwo, choices = setNames(c(colnames(d.bm[,-c(1:3)])), mdt[,colName]), selected = metagenome2selected, selectize = FALSE)),
+                     selectInput(inputId = "mg1", label = metagenometwo, choices = setNames(c(colnames(funtaxall)[-c(1:13)]), mdt[,colName]), selected = c(colnames(funtaxall)[metagenome2selected]), selectize = FALSE)),
     conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 || input.conditionedPanels==5",
                      selectInput(inputId = "tl1", label = taxone, choices = tax1n, selected = tax1selected, selectize = FALSE),
                      uiOutput("taxNames")),
@@ -193,14 +194,13 @@ ui <- fluidPage(
                      sliderInput("ko_sd", "SD cutoff for KO terms", value = 2, min = 0, max = 20)
                      ),
     conditionalPanel(condition = "input.conditionedPanels==6",
-                     fileInput('Rdata', 'Upload previously saved Rdata file.')
+                     fileInput('InFile', 'Upload previously saved Rdata file.'),
+                     actionButton("loadRdata", "Upload Rdata")
     ),
-    # downloadButton('downloadData', 'Download'),
     width = 3),
   
   mainPanel(
     tabsetPanel(
-      tabPanel("Upload R Data file", value = 6),
       tabPanel("F&T", uiOutput("dynamic1"), value = 1), 
       tabPanel("F&M", uiOutput("dynamic2"), value = 2),
       tabPanel("T&M", uiOutput("dynamic3"), value = 3),
@@ -213,7 +213,7 @@ ui <- fluidPage(
                selectInput(inputId = "set_funlevel2", label = set_functwo, choices = func2n, selected = func2selected),
                selectInput(inputId = "colorPalette", label = "Choose color palette for heatmaps", choices = rownames(brewer.pal.info[which(brewer.pal.info$category=="seq"),]), selected = currentPalette),
                plotOutput("paletteOutput"), 
-               actionButton("save_changes", "Save Changes")),
+               actionButton("save_changes", "Save Changes"), value = 6),
       tabPanel("Metadata", dataTableOutput("table1"))
     ), width = 9)
 )
@@ -230,8 +230,11 @@ server <- function(input, output, session) {
   colPal <- reactive({brewer.pal(9, input$colorPalette)})
   
   observeEvent(input$loadRdata, {
+    cat(dim(funtaxall),'\n')
     inFile <- input$InFile
-    loadRdata(inFile)
+    cat(inFile$datapath)
+    funtaxall <<- loadRdata(inFile$datapath)
+    cat(dim(funtaxall),'\n')
   })
   output$paletteOutput <- renderPlot({
     display.brewer.all(type = "seq")
@@ -286,12 +289,7 @@ server <- function(input, output, session) {
           plotInput()
           dev.off()
       })
-        #widget 
-        # x <- plotInput()
-        # saveWidget(x, "test.html")
-        #ggsave(file, plot = plotInput(), device = "pdf")
-        #device = device #you can set up dimentions 
-    
+      
     output$taxNames <- renderUI({x <- input$tl1
     if(x!="toplevel"){
     selectInput(inputId = "tn", label = taxthree, choices = as.vector(unique(funtaxall[,get(x)])), selected = as.character(funtaxall$genus[(nrow(funtaxall)/2)])) 
@@ -302,6 +300,7 @@ server <- function(input, output, session) {
     }})
     
     output$plot1 <- renderD3heatmap({
+      cat(dim(funtaxall),'\n')
       tl1 <- tl1()
       tl2 <- tl2()
       tn  <- tn()
