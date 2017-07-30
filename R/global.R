@@ -22,7 +22,6 @@ maintitle <- ""
 load("mdt.Rdata")
 metagenomeone <-"Choose metagenome samples"
 #metagenome1n <- c(colnames(d.bm[,-c(1:3)]))
-metagenome1n <- setNames(c(colnames(d.bm[,-c(1:3)])), mdt$MGN)
 metagenome1selected <- c(colnames(d.bm[,5]), colnames(d.bm[,6]))
 
 metagenometwo <- "Choose one metagenome sample"
@@ -53,6 +52,9 @@ func2selected <- "ufun"
 specieone <- "Choose Specie"
 specie1n <- as.vector(unique(d.bm[,"usp"]))
 specie1sellected <- c(d.bm$usp[(nrow(d.bm)/2)])
+
+#colname for sample name pickup.
+colName <- "MGN"
 
 #Color Palette for Heatmaps
 currentPalette <- "Blues"
