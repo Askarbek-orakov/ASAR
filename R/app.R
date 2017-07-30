@@ -15,6 +15,7 @@ library(stringr)
 library(biomformat)
 library(KEGGREST)
 library(shinythemes)
+library(matrixStats)
 library(png)  # For writePNG function
 library(devtools)
 install_github("Alanocallaghan/d3heatmap") #It has color key/color bar
@@ -158,7 +159,7 @@ ui <- fluidPage(
                      selectInput(inputId = "mgall", label = metagenomeone, choices = metagenome1n, selected = metagenome1selected, selectize = TRUE, multiple = TRUE)
     ),#setNames(rownames(mdt), mdt[,"MGN"])
     conditionalPanel(condition = "input.conditionedPanels==1",
-                     selectInput(inputId = "mg1", label = metagenometwo, choices = metagenome2n, selected = metagenome2selected, selectize = FALSE)),
+                     selectInput(inputId = "mg1", label = metagenometwo, choices = setNames(c(colnames(d.bm[,-c(1:3)])), mdt[,colName]), selected = metagenome2selected, selectize = FALSE)),
     conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 || input.conditionedPanels==5",
                      selectInput(inputId = "tl1", label = taxone, choices = tax1n, selected = tax1selected, selectize = FALSE),
                      uiOutput("taxNames")),
@@ -341,11 +342,12 @@ server <- function(input, output, session) {
       keepcols<-which(names(funtaxall)%in%c(tl1, fl1, fl2, mg2))
       funtax <- funtaxall[,..keepcols]
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,f2 = fl2)
-      obj <- as.matrix(funtax[,-c(1)])
+      obj <- funtax[,-c(1)]
       rownames(obj)<-funtax[,fl2]
-      colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
+      colnames(obj)<-as.character(mdt[c(colnames(obj)), colName])
       dk6 <- data.frame(Means=rowMeans(obj))
       obj <- obj[which(dk6$Means!=0),]
+      obj <- as.matrix(obj)
       if(dim(obj)[1]>1){
         res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
       }else{
@@ -369,11 +371,12 @@ server <- function(input, output, session) {
       keepcols<-which(names(funtaxall)%in%c(tl1, tl2, fl1, mg3))
       funtax <- funtaxall[,..keepcols]
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2)
-      obj <- as.matrix(funtax[,-1])
+      obj <- funtax[,-c(1)]
       rownames(obj)<-funtax[,tl2]
-      colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
+      colnames(obj)<-as.character(mdt[c(colnames(obj)), colName])
       dk6 <- data.frame(Means=rowMeans(obj))
       obj <- obj[which(dk6$Means!=0),]
+      obj <- as.matrix(obj)
       if(dim(obj)[1]>1){
         res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
       }else{
@@ -411,7 +414,7 @@ server <- function(input, output, session) {
     funtax <- funtaxall[,..keepcols]
     names(funtax)[names(funtax) == tl1] <- 'usp'
     obj<-pathwayHeatmap(funtax, tn, mgall, ko_sd)
-    colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
+    colnames(obj)<-as.character(mdt[c(colnames(obj)), colName])
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none")
     mat3[is.na(mat3)] <- 0
     d3heatmap(mat3, xaxis_height = 180, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
