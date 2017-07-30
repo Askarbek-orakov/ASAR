@@ -61,6 +61,6 @@ set_taxone <- "taxlevel 1"
 set_taxtwo <- "taxlevel 2"
 set_funcone <- "funlevel 1"
 set_functwo <- "funlevel 2"
-if(!file.exists("Settings.Rdata")){
+if(file.exists("Settings.Rdata")){
   load("Settings.Rdata")
 }
