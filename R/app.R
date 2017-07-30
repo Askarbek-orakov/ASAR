@@ -356,11 +356,12 @@ server <- function(input, output, session) {
     keepcols<-which(names(funtaxall)%in%c(tl1, fl1, fl2, mg2))
     funtax <- funtaxall[,..keepcols]
     funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,f2 = fl2)
-    obj <- as.matrix(funtax[,-c(1)])
+    obj <- funtax[,-c(1)]
     rownames(obj)<-funtax[,fl2]
-    colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
+    colnames(obj)<-as.character(mdt[c(colnames(obj)), colName])
     dk6 <- data.frame(Means=rowMeans(obj))
     obj <- obj[which(dk6$Means!=0),]
+    obj <- as.matrix(obj)
     if(dim(obj)[1]>1){
       res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
     }else{
@@ -424,11 +425,12 @@ server <- function(input, output, session) {
     keepcols<-which(names(funtaxall)%in%c(tl1, tl2, fl1, mg3))
     funtax <- funtaxall[,..keepcols]
     funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2)
-    obj <- as.matrix(funtax[,-1])
+    obj <- funtax[,-c(1)]
     rownames(obj)<-funtax[,tl2]
-    colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
+    colnames(obj)<-as.character(mdt[c(colnames(obj)), colName])
     dk6 <- data.frame(Means=rowMeans(obj))
     obj <- obj[which(dk6$Means!=0),]
+    obj <- as.matrix(obj)
     if(dim(obj)[1]>1){
       res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
     }else{
@@ -493,7 +495,7 @@ server <- function(input, output, session) {
     funtax <- funtaxall[,..keepcols]
     names(funtax)[names(funtax) == tl1] <- 'usp'
     obj<-pathwayHeatmap(funtax, tn, mgall, ko_sd)
-    colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
+    colnames(obj)<-as.character(mdt[c(colnames(obj)), colName])
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none")
     mat3[is.na(mat3)] <- 0
     x <- heatmap.2(mat3, col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
@@ -561,14 +563,9 @@ server <- function(input, output, session) {
   
   output$down5 <- downloadHandler(
     filename =  function() {
-      paste(input$filename, input$var3, sep=".")
     },
     # content is a function with argument file. content writes the plot to the device
     content = function(file) {
-      if(input$var3 == "png")
-        png(file, width = 3000, height = 2300, pointsize = 35) # open the png device
-      else
-        pdf(file, width = 15, height = 15) # open the pdf device
       plotInput5()
       dev.off()
     })
