@@ -568,7 +568,7 @@ server <- function(input, output, session) {
       if(input$var3 == "png")
         png(file, width = 3000, height = 2300, pointsize = 35) # open the png device
       else
-        pdf(file, width = 15, height = 15) # open the pdf device
+      pdf(file, width = 15, height = 15) # open the pdf device
       plotInput5()
       dev.off()
     })
