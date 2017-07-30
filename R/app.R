@@ -186,13 +186,29 @@ ui <- fluidPage(
                      uiOutput("PathwayID")
                      ),
     conditionalPanel(condition = "input.conditionedPanels==1 ||input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4",
-                     textInput("filename","Enter file name"),
-                     radioButtons(inputId = "var3", label = "Select the file type", choices = list("png", "pdf")),
-                     downloadButton(outputId = "down", label = "Download the heatmap")
+                     textInput("filename","Enter file name")
                      ),
+    conditionalPanel(condition = "input.conditionedPanels==1 ||input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 ||input.conditionedPanels==5 ",
+                     radioButtons(inputId = "var3", label = "Select the file type", choices = list("png", "pdf"))
+                     ),
+    conditionalPanel(condition = "input.conditionedPanels==1",
+                     downloadButton(outputId = "down1", label = "Download the heatmap")
+                     ),
+    conditionalPanel(condition = "input.conditionedPanels==2",
+                     downloadButton(outputId = "down2", label = "Download the heatmap")
+    ),
+    conditionalPanel(condition = "input.conditionedPanels==3",
+                     downloadButton(outputId = "down3", label = "Download the heatmap")
+    ),
+    conditionalPanel(condition = "input.conditionedPanels==4",
+                     downloadButton(outputId = "down4", label = "Download the heatmap")
+    ),
     conditionalPanel(condition = "input.conditionedPanels==5 || input.conditionedPanels==4",
                      sliderInput("ko_sd", "SD cutoff for KO terms", value = 2, min = 0, max = 20)
                      ),
+    conditionalPanel(condition = "input.conditionedPanels==5",
+                     downloadButton(outputId = "down5", label = "Download KEGG map")
+    ),
     conditionalPanel(condition = "input.conditionedPanels==6",
                      fileInput('InFile', 'Upload previously saved Rdata file.'),
                      actionButton("loadRdata", "Upload Rdata")
@@ -250,7 +266,7 @@ server <- function(input, output, session) {
     fn    <-reactive({input$fn})
     ko_sd <-reactive({input$ko_sd})
     
-    plotInput <- function(){
+    plotInput1 <- function(){
       tl1 <- tl1()
       tl2 <- tl2()
       tn  <- tn()
@@ -258,6 +274,7 @@ server <- function(input, output, session) {
       fl2 <- fl2()
       fn  <- fn()
       mg1 <- mg1()
+      colPal <- colPal() 
       keepcols<-which(names(funtaxall)%in%c(tl1, tl2, fl1, fl2, mg1))
       funtax <- funtaxall[,..keepcols]
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2,f2 = fl2)
@@ -267,26 +284,25 @@ server <- function(input, output, session) {
       colmean <- data.frame(Means=colMeans(obj))
       obj <- obj[which(rowmean$Means!=0),which(colmean$Means!=0)]
       if(dim(obj)[1]>1){
-        res<-plotHeatmap(obj,30,trace = "none", col = heatmapCols,norm=FALSE)
+        res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
       res[is.na(res)] <- 0 
-      x <- heatmap.2(res, col = brewer.pal(9,"Blues"), sepcolor="black", sepwidth=c(0.05,0.05),
-                     key=TRUE, symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
+      x <- heatmap.2(res, col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
     }
    
-    output$down <- downloadHandler(
+    output$down1 <- downloadHandler(
       filename =  function() {
         paste(input$filename, input$var3, sep=".")
       },
       # content is a function with argument file. content writes the plot to the device
       content = function(file) {
         if(input$var3 == "png")
-          png(file, width = 2000, height = 1300, pointsize = 20) # open the png device
+          png(file, width = 3000, height = 2300, pointsize = 35) # open the png device
         else
-          pdf(file) # open the pdf device
-          plotInput()
+          pdf(file, width = 15, height = 15) # open the pdf device
+          plotInput1()
           dev.off()
       })
       
@@ -323,12 +339,50 @@ server <- function(input, output, session) {
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
       res[is.na(res)] <- 0 
-      d3heatmap(res, xaxis_height = 180, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
+      d3heatmap(res, xaxis_height = 220, yaxis_width = 280, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
     })
   output$dynamic1 <- renderUI({
     d3heatmapOutput("plot1", height = paste0(input$pix1, "px"))
   })
 
+  plotInput2 <- function(){ 
+    tl1 <- tl1()
+    tn  <- tn()
+    fl1 <- fl1()
+    fl2 <- fl2()
+    fn  <- fn()
+    mg2 <- mgall()
+    colPal <- colPal()
+    keepcols<-which(names(funtaxall)%in%c(tl1, fl1, fl2, mg2))
+    funtax <- funtaxall[,..keepcols]
+    funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,f2 = fl2)
+    obj <- as.matrix(funtax[,-c(1)])
+    rownames(obj)<-funtax[,fl2]
+    colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
+    dk6 <- data.frame(Means=rowMeans(obj))
+    obj <- obj[which(dk6$Means!=0),]
+    if(dim(obj)[1]>1){
+      res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
+    }else{
+      res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
+    }
+    res[is.na(res)] <- 0
+    x <- heatmap.2(res, col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
+  }
+  
+  output$down2 <- downloadHandler(
+    filename =  function() {
+      paste(input$filename, input$var3, sep=".")
+    },
+    # content is a function with argument file. content writes the plot to the device
+    content = function(file) {
+      if(input$var3 == "png")
+        png(file, width = 3000, height = 2300, pointsize = 35) # open the png device
+      else
+        pdf(file, width = 15, height = 15) # open the pdf device
+      plotInput2()
+      dev.off()
+    })
   
     output$plot2 <- renderD3heatmap({
       tl1 <- tl1()
@@ -353,11 +407,51 @@ server <- function(input, output, session) {
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
       res[is.na(res)] <- 0
-      d3heatmap(res,  xaxis_height = 180, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
+      d3heatmap(res,  xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
     })
   output$dynamic2 <- renderUI({
     d3heatmapOutput("plot2", height = paste0(input$pix2, "px"))
   })
+  
+  plotInput3 <- function(){ 
+    tl1 <- tl1()
+    tl2 <- tl2()
+    tn  <- tn()
+    fl1 <- fl1()
+    fn  <- fn()
+    mg3 <- mgall()
+    colPal <- colPal()
+    keepcols<-which(names(funtaxall)%in%c(tl1, tl2, fl1, mg3))
+    funtax <- funtaxall[,..keepcols]
+    funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2)
+    obj <- as.matrix(funtax[,-1])
+    rownames(obj)<-funtax[,tl2]
+    colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
+    dk6 <- data.frame(Means=rowMeans(obj))
+    obj <- obj[which(dk6$Means!=0),]
+    if(dim(obj)[1]>1){
+      res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
+    }else{
+      res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
+    }
+    res[is.na(res)] <- 0
+    x <- heatmap.2(res, col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
+  }
+  
+  output$down3 <- downloadHandler(
+    filename =  function() {
+      paste(input$filename, input$var3, sep=".")
+    },
+    # content is a function with argument file. content writes the plot to the device
+    content = function(file) {
+      if(input$var3 == "png")
+        png(file, width = 3000, height = 2300, pointsize = 35) # open the png device
+      else
+        pdf(file, width = 15, height = 15) # open the pdf device
+      plotInput3()
+      dev.off()
+    })
+  
   
     output$plot3 <- renderD3heatmap({
       tl1 <- tl1()
@@ -382,11 +476,42 @@ server <- function(input, output, session) {
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
       res[is.na(res)] <- 0
-      d3heatmap(res, xaxis_height = 180, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal) 
+      d3heatmap(res, xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal) 
     })
   output$dynamic3 <- renderUI({
     d3heatmapOutput("plot3", height = paste0(input$pix3, "px"))
   })
+  
+  
+  plotInput4 <- function(){ 
+    tl1 <- tl1()
+    tn  <- tn() 
+    mgall <-mgall()
+    ko_sd <- ko_sd()
+    colPal <- colPal()
+    keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
+    funtax <- funtaxall[,..keepcols]
+    names(funtax)[names(funtax) == tl1] <- 'usp'
+    obj<-pathwayHeatmap(funtax, tn, mgall, ko_sd)
+    colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
+    mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none")
+    mat3[is.na(mat3)] <- 0
+    x <- heatmap.2(mat3, col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
+  }
+  
+  output$down4 <- downloadHandler(
+    filename =  function() {
+      paste(input$filename, input$var3, sep=".")
+    },
+    # content is a function with argument file. content writes the plot to the device
+    content = function(file) {
+      if(input$var3 == "png")
+        png(file, width = 3000, height = 3000, pointsize = 35) # open the png device
+      else
+        pdf(file, width = 15, height = 15) # open the pdf device
+      plotInput4()
+      dev.off()
+    })
   
   observeEvent(input$path, {
     output$PathwayID <- renderUI({
@@ -416,12 +541,38 @@ server <- function(input, output, session) {
     colnames(obj)<-as.character(mdt[c(colnames(obj)), colName])
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none")
     mat3[is.na(mat3)] <- 0
-    d3heatmap(mat3, xaxis_height = 180, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
+    d3heatmap(mat3, xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
   })})
   output$dynamic4 <- renderUI({
     d3heatmapOutput("plot4", height = paste0(input$pix4, "px"))
   })
     
+
+  plotInput5 <- function(){
+    sp.li<- tn()
+    tl1 <- tl1()
+    pathwi<- pathw()
+    mgall <-mgall()
+    keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
+    funtax <- funtaxall[,..keepcols]
+    names(funtax)[names(funtax) == tl1] <- 'usp'
+    x <- pathImage(funtax, sp.li, mgall, pathwi)
+    }
+  
+  output$down5 <- downloadHandler(
+    filename =  function() {
+      paste(input$filename, input$var3, sep=".")
+    },
+    # content is a function with argument file. content writes the plot to the device
+    content = function(file) {
+      if(input$var3 == "png")
+        png(file, width = 3000, height = 2300, pointsize = 35) # open the png device
+      else
+        pdf(file, width = 15, height = 15) # open the pdf device
+      plotInput5()
+      dev.off()
+    })
+  
   output$Pathway <- renderImage({
     sp.li<- tn()
     tl1 <- tl1()
