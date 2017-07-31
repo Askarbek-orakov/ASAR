@@ -151,7 +151,18 @@ getPathwayList <- function(funtax, sp.li, mgm, ko_sd) {
   kos<- unique(dk7[,"ko"])
   getpathsfromKOs(unique(dk5[,"ko"]))
 }
-cat(colnames(funtaxall)[metagenome1selected],'\n')
+chooseDends <- function(res){
+  if(dim(res)[1]==1&dim(res)[2]==1){
+    dend <- 'none'
+  } else if(dim(res)[1]==1){
+    dend <- 'column'
+  } else if(dim(res)[2]==1){
+    dend <- 'row'
+  } else{
+    dend <- 'both'
+  }
+  return(dend)
+}
 
 ui <- fluidPage(
   titlePanel(maintitle),
@@ -295,7 +306,7 @@ server <- function(input, output, session) {
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
       res[is.na(res)] <- 0 
-      x <- heatmap.2(res, col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
+      x <- heatmap.2(res,dendrogram = chooseDends(res), col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
     }
    
     output$down1 <- downloadHandler(
@@ -345,7 +356,7 @@ server <- function(input, output, session) {
       }
       res[is.na(res)] <- 0 
       numrow1$plot1 <- dim(res)[1]
-      d3heatmap(res, xaxis_height = 220, yaxis_width = 280, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
+      d3heatmap(res,dendrogram = chooseDends(res), xaxis_height = 220, yaxis_width = 280, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
     })
     output$dynamic1 <- renderUI({
     d3heatmapOutput("plot1", height = paste0(numrow1$plot1*input$pix1+220, "px"))
@@ -373,7 +384,7 @@ server <- function(input, output, session) {
       res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
     }
     res[is.na(res)] <- 0
-    x <- heatmap.2(res, col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
+    x <- heatmap.2(res,dendrogram = chooseDends(res), col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
   }
   
   output$down2 <- downloadHandler(
@@ -414,7 +425,7 @@ server <- function(input, output, session) {
       }
       res[is.na(res)] <- 0
       numrow2$plot2 <- dim(res)[1]
-      d3heatmap(res, xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
+      d3heatmap(res,dendrogram = chooseDends(res), xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
     })
   output$dynamic2 <- renderUI({
     d3heatmapOutput("plot2", height = paste0(numrow2$plot2*input$pix2+220, "px"))
@@ -442,7 +453,7 @@ server <- function(input, output, session) {
       res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
     }
     res[is.na(res)] <- 0
-    x <- heatmap.2(res, col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
+    x <- heatmap.2(res,dendrogram = chooseDends(res), col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
   }
   
   output$down3 <- downloadHandler(
@@ -484,7 +495,8 @@ server <- function(input, output, session) {
       }
       res[is.na(res)] <- 0
       numrow3$plot3 <- dim(res)[1]
-      d3heatmap(res, xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal) 
+      
+      d3heatmap(res,dendrogram = chooseDends(res), xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal) 
     })
   output$dynamic3 <- renderUI({
     d3heatmapOutput("plot3", height = paste0(numrow3$plot3*input$pix3+220, "px"))
@@ -504,7 +516,7 @@ server <- function(input, output, session) {
     colnames(obj)<-as.character(mdt[c(gsub('mgm','', colnames(obj))), 3])
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none")
     mat3[is.na(mat3)] <- 0
-    x <- heatmap.2(mat3, col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
+    x <- heatmap.2(mat3,dendrogram = chooseDends(mat3), col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
   }
   
   output$down4 <- downloadHandler(
@@ -550,7 +562,7 @@ server <- function(input, output, session) {
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none")
     mat3[is.na(mat3)] <- 0
     numrow4$plot4 <- dim(mat3)[1]
-    d3heatmap(mat3, xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
+    d3heatmap(mat3,dendrogram = chooseDends(mat3), xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
   })})
   output$dynamic4 <- renderUI({
     d3heatmapOutput("plot4", height = paste0(numrow4$plot4*input$pix4+220, "px"))
