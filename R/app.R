@@ -623,13 +623,13 @@ server <- function(input, output, session) {
       else
         DF <- values[["DF"]]
     }
-    values[["DF"]] <- DF
+    values[["DF"]] <-data.frame(DF)
   })
   
   output$hot <- renderRHandsontable({
     DF = data1()
     if (!is.null(DF))
-      rhandsontable(DF, stretchH = "all")
+      rhandsontable(DF, useTypes = FALSE, stretchH = "all")
   })
   
   #output$table1 <- renderDataTable(as.matrix(mdt))
