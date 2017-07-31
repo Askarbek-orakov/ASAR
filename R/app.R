@@ -22,6 +22,7 @@ install_github("Alanocallaghan/d3heatmap") #It has color key/color bar
 library(d3heatmap)
 library(gplots)
 library(RColorBrewer)
+library(rhandsontable)
 options(shiny.maxRequestSize=10*1024^3)
 load("mdt.Rdata")
 load("keggmappings.Rdata")
@@ -213,6 +214,9 @@ ui <- fluidPage(
                      fileInput('InFile', 'Upload previously saved Rdata file.'),
                      actionButton("loadRdata", "Upload Rdata")
     ),
+    # conditionalPanel(condition = "input.conditionedPanels==7",
+    #                  rHandsontableOutput("hot")
+    # ),
     width = 3),
   
   mainPanel(
@@ -230,7 +234,7 @@ ui <- fluidPage(
                selectInput(inputId = "colorPalette", label = "Choose color palette for heatmaps", choices = rownames(brewer.pal.info[which(brewer.pal.info$category=="seq"),]), selected = currentPalette),
                plotOutput("paletteOutput"), 
                actionButton("save_changes", "Save Changes"), value = 6),
-      tabPanel("Metadata", dataTableOutput("table1"))
+      tabPanel("Metadata",rHandsontableOutput("hot")) #dataTableOutput("table1")
     ), width = 9)
 )
 
@@ -585,7 +589,30 @@ server <- function(input, output, session) {
          alt = "Press GO to select Pathway!")
   }, deleteFile = FALSE)
   
-  output$table1 <- renderDataTable(as.matrix(mdt))
+  
+  
+  values = reactiveValues()
+  
+  data1 = reactive({
+    if (!is.null(input$hot)) {
+      values[["previous"]] <- isolate(values[["DF"]])
+      DF = hot_to_r(input$hot)
+    } else {
+      if (is.null(values[["DF"]]))
+        DF <- mdt
+      else
+        DF <- values[["DF"]]
+    }
+    values[["DF"]] <- DF
+  })
+  
+  output$hot <- renderRHandsontable({
+    DF = data1()
+    if (!is.null(DF))
+      rhandsontable(DF, stretchH = "all")
+  })
+  
+  #output$table1 <- renderDataTable(as.matrix(mdt))
   
   observeEvent(input$save_changes, {
     tax1selected <-set_taxlevel1()
