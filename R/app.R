@@ -210,7 +210,9 @@ ui <- fluidPage(
     ),
     conditionalPanel(condition = "input.conditionedPanels==6",
                      fileInput('InFile', 'Upload previously saved Rdata file.'),
-                     actionButton("loadRdata", "Upload Rdata")
+                     actionButton("loadRdata", "Upload Rdata"),
+                     textInput("Rdataname","Enter file name for Rdata being saved (with '.Rdata' in the end"),
+                     actionButton("saveRdata", "Save current Rdata")
     ),
     width = 3),
   
@@ -245,11 +247,12 @@ server <- function(input, output, session) {
   colPal <- reactive({brewer.pal(9, input$colorPalette)})
   
   observeEvent(input$loadRdata, {
-    cat(dim(funtaxall),'\n')
     inFile <- input$InFile
-    cat(inFile$datapath)
     funtaxall <<- loadRdata(inFile$datapath)
-    cat(dim(funtaxall),'\n')
+  })
+  
+  observeEvent(input$saveRdata, {
+    save(funtaxall, mdt, file = input$Rdataname)
   })
   output$paletteOutput <- renderPlot({
     display.brewer.all(type = "seq")
