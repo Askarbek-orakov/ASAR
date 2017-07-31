@@ -150,7 +150,7 @@ getpathsfromKOs <- function(KOs){
 getPathwayList <- function(funtax, sp.li, mgm, ko_sd) {
   dk7 <- filter_stats(funtax, sp.li, mgm, ko_sd)
   kos<- unique(dk7[,"ko"])
-  getpathsfromKOs(unique(dk5[,"ko"]))
+  getpathsfromKOs(unique(dk7[,"ko"]))
 }
 cat(colnames(funtaxall)[metagenome1selected],'\n')
 
