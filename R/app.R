@@ -226,9 +226,17 @@ ui <- fluidPage(
                      textInput("Rdataname","Enter file name for Rdata being saved (with '.Rdata' in the end"),
                      actionButton("saveRdata", "Save current Rdata")
     ),
-    # conditionalPanel(condition = "input.conditionedPanels==7",
-    #                  rHandsontableOutput("hot")
-    # ),
+    conditionalPanel(condition = "input.conditionedPanels==7",
+                     h3("Table options"),
+                     radioButtons("useType", "Use Data Types", c("FALSE", "TRUE")),
+                     h3("Download the metadata"), 
+                     div(class='row', 
+                         div(class="col-sm-6", 
+                             actionButton("save", "Download")),
+                         div(class="col-sm-6",
+                             radioButtons("fileType", "File type", c("txt", "pdf")))
+                     )
+    ),
     width = 3),
   
   mainPanel(
@@ -246,7 +254,15 @@ ui <- fluidPage(
                selectInput(inputId = "colorPalette", label = "Choose color palette for heatmaps", choices = rownames(brewer.pal.info[which(brewer.pal.info$category=="seq"),]), selected = currentPalette),
                plotOutput("paletteOutput"), 
                actionButton("save_changes", "Save Changes"), value = 6),
-      tabPanel("Metadata",rHandsontableOutput("hot")) #dataTableOutput("table1")
+      tabPanel("Metadata",rHandsontableOutput("hot"), h3("Add a new column"),
+               div(class='row', 
+                   div(class="col-sm-5", 
+                       uiOutput("ui_newcolname"),
+                       actionButton("addcolumn", "Add")),
+                   div(class="col-sm-4", 
+                       radioButtons("newcolumntype", "Type", c("integer", "double", "character"))),
+                   div(class="col-sm-3")
+               ), value = 7) #dataTableOutput("table1")
     ), width = 9)
 )
 
@@ -611,28 +627,48 @@ server <- function(input, output, session) {
   
   
   
-  values = reactiveValues()
+  values <- reactiveValues()
   
-  data1 = reactive({
+  data1 <- reactive({
     if (!is.null(input$hot)) {
-      values[["previous"]] <- isolate(values[["DF"]])
-      DF = hot_to_r(input$hot)
+      DF <- hot_to_r(input$hot)
     } else {
       if (is.null(values[["DF"]]))
         DF <- mdt
       else
         DF <- values[["DF"]]
     }
-    values[["DF"]] <-data.frame(DF)
+    values[["DF"]] <- DF
+    DF
   })
   
   output$hot <- renderRHandsontable({
     DF = data1()
     if (!is.null(DF))
-      rhandsontable(DF, useTypes = FALSE, stretchH = "all")
+      rhandsontable(DF, useTypes = as.logical(input$useType), stretchH = "all")
   })
-  
+  output$ui_newcolname <- renderUI({
+    textInput("newcolumnname", "Name", sprintf("newcol%s", 1+ncol(values[["DF"]])))
+  })
+  observeEvent(input$addcolumn, {
+    DF <- isolate(values[["DF"]])
+    values[["previous"]] <- DF
+    newcolumn <- eval(parse(text=sprintf('%s(nrow(DF))', isolate(input$newcolumntype))))
+    values[["DF"]] <- setNames(cbind(DF, newcolumn, stringsAsFactors=FALSE), c(names(DF), isolate(input$newcolumnname)))
+  })
   #output$table1 <- renderDataTable(as.matrix(mdt))
+  
+  observeEvent(input$save, {
+    fileType <- isolate(input$fileType)
+    finalDF <- isolate(values[["DF"]])
+    if(fileType == "txt"){
+      dput(finalDF, file=file.path(outdir, sprintf("%s.txt", outfilename)))
+    }
+    else{
+      saveRDS(finalDF, file=file.path(outdir, sprintf("%s.rds", outfilename)))
+    }
+  }
+  )
   
   observeEvent(input$save_changes, {
     tax1selected <-set_taxlevel1()
