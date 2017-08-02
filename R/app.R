@@ -639,12 +639,19 @@ server <- function(input, output, session) {
     hot
   })
   
-  observe({
-    input$saveBtn
+  observeEvent(input$saveBtn,{
+    showNotification("It may take some time to save", type = "message", duration = 10) #action = a(href = "javascript:location.reload();", "Reload page")
+    showModal(modalDialog(
+      title = "You have saved your metadata!",
+      "Your changes will be applied after you restart the app!",
+      easyClose = TRUE,
+      footer = NULL
+    ))
     if (!is.null(values[["hot"]])) {
       #write.table(values[["hot"]], "mtcarsss")
       mdt <- values[["hot"]]
       save(mdt, funtaxall, d.kres, kegg, file = "pathview.Rdata")
+      
     }
   })
   
