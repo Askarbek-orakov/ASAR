@@ -625,13 +625,12 @@ server <- function(input, output, session) {
          alt = "Press GO to select Pathway!")
   }, deleteFile = FALSE)
   
-  
-  
   values <- reactiveValues()
   
-  data1 <- reactive({
+  observe({
     if (!is.null(input$hot)) {
-      DF <- hot_to_r(input$hot)
+      values[["previous"]] <- isolate(values[["DF"]])
+      DF = hot_to_r(input$hot)
     } else {
       if (is.null(values[["DF"]]))
         DF <- mdt
@@ -639,11 +638,10 @@ server <- function(input, output, session) {
         DF <- values[["DF"]]
     }
     values[["DF"]] <- DF
-    DF
   })
   
   output$hot <- renderRHandsontable({
-    DF = data1()
+    DF <- values[["DF"]]
     if (!is.null(DF))
       rhandsontable(DF, useTypes = as.logical(input$useType), stretchH = "all")
   })
