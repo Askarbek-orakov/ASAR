@@ -23,9 +23,8 @@ library(d3heatmap)
 library(gplots)
 library(RColorBrewer)
 library(rhandsontable)
+load("pathview.Rdata")
 options(shiny.maxRequestSize=10*1024^3)
-load("mdt.Rdata")
-load("keggmappings.Rdata")
 loadRdata <- function(fname){
   load(file = fname)
   return(funtaxall)
@@ -262,7 +261,7 @@ ui <- fluidPage(
                    div(class="col-sm-4", 
                        radioButtons("newcolumntype", "Type", c("integer", "double", "character"))),
                    div(class="col-sm-3")
-               ), value = 7) #dataTableOutput("table1")
+               ), actionButton("saveBtn", "Save"), value = 7) #dataTableOutput("table1")
     ), width = 9)
 )
 
@@ -625,48 +624,80 @@ server <- function(input, output, session) {
          alt = "Press GO to select Pathway!")
   }, deleteFile = FALSE)
   
-  values <- reactiveValues()
+  
+  values = reactiveValues()
+  
+  data = reactive({
+    if (is.null(input$hot)) {
+      hot = mdt
+    } else {
+      hot = hot_to_r(input$hot)
+    }
+    
+    # this would be used as a function input
+    values[["hot"]] = hot
+    hot
+  })
   
   observe({
-    if (!is.null(input$hot)) {
-      values[["previous"]] <- isolate(values[["DF"]])
-      DF = hot_to_r(input$hot)
-    } else {
-      if (is.null(values[["DF"]]))
-        DF <- mdt
-      else
-        DF <- values[["DF"]]
+    input$saveBtn
+    if (!is.null(values[["hot"]])) {
+      #write.table(values[["hot"]], "mtcarsss")
+      mdt <- values[["hot"]]
+      save(mdt, funtaxall, d.kres, kegg, file = "pathview.Rdata")
     }
-    values[["DF"]] <- DF
   })
   
   output$hot <- renderRHandsontable({
-    DF <- values[["DF"]]
+    DF = data()
     if (!is.null(DF))
       rhandsontable(DF, useTypes = as.logical(input$useType), stretchH = "all")
   })
-  output$ui_newcolname <- renderUI({
-    textInput("newcolumnname", "Name", sprintf("newcol%s", 1+ncol(values[["DF"]])))
-  })
-  observeEvent(input$addcolumn, {
-    DF <- isolate(values[["DF"]])
-    values[["previous"]] <- DF
-    newcolumn <- eval(parse(text=sprintf('%s(nrow(DF))', isolate(input$newcolumntype))))
-    values[["DF"]] <- setNames(cbind(DF, newcolumn, stringsAsFactors=FALSE), c(names(DF), isolate(input$newcolumnname)))
-  })
-  #output$table1 <- renderDataTable(as.matrix(mdt))
   
-  observeEvent(input$save, {
-    fileType <- isolate(input$fileType)
-    finalDF <- isolate(values[["DF"]])
-    if(fileType == "txt"){
-      dput(finalDF, file=file.path(outdir, sprintf("%s.txt", outfilename)))
-    }
-    else{
-      saveRDS(finalDF, file=file.path(outdir, sprintf("%s.rds", outfilename)))
-    }
-  }
-  )
+  # values <- reactiveValues()
+  # 
+  # 
+  # observe({
+  #   input$saveBtn
+  #   if (!is.null(input$hot)) {
+  #     DF = hot_to_r(input$hot)
+  #   } else {
+  #     if (is.null(values[["DF"]]))
+  #       DF <- mdt
+  #     else
+  #       DF <- values[["DF"]]
+  #   }
+  #   values[["DF"]] <- DF
+  # })
+  # 
+  # output$hot <- renderRHandsontable({
+  #   DF <- values[["DF"]]
+  #   if (!is.null(DF))
+  #     rhandsontable(DF, useTypes = as.logical(input$useType), stretchH = "all")
+  # })
+  # output$ui_newcolname <- renderUI({
+  #   textInput("newcolumnname", "Name", sprintf("newcol%s", 1+ncol(values[["DF"]])))
+  # })
+  # 
+  # observeEvent(input$addcolumn, {
+  #   DF <- isolate(values[["DF"]])
+  #   values[["previous"]] <- DF
+  #   newcolumn <- eval(parse(text=sprintf('%s(nrow(DF))', isolate(input$newcolumntype))))
+  #   values[["DF"]] <- setNames(cbind(DF, newcolumn, stringsAsFactors=FALSE), c(names(DF), isolate(input$newcolumnname)))
+  # })
+  # #output$table1 <- renderDataTable(as.matrix(mdt))
+  # 
+  # observeEvent(input$save, {
+  #   fileType <- isolate(input$fileType)
+  #   finalDF <- isolate(values[["DF"]])
+  #   if(fileType == "txt"){
+  #     dput(finalDF, file=file.path(outdir, sprintf("%s.txt", outfilename)))
+  #   }
+  #   else{
+  #     saveRDS(finalDF, file=file.path(outdir, sprintf("%s.rds", outfilename)))
+  #   }
+  # }
+  #)
   
   observeEvent(input$save_changes, {
     tax1selected <-set_taxlevel1()
