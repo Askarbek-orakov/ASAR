@@ -279,7 +279,14 @@ server <- function(input, output, session) {
     tl2   <-reactive({input$tl2})
     fl1   <-reactive({input$fl1})
     fl2   <-reactive({input$fl2})
-    tn    <-reactive({input$tn})
+    tn    <-reactive({
+      if(tl1()=='toplevel'){
+        cat('toplevel\n')
+        return('toplevel')
+      }else{
+        return(input$tn)
+      }
+    })
     fn    <-reactive({input$fn})
     ko_sd <-reactive({input$ko_sd})
     numrow1 <- reactiveValues(plot1 =0)
@@ -547,6 +554,13 @@ server <- function(input, output, session) {
       ko_sd <- ko_sd()
       keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
       funtax <- funtaxall[,..keepcols]
+      if(tl1=='toplevel'){
+        keepcols<-c('toplevel',keepcols)
+        funtax$toplevel<-factor('toplevel')
+        sp.li<-'toplevel'
+        #save(funtax,file='funtax.tmp.Rdata')
+      }
+      funtax <- Intfuntax(funtax,tl1,tn,'toplevel',NULL)
       names(funtax)[names(funtax) == tl1] <- 'usp'
       selectInput(inputId = "PathwayID", label = "Input Pathway ID", as.vector(getPathwayList(funtax, sp.li =  tn, mgm =  mgall, ko_sd = ko_sd)))
     })})
@@ -582,6 +596,7 @@ server <- function(input, output, session) {
     mgall <-mgall()
     keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
+    funtax <- Intfuntax(funtax,tl1,sp.li,'toplevel',NULL)
     names(funtax)[names(funtax) == tl1] <- 'usp'
     x <- pathImage(funtax, sp.li, mgall, pathwi)
     }
@@ -601,6 +616,13 @@ server <- function(input, output, session) {
     mgall <-mgall()
     keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
+    if(tl1=='toplevel'){
+      keepcols<-c('toplevel',keepcols)
+      funtax$toplevel<-factor('toplevel')
+      sp.li<-'toplevel'
+      #save(funtax,file='funtax.tmp.Rdata')
+    }
+    funtax <- Intfuntax(funtax,tl1,sp.li,'toplevel',NULL)
     names(funtax)[names(funtax) == tl1] <- 'usp'
     pathImage(funtax, sp.li, mgall, pathwi)
     cat(paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"))
