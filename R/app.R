@@ -87,7 +87,7 @@ plotHeatmap<-function(obj,n,norm=TRUE,log=TRUE,fun=sd,...){
   }else{  
     otuStats = apply(mat[otusToKeep, ], 1, fun)
   }
-  otuIndices = otusToKeep[order(otuStats, decreasing = TRUE)[1:min(c(n,dim(mat)[1]))]]
+  otuIndices = otusToKeep[order(otuStats, decreasing = TRUE)[1:min(c(length(otusToKeep),n,dim(mat)[1]))]]
   mat2 = mat[otuIndices, ]
 }
 returnAppropriateObj<-function(obj, norm, log){
