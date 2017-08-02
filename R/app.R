@@ -227,7 +227,7 @@ ui <- fluidPage(
                      actionButton("saveRdata", "Save current Rdata")
     ),
     conditionalPanel(condition = "input.conditionedPanels==7",
-                     h3("Table options"),
+                     helpText("You cannot add or remove column when column types are defined (i.e. Use Data Types is set as 'TRUE')."),
                      radioButtons("useType", "Use Data Types", c("FALSE", "TRUE")),
                      h3("Download the metadata"), 
                      div(class='row', 
