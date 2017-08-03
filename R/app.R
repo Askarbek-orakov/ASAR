@@ -23,8 +23,12 @@ library(d3heatmap)
 library(gplots)
 library(RColorBrewer)
 library(rhandsontable)
+library(limma)
 load("pathview.Rdata")
 options(shiny.maxRequestSize=10*1024^3)
+mdt$Group<-paste(gsub('is','IGBS',gsub('sws','SS',mdt$Origin)),mdt$Source)
+mdt$Group<-gsub('inflow inflow','SW',gsub(' inoculum','',mdt$Group))
+
 ko.path.name<-ko.path.name[-grep('ko01100',ko.path.name$ko),]
 loadRdata <- function(fname){
   load(file = fname)
@@ -96,7 +100,8 @@ plotHeatmap<-function(obj,n,norm=TRUE,log=TRUE,fun=sd,...){
 }
 returnAppropriateObj<-function(obj, norm, log){
   if(class(obj)!='matrix') stop('Obj should be a matrix')
-  res<-obj
+  res<-avearrays(obj)
+
   if(log){
     res<-log2(res+1)
   }
