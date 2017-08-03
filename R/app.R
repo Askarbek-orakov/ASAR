@@ -123,7 +123,10 @@ filter_stats <- function(funtax, taxon, metagenomes, sd_cutoff) {
   indM <- which(names(adk5)%in%c(metagenomes))
   adk5 <- as.data.table(adk5)
   dk6 <- data.frame(ID = adk5[,"ko"], Means=rowMeans(adk5[,..indM]), SD=rowSds(as.matrix(adk5[,..indM])))
-  dk7 <- adk5[which((dk6$Means!=0) & (dk6$SD>sd_cutoff)),]
+  dk6idx<-order(dk6$SD,decreasing = TRUE)[which((dk6$Means!=0))]
+  cutoff<-as.integer(max(2,sd_cutoff*length(dk6idx)/100))
+  cat('filter_',dim(dk6),length(dk6idx),cutoff,'\n')
+  dk7 <- adk5[dk6idx[1:cutoff],]
 }
 getpathfromKO <- function(KO){
   temp <- kegg[K == KO]
@@ -222,7 +225,7 @@ ui <- fluidPage(
                      downloadButton(outputId = "down4", label = "Download the heatmap")
     ),
     conditionalPanel(condition = "input.conditionedPanels==5 || input.conditionedPanels==4",
-                     sliderInput("ko_sd", "SD cutoff for KO terms", value = 2, min = 0, max = 20)
+                     sliderInput("ko_sd", "SD cutoff for KO terms", value = 20, min = 0, max = 100,step = 0.1)
                      ),
     conditionalPanel(condition = "input.conditionedPanels==5",
                      downloadButton(outputId = "down5", label = "Download KEGG map")
@@ -382,8 +385,9 @@ server <- function(input, output, session) {
       obj[is.na(obj)] <- 0
       rowmean <- data.frame(Means=rowMeans(obj))
       colmean <- data.frame(Means=colMeans(obj))
-      obj <- obj[which(rowmean$Means!=0),which(colmean$Means!=0)]
-      if(dim(obj)[1]>1){
+      idxM<-which(rowmean$Means!=0)
+      obj <- obj[idxM,which(colmean$Means!=0)]
+      if(length(idxM)>1){
         res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
       }else{
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
