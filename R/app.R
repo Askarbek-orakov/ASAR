@@ -670,6 +670,7 @@ server <- function(input, output, session) {
   observeEvent(input$path, {
     output$PathwayID <- renderUI({
       tn <- tn()
+      if(!is.null(tn)){
       tl1 <- tl1()
       mgall <- mgall()
       ko_sd <- ko_sd()
@@ -684,7 +685,7 @@ server <- function(input, output, session) {
       funtax <- Intfuntax(funtax,tl1,tn,'toplevel',NULL)
       names(funtax)[names(funtax) == tl1] <- 'usp'
       selectInput(inputId = "PathwayID", label = "Input Pathway ID", as.vector(getPathwayList(funtax, sp.li =  tn, mgm =  mgall, ko_sd = ko_sd)))
-    })})
+    }})})
 
   pathw <- reactive({input$PathwayID})
 
@@ -742,7 +743,8 @@ server <- function(input, output, session) {
     tl1 <- tl1()
     pathwi<- pathw()
     mgall <-mgall()
-    keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
+    if(!is.null(sp.li)){
+      keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
     if(tl1=='toplevel'){
       keepcols<-c('toplevel',keepcols)
@@ -756,6 +758,7 @@ server <- function(input, output, session) {
     cat(mgall,'-',dim(funtax),'-',names(funtax),'\n-',as.character(mdt[match(mgall,rownames(mdt)), colName()]),'\n')
     names<-as.character(mdt[match(mgall,rownames(mdt)), colName()])
     pathImage(funtax, sp.li, mgall, pathwi, kostat,names)
+    }
     list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
          contentType = 'png',
          alt = "Press GO to select Pathway!")
