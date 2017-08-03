@@ -617,7 +617,11 @@ server <- function(input, output, session) {
       if(input$var3 == "png")
         png(file, width = 3000, height = 3000, pointsize = 35) # open the png device
       else
-        pdf(file, width = 15, height = 15) # open the pdf device
+        w<-h<-15
+        if(numrow4$plot4>50){
+          h<-h*2
+        }
+        pdf(file, width = w, height = h) # open the pdf device
       plotInput4()
       dev.off()
     })
