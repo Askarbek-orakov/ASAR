@@ -298,13 +298,17 @@ server <- function(input, output, session) {
     tl2   <-reactive({input$tl2})
     fl1   <-reactive({input$fl1})
     fl2   <-reactive({input$fl2})
+    taxnames<-reactiveValues(tn=as.character(funtaxall$genus[(nrow(funtaxall)/2)]))
     tn    <-reactive({
+#      isolate({
       if(tl1()=='toplevel'){
         cat('toplevel\n')
-        return('toplevel')
+        taxnames$tn<-'toplevel'
       }else{
-        return(input$tn)
+        taxnames$tn<-input$tn
       }
+#      })
+      return(taxnames$tn)
     })
     fn    <-reactive({input$fn})
     ko_sd <-reactive({input$ko_sd})
@@ -362,8 +366,10 @@ server <- function(input, output, session) {
       })
       
     output$taxNames <- renderUI({x <- input$tl1
+    cat('taxnames!\n')
     if(x!="toplevel"){
-    selectInput(inputId = "tn", label = taxthree, multiple=(input$conditionedPanels!=5), choices = as.vector(unique(funtaxall[,get(x)])), selected = as.character(funtaxall$genus[(nrow(funtaxall)/2)])) 
+      isolate({
+    selectInput(inputId = "tn", label = taxthree, multiple=(input$conditionedPanels!=5), choices = as.vector(unique(funtaxall[,get(x)])), selected = taxnames$tn) })
     }})
     output$funNames <- renderUI({y <- input$fl1
     if(y!="toplevel"){
