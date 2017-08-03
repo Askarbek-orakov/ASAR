@@ -30,6 +30,7 @@ loadRdata <- function(fname){
   load(file = fname)
   return(funtaxall)
 }
+
 funtaxall <- loadRdata("pathview.Rdata")
 source("global.R")
 mergeMetagenomes <- function(funtax, newName, prevNames){
@@ -164,6 +165,7 @@ getPathwayList <- function(funtax, sp.li, mgm, ko_sd) {
   kos<- unique(dk7[,"ko"])
   getpathsfromKOs(unique(dk7[,"ko"]))
 }
+
 chooseDends <- function(res){
   if(dim(res)[1]==1&dim(res)[2]==1){
     dend <- 'none'
