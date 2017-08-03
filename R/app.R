@@ -113,14 +113,38 @@ get_ko_data <- function(funtax, taxon, metagenomes) {
   adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'usp', 'ufun', 'annotation')]),FUN=sum)
 }
 
-pathImage<-function(funtax, sp.li, mgm, pathwi) {
+pathImage<-function(funtax, sp.li, mgm, pathwi, kostat) {
   withProgress(message = paste("Drawing KEGG pathway", pathwi, "for", sp.li, ".", "please wait!"),detail = 'This may take a while...', value = 10, {
   adk5<-get_ko_data(funtax, sp.li, mgm)
   rownames(adk5)<-adk5$ko
   adk5<-adk5[,-1]
-  pathview(gene.data = adk5, pathway.id = pathwi,
-           species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
-           limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
+  cat(dim(adk5),'\n')
+  indRow <- match(rownames(adk5),rownames(kostat))
+  indCol <- match(colnames(adk5),colnames(kostat))
+  cat(length(indCol),head(indCol),length(indRow),dim(kostat),'\n')
+  if(any(is.na(indCol))|any(is.na(indRow))){
+    showModal(modalDialog(
+      title = titleForNonMatchKostat, textForNonMatchKostat, easyClose = TRUE, footer = NULL
+    ))
+  } else {
+    kostat <- kostat[indRow, indCol]
+    ind0 <- apply(kostat,2,function(.x){which(.x==0)})
+    if(any(sapply(1:length(ind0), function(i){any(adk5[ind0[[i]],names(ind0)[i]]!=0)}))){
+      showModal(modalDialog(
+        title = titleForNonMatchZerosKostat, textForNonMatchZerosKostat, easyClose = TRUE, footer = NULL
+      ))
+    } else {
+      sapply(1:length(ind0), function(i){kostat[ind0[[i]],names(ind0)[i]] <<- 10^(-5)})
+      adk5 <- adk5/kostat*100
+      pathview(gene.data = adk5, pathway.id = pathwi,
+               species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
+               limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
+    }
+    
+    
+    
+  }
+  
   })
 }
 filter_stats <- function(funtax, taxon, metagenomes, sd_cutoff) {
@@ -180,7 +204,15 @@ chooseDends <- function(res){
   }
   return(dend)
 }
-
+kostat <- function(funtaxall, d.kres){
+  funtaxall <- funtaxall[,-c("usp","species", "genus", "family", "order", "class", "phylum", "domain","ufun", "FUN2", "FUN3", "FUN4")]
+  d5.1<-funtaxall[,list(m5=unlist(str_split(md5,','))),by=.(md5)]
+  d5<-merge(d5.1,funtaxall,by='md5')
+  dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
+  adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'annotation')]),FUN=sum)
+  rownames(adk5)<- adk5$ko
+  adk5 <- adk5[,-1]
+}
 ui <- fluidPage(
   titlePanel(maintitle),
   sidebarPanel(
@@ -683,7 +715,7 @@ server <- function(input, output, session) {
     content = function(file) {
       plotInput5()
     })
-  
+  kostat <- kostat(funtaxall, d.kres)
   output$Pathway <- renderImage({
     sp.li<- tn()
     tl1 <- tl1()
@@ -699,7 +731,7 @@ server <- function(input, output, session) {
     }
     funtax <- Intfuntax(funtax,tl1,sp.li,'toplevel',NULL)
     names(funtax)[names(funtax) == tl1] <- 'usp'
-    pathImage(funtax, sp.li, mgall, pathwi)
+    pathImage(funtax, sp.li, mgall, pathwi, kostat)
     cat(paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"))
     list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
          contentType = 'png',
