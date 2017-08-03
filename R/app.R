@@ -281,7 +281,7 @@ ui <- fluidPage(
                      ),
     conditionalPanel(condition = "input.conditionedPanels==7",
                      h3("Your Metadata"),
-                     selectInput("colName", ColNameSelectorTitle, choices = colnames(mdt), selected = colnames(mdt[,1]), selectize = FALSE)
+                     selectInput("colName", ColNameSelectorTitle, choices = colnames(mdt), selected = colName, selectize = FALSE)
                      ),
     width = 3),
   
@@ -324,10 +324,10 @@ server <- function(input, output, session) {
   colName <- reactive({input$colName})
   
   output$Mgall <- renderUI({
-    selectInput(inputId = "mgall", label = metagenomeone, choices = setNames(c(colnames(funtaxall)[-c(1:13)]), mdt[,input$colName]), selected = c(colnames(funtaxall)[metagenome1selected]), selectize = TRUE, multiple = TRUE)
+    selectInput(inputId = "mgall", label = metagenomeone, choices = setNames(c(colnames(funtaxall)[-c(1:13)]), mdt[,colName()]), selected = c(colnames(funtaxall)[metagenome1selected]), selectize = TRUE, multiple = TRUE)
   })
   output$mg1 <- renderUI({
-    selectInput(inputId = "mg1", label = metagenometwo, choices = setNames(c(colnames(funtaxall)[-c(1:13)]), mdt[,input$colName]), selected = c(colnames(funtaxall)[metagenome2selected]), selectize = FALSE)
+    selectInput(inputId = "mg1", label = metagenometwo, choices = setNames(c(colnames(funtaxall)[-c(1:13)]), mdt[,colName()]), selected = c(colnames(funtaxall)[metagenome2selected]), selectize = FALSE)
   })  
   observeEvent(input$loadRdata, {
     inFile <- input$InFile
