@@ -26,6 +26,7 @@ library(rhandsontable)
 options(shiny.maxRequestSize=10*1024^3)
 load("mdt.Rdata")
 load("keggmappings.Rdata")
+ko.path.name<-ko.path.name[-grep('ko01100',ko.path.name$ko),]
 loadRdata <- function(fname){
   load(file = fname)
   return(funtaxall)
@@ -137,9 +138,15 @@ pathwayHeatmap<-function(funtax,sp.lis, mgms, ko_sd) {
   adk6<-adk5[,list(pat=unlist(str_split(pathwayID,','))),by=.(ko)]
   a6<-merge(adk6,adk5[,..indC],by='ko')
   a7<-aggregate(.~pat,as.data.frame(a6[,-c('ko')]),FUN=sum)
-  rownames(a7)<-a7$pat
+  pnameIdx<-match(paste0('ko',a7$pat),ko.path.name$ko)
+  a7<-a7[!is.na(pnameIdx),]
+  cat(unlist(head(a7,1)),names(a7),'\n')
+  cat(pnameIdx,'\n')
+  pnameIdx<-pnameIdx[!is.na(pnameIdx)]
+  cat('heatmap',dim(adk5),dim(adk6),dim(a7),length(pnameIdx),'\n')
+  rownames(a7)<-ko.path.name$name[pnameIdx]
   a8<- as.matrix(a7[,-1])
-  rownames(a8) <- a7$pat
+  rownames(a8) <- ko.path.name$name[pnameIdx]
   return(a8)
 }
 getpathsfromKOs <- function(KOs){
