@@ -524,8 +524,11 @@ server <- function(input, output, session) {
       }
       res[is.na(res)] <- 0
       numrow3$plot3 <- dim(res)[1]
-      
-      d3heatmap(res,dendrogram = chooseDends(res), xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal) 
+      if(dim(res)[1]>1 & dim(res)[2]>1){
+        d3heatmap(res,dendrogram = chooseDends(res), xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal) 
+      }else{
+        
+      }
     })
   output$dynamic3 <- renderUI({
     d3heatmapOutput("plot3", height = paste0(numrow3$plot3*input$pix3+220, "px"))
