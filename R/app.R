@@ -113,14 +113,14 @@ returnAppropriateObj<-function(obj, norm, log){
 }
 get_ko_data <- function(funtax, taxon, metagenomes) {
   d<-getSpecieFromAbundMD5_2(funtax,sp = taxon,aggregate = FALSE)
-  indC<-which(names(d)%in%c('md5',metagenomes))
+  indC<-c(which(names(d)=='md5'),match(metagenomes,names(d)))
   d5.1<-d[,list(m5=unlist(str_split(md5,','))),by=.(usp,ufun,md5)]
   d5<-merge(d5.1,d[,..indC],by='md5')
   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
   adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'usp', 'ufun', 'annotation')]),FUN=sum)
 }
 
-pathImage<-function(funtax, sp.li, mgm, pathwi, kostat) {
+pathImage<-function(funtax, sp.li, mgm, pathwi, kostat,names) {
   withProgress(message = paste("Drawing KEGG pathway", pathwi, "for", sp.li, ".", "please wait!"),detail = 'This may take a while...', value = 10, {
   adk5<-get_ko_data(funtax, sp.li, mgm)
   rownames(adk5)<-adk5$ko
@@ -141,7 +141,11 @@ pathImage<-function(funtax, sp.li, mgm, pathwi, kostat) {
     } else {
       sapply(1:length(ind0), function(i){kostat[ind0[[i]],names(ind0)[i]] <<- 10^(-5)})
       adk5 <- adk5/kostat*100
-      pathview(gene.data = adk5, pathway.id = pathwi,
+      cat(class(adk5),dim(adk5),colnames(adk5),'\n',mgm,'\n')
+      obj<-as.matrix(adk5)
+      colnames(obj)<-names
+      obj<-log10(avearrays(obj)+1)
+      pathview(gene.data = obj, pathway.id = pathwi,
                species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
                limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
     }
@@ -722,8 +726,7 @@ server <- function(input, output, session) {
     keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
     funtax <- Intfuntax(funtax,tl1,sp.li,'toplevel',NULL)
-    names(funtax)[names(funtax) == tl1] <- 'usp'
-    x <- pathImage(funtax, sp.li, mgall, pathwi)
+    x <- pathImage(funtax, sp.li, mgall, pathwi,names = names)
     }
   
   output$down5 <- downloadHandler(
@@ -749,7 +752,10 @@ server <- function(input, output, session) {
     }
     funtax <- Intfuntax(funtax,tl1,sp.li,'toplevel',NULL)
     names(funtax)[names(funtax) == tl1] <- 'usp'
-    pathImage(funtax, sp.li, mgall, pathwi, kostat)
+    names(funtax)[names(funtax) == tl1] <- 'usp'
+    cat(mgall,'-',dim(funtax),'-',names(funtax),'\n-',as.character(mdt[match(mgall,rownames(mdt)), colName()]),'\n')
+    names<-as.character(mdt[match(mgall,rownames(mdt)), colName()])
+    pathImage(funtax, sp.li, mgall, pathwi, kostat,names)
     list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
          contentType = 'png',
          alt = "Press GO to select Pathway!")
