@@ -239,8 +239,7 @@ ui <- fluidPage(
                      actionButton("saveRdata", "Save current Rdata")
     ),
     conditionalPanel(condition = "input.conditionedPanels==7",
-                     helpText("You cannot add or remove column when column types are defined (i.e. Use Data Types is set as 'TRUE')."),
-                     radioButtons("useType", "Use Data Types", c("FALSE", "TRUE"))
+                     h3("Your Metadata")
     ),
     width = 3),
   
@@ -259,11 +258,14 @@ ui <- fluidPage(
                selectInput(inputId = "colorPalette", label = "Choose color palette for heatmaps", choices = rownames(brewer.pal.info[which(brewer.pal.info$category=="seq"),]), selected = currentPalette),
                plotOutput("paletteOutput"), 
                actionButton("save_changes", "Save Changes"), value = 6),
-      tabPanel("Metadata",rHandsontableOutput("hot"), h3("Add a new column"),
-               div(class='row', div(class="col-sm-5", uiOutput("ui_newcolname"), actionButton("addcolumn", "Add")), div(class="col-sm-4", 
-               radioButtons("newcolumntype", "Type", c("integer", "double", "character"))),
+      tabPanel("Metadata",rHandsontableOutput("hot"),
+               div(class='row', div(h3("Edit Your Metadata"), class="col-sm-5", uiOutput("ui_newcolname")), div(class="col-sm-4", h3("Select the type of a new column"), 
+               radioButtons("newcolumntype", "Type of a new column", c("integer", "double", "character"))),
                div(class="col-sm-3")
-               ), actionButton("saveBtn", "Save"), value = 7) #dataTableOutput("table1")
+               ), 
+               actionButton("addcolumn", "Press here to create a coumn"),
+               actionButton("addcolumn2", "Save a new column"),
+               actionButton("saveBtn", "Save the metadata"), value = 7) #dataTableOutput("table1")
     ), width = 9)
 )
 
@@ -674,19 +676,21 @@ server <- function(input, output, session) {
     if (!is.null(values[["hot"]])) {
       #write.table(values[["hot"]], "mtcarsss")
       mdt <<- values[["hot"]]
-      save(mdt, funtaxall, d.kres, kegg, file = "pathview.Rdata")
+      save(mdt, funtaxall, d.kres, kegg, ko.path.name, file = "pathview.Rdata")
     }
   })
   
   output$hot <- renderRHandsontable({
-    if (input$useType==TRUE) {
+    if (pressed$a==FALSE){
+      DF <- values[["DF"]] 
+      if (!is.null(DF)){
+        rhandsontable(DF, useTypes = FALSE, stretchH = "all")
+      }
+    } else {
     DF = data()
     if (!is.null(DF))
-      rhandsontable(DF, useTypes = as.logical(input$useType), stretchH = "all")
-    } else {
-    DF <- values[["DF"]] }
-    if (!is.null(DF))
-      rhandsontable(DF, useTypes = as.logical(input$useType), stretchH = "all")
+      rhandsontable(DF, useTypes = TRUE, stretchH = "all")
+    }
   })
   
   observe({
@@ -703,14 +707,21 @@ server <- function(input, output, session) {
   })
 
   output$ui_newcolname <- renderUI({
-    textInput("newcolumnname", "Name", sprintf("newcol%s", 1+ncol(values[["DF"]])))
+    textInput("newcolumnname", "Name a new column", sprintf("newcol%s", 1+ncol(values[["DF"]])))
   })
 
+  pressed <- reactiveValues(a=TRUE)
+  
   observeEvent(input$addcolumn, {
+    pressed$a <- FALSE
     DF <- isolate(values[["DF"]])
     values[["previous"]] <- DF
     newcolumn <- eval(parse(text=sprintf('%s(nrow(DF))', isolate(input$newcolumntype))))
     values[["DF"]] <- setNames(cbind(DF, newcolumn, stringsAsFactors=FALSE), c(names(DF), isolate(input$newcolumnname)))
+  })
+  
+  observeEvent(input$addcolumn2, {
+    pressed$a <- TRUE
   })
   
   observeEvent(input$save_changes, {
