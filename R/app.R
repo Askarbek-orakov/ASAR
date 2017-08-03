@@ -40,7 +40,9 @@ mergeMetagenomes <- function(funtax, newName, prevNames){
 }
 Intfuntax <- function(result2, t1, tn, f1, fn, t2=NULL, f2=NULL){
   if(t1!="toplevel"){
-    result2 <- result2[grep(tn, result2[,get(t1)])]
+    idx<-unique(unlist(sapply(tn,grep,x=result2[,get(t1)])))
+    result2 <- result2[idx]
+    cat(tn,class(result2),dim(result2),names(result2),t1,'.',t2,'.','\n')
   }
   if(f1!="toplevel"){
     result2 <- result2[grep(fn, result2[,get(f1)])]
@@ -353,7 +355,7 @@ server <- function(input, output, session) {
       
     output$taxNames <- renderUI({x <- input$tl1
     if(x!="toplevel"){
-    selectInput(inputId = "tn", label = taxthree, choices = as.vector(unique(funtaxall[,get(x)])), selected = as.character(funtaxall$genus[(nrow(funtaxall)/2)])) 
+    selectInput(inputId = "tn", label = taxthree, multiple=(input$conditionedPanels!=5), choices = as.vector(unique(funtaxall[,get(x)])), selected = as.character(funtaxall$genus[(nrow(funtaxall)/2)])) 
     }})
     output$funNames <- renderUI({y <- input$fl1
     if(y!="toplevel"){
