@@ -72,12 +72,14 @@ getSpecieFromAbundMD5<-function(taxall, tx=tx, sp = SpName, aggregate=FALSE){
   drops <- c("domain","phylum", "class", "order", "family", "genus", "species" ,"usp" )
   drops <- drops[drops!= tx]
   dd.res <- taxall[ , !(names(taxall) %in% drops), with = FALSE]
-  d.res<-dd.res[grep(sp,dd.res[,get(tx)])]
+  idx<-unique(unlist(sapply(sp,grep,x=dd.res[,get(tx)])))
+  d.res<-dd.res[idx]
   if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-c(1,2)],FUN = sum)
   return(d.res)
 }
 getSpecieFromAbundMD5_2<-function(d.bm,sp=SpName,aggregate=FALSE){
-  d.res<-d.bm[grep(sp,d.bm$usp),]
+  idx<-unique(unlist(sapply(sp,grep,x=d.bm$usp)))
+  d.res<-d.bm[idx]
   if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-c(1,3)],FUN = sum)
   return(d.res)
 }
