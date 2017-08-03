@@ -211,9 +211,9 @@ ui <- fluidPage(
   titlePanel(maintitle),
   sidebarPanel(
     conditionalPanel(condition = "input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 || input.conditionedPanels==5",
-                     selectInput(inputId = "mgall", label = metagenomeone, choices = setNames(c(colnames(funtaxall)[-c(1:13)]), mdt[,colName]), selected = c(colnames(funtaxall)[metagenome1selected]), selectize = TRUE, multiple = TRUE)),
+                     uiOutput("Mgall")),
     conditionalPanel(condition = "input.conditionedPanels==1",
-                     selectInput(inputId = "mg1", label = metagenometwo, choices = setNames(c(colnames(funtaxall)[-c(1:13)]), mdt[,colName]), selected = c(colnames(funtaxall)[metagenome2selected]), selectize = FALSE)),
+                     uiOutput("mg1")),
     conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 || input.conditionedPanels==5",
                      selectInput(inputId = "tl1", label = taxone, choices = tax1n, selected = tax1selected, selectize = FALSE),
                      uiOutput("taxNames")),
@@ -269,8 +269,9 @@ ui <- fluidPage(
                      actionButton("saveRdata", "Save current Rdata")
                      ),
     conditionalPanel(condition = "input.conditionedPanels==7",
-                     h3("Your Metadata")
-    ),
+                     h3("Your Metadata"),
+                     selectInput("colName", ColNameSelectorTitle, choices = colnames(mdt), selected = colnames(mdt[,1]), selectize = FALSE)
+                     ),
     width = 3),
   
   mainPanel(
@@ -309,7 +310,14 @@ server <- function(input, output, session) {
   set_funlevel2 <-reactive({input$set_funlevel2})
   colorPalette <-reactive({input$colorPalette})
   colPal <- reactive({brewer.pal(9, input$colorPalette)})
+  colName <- reactive({input$colName})
   
+  output$Mgall <- renderUI({
+    selectInput(inputId = "mgall", label = metagenomeone, choices = setNames(c(colnames(funtaxall)[-c(1:13)]), mdt[,input$colName]), selected = c(colnames(funtaxall)[metagenome1selected]), selectize = TRUE, multiple = TRUE)
+  })
+  output$mg1 <- renderUI({
+    selectInput(inputId = "mg1", label = metagenometwo, choices = setNames(c(colnames(funtaxall)[-c(1:13)]), mdt[,input$colName]), selected = c(colnames(funtaxall)[metagenome2selected]), selectize = FALSE)
+  })  
   observeEvent(input$loadRdata, {
     inFile <- input$InFile
     funtaxall <<- loadRdata(inFile$datapath)
@@ -451,7 +459,7 @@ server <- function(input, output, session) {
     funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,f2 = fl2)
     obj <- funtax[,-c(1)]
     rownames(obj)<-funtax[,fl2]
-    colnames(obj)<-as.character(mdt[c(colnames(obj)), colName])
+    colnames(obj)<-as.character(mdt[c(colnames(obj)), colName()])
     dk6 <- data.frame(Means=rowMeans(obj))
     obj <- obj[which(dk6$Means!=0),]
     obj <- as.matrix(obj)
@@ -495,7 +503,7 @@ server <- function(input, output, session) {
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,f2 = fl2)
       obj <- funtax[,-c(1)]
       rownames(obj)<-funtax[,fl2]
-      colnames(obj)<-as.character(mdt[c(colnames(obj)), colName])
+      colnames(obj)<-as.character(mdt[c(colnames(obj)), colName()])
       dk6 <- data.frame(Means=rowMeans(obj))
       obj <- obj[which(dk6$Means!=0),]
       obj <- as.matrix(obj)
@@ -533,7 +541,7 @@ server <- function(input, output, session) {
     funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2)
     obj <- funtax[,-c(1)]
     rownames(obj)<-funtax[,tl2]
-    colnames(obj)<-as.character(mdt[c(colnames(obj)), colName])
+    colnames(obj)<-as.character(mdt[c(colnames(obj)), colName()])
     dk6 <- data.frame(Means=rowMeans(obj))
     obj <- obj[which(dk6$Means!=0),]
     obj <- as.matrix(obj)
@@ -578,7 +586,7 @@ server <- function(input, output, session) {
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2)
       obj <- funtax[,-c(1)]
       rownames(obj)<-funtax[,tl2]
-      colnames(obj)<-as.character(mdt[c(colnames(obj)), colName])
+      colnames(obj)<-as.character(mdt[c(colnames(obj)), colName()])
       dk6 <- data.frame(Means=rowMeans(obj))
       obj <- obj[which(dk6$Means!=0),]
       obj <- as.matrix(obj)
@@ -614,7 +622,7 @@ server <- function(input, output, session) {
     funtax <- funtaxall[,..keepcols]
     names(funtax)[names(funtax) == tl1] <- 'usp'
     obj<-pathwayHeatmap(funtax, tn, mgall, ko_sd)
-    colnames(obj)<-as.character(mdt[c(colnames(obj)), colName])
+    colnames(obj)<-as.character(mdt[c(colnames(obj)), colName()])
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none")
     mat3[is.na(mat3)] <- 0
     x <- heatmap.2(mat3,dendrogram = chooseDends(mat3), col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
@@ -670,7 +678,7 @@ server <- function(input, output, session) {
     funtax <- funtaxall[,..keepcols]
     names(funtax)[names(funtax) == tl1] <- 'usp'
     obj<-pathwayHeatmap(funtax, tn, mgall, ko_sd)
-    colnames(obj)<-as.character(mdt[c(colnames(obj)), colName])
+    colnames(obj)<-as.character(mdt[c(colnames(obj)), colName()])
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none")
     mat3[is.na(mat3)] <- 0
     numrow4$plot4 <- dim(mat3)[1]

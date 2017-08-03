@@ -4,6 +4,7 @@ titleForDimErrorPopup <- "Wrong Heatmap dimensions!"
 textForDimErrorPopup <- "Please select other function or taxon or go one level higher."
 titleForNonMatchKostat <- "Error with annotation files!"
 textForNonMatchKostat <- "There is inconsistency within KEGG Orthology Annotation file."
+ColNameSelectorTitle <- "Please select column name of metadata to select samples by."
 metagenomeone <-"Choose metagenome samples"
 metagenome1selected <- c(14,15)
 metagenometwo <- "Choose one metagenome sample"
