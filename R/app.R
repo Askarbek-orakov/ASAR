@@ -26,6 +26,7 @@ library(rhandsontable)
 load("pathview.Rdata")
 options(shiny.maxRequestSize=10*1024^3)
 ko.path.name<-ko.path.name[-grep('ko01100',ko.path.name$ko),]
+kegg <- kegg[-grep('ko01100', kegg$ko),]
 loadRdata <- function(fname){
   load(file = fname)
   return(funtaxall)
@@ -43,7 +44,6 @@ Intfuntax <- function(result2, t1, tn, f1, fn, t2=NULL, f2=NULL){
   if(t1!="toplevel"){
     idx<-unique(unlist(sapply(tn,grep,x=result2[,get(t1)])))
     result2 <- result2[idx]
-    cat(tn,class(result2),dim(result2),names(result2),t1,'.',t2,'.','\n')
   }
   if(f1!="toplevel"){
     result2 <- result2[grep(fn, result2[,get(f1)])]
@@ -118,10 +118,8 @@ pathImage<-function(funtax, sp.li, mgm, pathwi, kostat) {
   adk5<-get_ko_data(funtax, sp.li, mgm)
   rownames(adk5)<-adk5$ko
   adk5<-adk5[,-1]
-  cat(dim(adk5),'\n')
   indRow <- match(rownames(adk5),rownames(kostat))
   indCol <- match(colnames(adk5),colnames(kostat))
-  cat(length(indCol),head(indCol),length(indRow),dim(kostat),'\n')
   if(any(is.na(indCol))|any(is.na(indRow))){
     showModal(modalDialog(
       title = titleForNonMatchKostat, textForNonMatchKostat, easyClose = TRUE, footer = NULL
@@ -154,7 +152,6 @@ filter_stats <- function(funtax, taxon, metagenomes, sd_cutoff) {
   dk6 <- data.frame(ID = adk5[,"ko"], Means=rowMeans(adk5[,..indM]), SD=rowSds(as.matrix(adk5[,..indM])))
   dk6idx<-order(dk6$SD,decreasing = TRUE)[which((dk6$Means!=0))]
   cutoff<-as.integer(max(2,sd_cutoff*length(dk6idx)/100))
-  cat('filter_',dim(dk6),length(dk6idx),cutoff,'\n')
   dk7 <- adk5[dk6idx[1:cutoff],]
 }
 getpathfromKO <- function(KO){
@@ -172,10 +169,7 @@ pathwayHeatmap<-function(funtax,sp.lis, mgms, ko_sd) {
   a7<-aggregate(.~pat,as.data.frame(a6[,-c('ko')]),FUN=sum)
   pnameIdx<-match(paste0('ko',a7$pat),ko.path.name$ko)
   a7<-a7[!is.na(pnameIdx),]
-  cat(unlist(head(a7,1)),names(a7),'\n')
-  cat(pnameIdx,'\n')
   pnameIdx<-pnameIdx[!is.na(pnameIdx)]
-  cat('heatmap',dim(adk5),dim(adk6),dim(a7),length(pnameIdx),'\n')
   rownames(a7)<-ko.path.name$name[pnameIdx]
   a8<- as.matrix(a7[,-1])
   rownames(a8) <- ko.path.name$name[pnameIdx]
@@ -336,7 +330,6 @@ server <- function(input, output, session) {
     fl2   <-reactive({input$fl2})
     tn    <-reactive({
       if(tl1()=='toplevel'){
-        cat('toplevel\n')
         return('toplevel')
       }else{
         return(input$tn)
@@ -732,7 +725,6 @@ server <- function(input, output, session) {
     funtax <- Intfuntax(funtax,tl1,sp.li,'toplevel',NULL)
     names(funtax)[names(funtax) == tl1] <- 'usp'
     pathImage(funtax, sp.li, mgall, pathwi, kostat)
-    cat(paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"))
     list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
          contentType = 'png',
          alt = "Press GO to select Pathway!")
