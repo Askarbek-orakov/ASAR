@@ -529,7 +529,9 @@ server <- function(input, output, session) {
       if(dim(res)[1]>1 & dim(res)[2]>1){
         d3heatmap(res,dendrogram = chooseDends(res), xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal) 
       }else{
-        
+        showModal(modalDialog(
+          title = titleForDimErrorPopup, textForDimErrorPopup, easyClose = TRUE, footer = NULL
+        ))
       }
     })
   output$dynamic3 <- renderUI({
