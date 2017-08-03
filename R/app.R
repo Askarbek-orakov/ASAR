@@ -23,9 +23,8 @@ library(d3heatmap)
 library(gplots)
 library(RColorBrewer)
 library(rhandsontable)
+load("pathview.Rdata")
 options(shiny.maxRequestSize=10*1024^3)
-load("mdt.Rdata")
-load("keggmappings.Rdata")
 ko.path.name<-ko.path.name[-grep('ko01100',ko.path.name$ko),]
 loadRdata <- function(fname){
   load(file = fname)
@@ -112,13 +111,16 @@ get_ko_data <- function(funtax, taxon, metagenomes) {
   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
   adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'usp', 'ufun', 'annotation')]),FUN=sum)
 }
+
 pathImage<-function(funtax, sp.li, mgm, pathwi) {
+  withProgress(message = paste("Drawing KEGG pathway", pathwi, "for", sp.li, ".", "please wait!"),detail = 'This may take a while...', value = 10, {
   adk5<-get_ko_data(funtax, sp.li, mgm)
   rownames(adk5)<-adk5$ko
   adk5<-adk5[,-1]
   pathview(gene.data = adk5, pathway.id = pathwi,
            species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
            limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
+  })
 }
 filter_stats <- function(funtax, taxon, metagenomes, sd_cutoff) {
   adk5 <- get_ko_data(funtax, taxon, metagenomes)
@@ -239,15 +241,8 @@ ui <- fluidPage(
                      actionButton("saveRdata", "Save current Rdata")
     ),
     conditionalPanel(condition = "input.conditionedPanels==7",
-                     h3("Table options"),
-                     radioButtons("useType", "Use Data Types", c("FALSE", "TRUE")),
-                     h3("Download the metadata"), 
-                     div(class='row', 
-                         div(class="col-sm-6", 
-                             actionButton("save", "Download")),
-                         div(class="col-sm-6",
-                             radioButtons("fileType", "File type", c("txt", "pdf")))
-                     )
+                     helpText("You cannot add or remove column when column types are defined (i.e. Use Data Types is set as 'TRUE')."),
+                     radioButtons("useType", "Use Data Types", c("FALSE", "TRUE"))
     ),
     width = 3),
   
@@ -267,14 +262,10 @@ ui <- fluidPage(
                plotOutput("paletteOutput"), 
                actionButton("save_changes", "Save Changes"), value = 6),
       tabPanel("Metadata",rHandsontableOutput("hot"), h3("Add a new column"),
-               div(class='row', 
-                   div(class="col-sm-5", 
-                       uiOutput("ui_newcolname"),
-                       actionButton("addcolumn", "Add")),
-                   div(class="col-sm-4", 
-                       radioButtons("newcolumntype", "Type", c("integer", "double", "character"))),
-                   div(class="col-sm-3")
-               ), value = 7) #dataTableOutput("table1")
+               div(class='row', div(class="col-sm-5", uiOutput("ui_newcolname"), actionButton("addcolumn", "Add")), div(class="col-sm-4", 
+               radioButtons("newcolumntype", "Type", c("integer", "double", "character"))),
+               div(class="col-sm-3")
+               ), actionButton("saveBtn", "Save"), value = 7) #dataTableOutput("table1")
     ), width = 9)
 )
 
@@ -661,12 +652,49 @@ server <- function(input, output, session) {
   }, deleteFile = FALSE)
   
   
+  values = reactiveValues()
   
-  values <- reactiveValues()
+  data = reactive({
+    if (is.null(input$hot)) {
+      hot = mdt
+    } else {
+      hot = hot_to_r(input$hot)
+    }
+    
+    # this would be used as a function input
+    values[["hot"]] = hot
+    hot
+  })
   
-  data1 <- reactive({
+  observeEvent(input$saveBtn,{
+      showModal(modalDialog(
+      title = "You have saved your metadata!",
+      "Your changes will be applied after you restart the app. Saving process may take a few seconds. Please, restart the app!",
+      easyClose = TRUE,
+      footer = NULL
+    ))
+    if (!is.null(values[["hot"]])) {
+      #write.table(values[["hot"]], "mtcarsss")
+      mdt <<- values[["hot"]]
+      save(mdt, funtaxall, d.kres, kegg, file = "pathview.Rdata")
+    }
+  })
+  
+  output$hot <- renderRHandsontable({
+    if (input$useType==TRUE) {
+    DF = data()
+    if (!is.null(DF))
+      rhandsontable(DF, useTypes = as.logical(input$useType), stretchH = "all")
+    } else {
+    DF <- values[["DF"]] }
+    if (!is.null(DF))
+      rhandsontable(DF, useTypes = as.logical(input$useType), stretchH = "all")
+  })
+  
+  observe({
+    input$saveBtn
     if (!is.null(input$hot)) {
-      DF <- hot_to_r(input$hot)
+      DF = hot_to_r(input$hot)
     } else {
       if (is.null(values[["DF"]]))
         DF <- mdt
@@ -674,36 +702,18 @@ server <- function(input, output, session) {
         DF <- values[["DF"]]
     }
     values[["DF"]] <- DF
-    DF
   })
-  
-  output$hot <- renderRHandsontable({
-    DF = data1()
-    if (!is.null(DF))
-      rhandsontable(DF, useTypes = as.logical(input$useType), stretchH = "all")
-  })
+
   output$ui_newcolname <- renderUI({
     textInput("newcolumnname", "Name", sprintf("newcol%s", 1+ncol(values[["DF"]])))
   })
+
   observeEvent(input$addcolumn, {
     DF <- isolate(values[["DF"]])
     values[["previous"]] <- DF
     newcolumn <- eval(parse(text=sprintf('%s(nrow(DF))', isolate(input$newcolumntype))))
     values[["DF"]] <- setNames(cbind(DF, newcolumn, stringsAsFactors=FALSE), c(names(DF), isolate(input$newcolumnname)))
   })
-  #output$table1 <- renderDataTable(as.matrix(mdt))
-  
-  observeEvent(input$save, {
-    fileType <- isolate(input$fileType)
-    finalDF <- isolate(values[["DF"]])
-    if(fileType == "txt"){
-      dput(finalDF, file=file.path(outdir, sprintf("%s.txt", outfilename)))
-    }
-    else{
-      saveRDS(finalDF, file=file.path(outdir, sprintf("%s.rds", outfilename)))
-    }
-  }
-  )
   
   observeEvent(input$save_changes, {
     tax1selected <-set_taxlevel1()
