@@ -599,7 +599,7 @@ server <- function(input, output, session) {
     names(funtax)[names(funtax) == tl1] <- 'usp'
     obj<-pathwayHeatmap(funtax, tn, mgall, ko_sd)
     colnames(obj)<-as.character(mdt[c(colnames(obj)), colName])
-    mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none")
+    mat3 <- plotHeatmap(obj,100,norm = FALSE, log = TRUE,trace = "none")
     mat3[is.na(mat3)] <- 0
     x <- heatmap.2(mat3,dendrogram = chooseDends(mat3), col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
   }
@@ -655,7 +655,7 @@ server <- function(input, output, session) {
     names(funtax)[names(funtax) == tl1] <- 'usp'
     obj<-pathwayHeatmap(funtax, tn, mgall, ko_sd)
     colnames(obj)<-as.character(mdt[c(colnames(obj)), colName])
-    mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none")
+    mat3 <- plotHeatmap(obj,100,norm = FALSE, log = TRUE,trace = "none")
     mat3[is.na(mat3)] <- 0
     numrow4$plot4 <- dim(mat3)[1]
     if(dim(mat3)[1]>1 & dim(mat3)[2]>1){
