@@ -36,7 +36,7 @@ set_taxtwo <- "taxlevel 2"
 set_funcone <- "funlevel 1"
 set_functwo <- "funlevel 2"
 currentPalette <- "Blues"
-colName <- "MGN"
+colName <- "Group"
 if(file.exists("Settings.Rdata")){
   load("Settings.Rdata")
 }

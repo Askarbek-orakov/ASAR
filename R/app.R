@@ -23,8 +23,12 @@ library(d3heatmap)
 library(gplots)
 library(RColorBrewer)
 library(rhandsontable)
+library(limma)
 load("pathview.Rdata")
 options(shiny.maxRequestSize=10*1024^3)
+mdt$Group<-paste(gsub('is','IGBS',gsub('sws','SS',mdt$Origin)),mdt$Source)
+mdt$Group<-gsub('inflow inflow','SW',gsub(' inoculum','',mdt$Group))
+
 ko.path.name<-ko.path.name[-grep('ko01100',ko.path.name$ko),]
 kegg <- kegg[-grep('ko01100', kegg$ko),]
 loadRdata <- function(fname){
@@ -73,12 +77,14 @@ getSpecieFromAbundMD5<-function(taxall, tx=tx, sp = SpName, aggregate=FALSE){
   drops <- c("domain","phylum", "class", "order", "family", "genus", "species" ,"usp" )
   drops <- drops[drops!= tx]
   dd.res <- taxall[ , !(names(taxall) %in% drops), with = FALSE]
-  d.res<-dd.res[grep(sp,dd.res[,get(tx)])]
+  idx<-unique(unlist(sapply(sp,grep,x=dd.res[,get(tx)])))
+  d.res<-dd.res[idx]
   if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-c(1,2)],FUN = sum)
   return(d.res)
 }
 getSpecieFromAbundMD5_2<-function(d.bm,sp=SpName,aggregate=FALSE){
-  d.res<-d.bm[grep(sp,d.bm$usp),]
+  idx<-unique(unlist(sapply(sp,grep,x=d.bm$usp)))
+  d.res<-d.bm[idx]
   if(aggregate&dim(d.res)[1]>1) d.res<-aggregate(.~ufun,as.data.frame(d.res)[,-c(1,3)],FUN = sum)
   return(d.res)
 }
@@ -95,7 +101,8 @@ plotHeatmap<-function(obj,n,norm=TRUE,log=TRUE,fun=sd,...){
 }
 returnAppropriateObj<-function(obj, norm, log){
   if(class(obj)!='matrix') stop('Obj should be a matrix')
-  res<-obj
+  res<-avearrays(obj)
+
   if(log){
     res<-log2(res+1)
   }
@@ -336,12 +343,17 @@ server <- function(input, output, session) {
     tl2   <-reactive({input$tl2})
     fl1   <-reactive({input$fl1})
     fl2   <-reactive({input$fl2})
+    taxnames<-reactiveValues(tn=as.character(funtaxall$genus[(nrow(funtaxall)/2)]))
     tn    <-reactive({
+#      isolate({
       if(tl1()=='toplevel'){
-        return('toplevel')
+        cat('toplevel\n')
+        taxnames$tn<-'toplevel'
       }else{
-        return(input$tn)
+        taxnames$tn<-input$tn
       }
+#      })
+      return(taxnames$tn)
     })
     fn    <-reactive({input$fn})
     ko_sd <-reactive({input$ko_sd})
@@ -400,7 +412,8 @@ server <- function(input, output, session) {
       
     output$taxNames <- renderUI({x <- input$tl1
     if(x!="toplevel"){
-    selectInput(inputId = "tn", label = taxthree, multiple=(input$conditionedPanels!=5), choices = as.vector(unique(funtaxall[,get(x)])), selected = as.character(funtaxall$genus[(nrow(funtaxall)/2)])) 
+      isolate({
+    selectInput(inputId = "tn", label = taxthree, multiple=(input$conditionedPanels!=5), choices = as.vector(unique(funtaxall[,get(x)])), selected = taxnames$tn) })
     }})
     output$funNames <- renderUI({y <- input$fl1
     if(y!="toplevel"){
@@ -623,7 +636,7 @@ server <- function(input, output, session) {
     names(funtax)[names(funtax) == tl1] <- 'usp'
     obj<-pathwayHeatmap(funtax, tn, mgall, ko_sd)
     colnames(obj)<-as.character(mdt[c(colnames(obj)), colName()])
-    mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none")
+    mat3 <- plotHeatmap(obj,100,norm = FALSE, log = TRUE,trace = "none")
     mat3[is.na(mat3)] <- 0
     x <- heatmap.2(mat3,dendrogram = chooseDends(mat3), col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
   }
@@ -641,7 +654,11 @@ server <- function(input, output, session) {
       if(input$var3 == "png")
         png(file, width = 3000, height = 3000, pointsize = 35) # open the png device
       else
-        pdf(file, width = 15, height = 15) # open the pdf device
+        w<-h<-15
+        if(numrow4$plot4>50){
+          h<-h*2
+        }
+        pdf(file, width = w, height = h) # open the pdf device
       plotInput4()
       dev.off()
     })
@@ -679,7 +696,7 @@ server <- function(input, output, session) {
     names(funtax)[names(funtax) == tl1] <- 'usp'
     obj<-pathwayHeatmap(funtax, tn, mgall, ko_sd)
     colnames(obj)<-as.character(mdt[c(colnames(obj)), colName()])
-    mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none")
+    mat3 <- plotHeatmap(obj,100,norm = FALSE, log = TRUE,trace = "none")
     mat3[is.na(mat3)] <- 0
     numrow4$plot4 <- dim(mat3)[1]
     if(dim(mat3)[1]>1 & dim(mat3)[2]>1){
