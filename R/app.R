@@ -117,6 +117,11 @@ pathImage<-function(funtax, sp.li, mgm, pathwi) {
   adk5<-get_ko_data(funtax, sp.li, mgm)
   rownames(adk5)<-adk5$ko
   adk5<-adk5[,-1]
+  indRow <- match(rownames(adk5),rownames(kostat))
+  indCol <- match(colnames(adk5), colnames(kostat))
+  kostat <- kostat[indRow, indCol]
+  ind0 <- which(kostat==0)
+  
   pathview(gene.data = adk5, pathway.id = pathwi,
            species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
            limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
@@ -178,7 +183,15 @@ chooseDends <- function(res){
   }
   return(dend)
 }
-
+kostat <- function(funtaxall, d.kres){
+  funtaxall <- funtaxall[,-c("usp","species", "genus", "family", "order", "class", "phylum", "domain","ufun", "FUN2", "FUN3", "FUN4")]
+  d5.1<-funtaxall[,list(m5=unlist(str_split(md5,','))),by=.(md5)]
+  d5<-merge(d5.1,funtaxall,by='md5')
+  dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
+  adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'annotation')]),FUN=sum)
+  rownames(adk5)<- adk5$ko
+  adk5 <- adk5[,-1]
+}
 ui <- fluidPage(
   titlePanel(maintitle),
   sidebarPanel(
@@ -217,33 +230,33 @@ ui <- fluidPage(
                      radioButtons(inputId = "var3", label = "Select the file type", choices = list("png", "pdf"))
                      ),
     conditionalPanel(condition = "input.conditionedPanels==1",
-                     downloadButton(outputId = "down1", label = "Download the heatmap")
+                     uiOutput("downLink1")
                      ),
     conditionalPanel(condition = "input.conditionedPanels==2",
-                     downloadButton(outputId = "down2", label = "Download the heatmap")
-    ),
+                     uiOutput("downLink2")
+                     ),
     conditionalPanel(condition = "input.conditionedPanels==3",
-                     downloadButton(outputId = "down3", label = "Download the heatmap")
-    ),
+                     uiOutput("downLink3")
+                     ),
     conditionalPanel(condition = "input.conditionedPanels==4",
-                     downloadButton(outputId = "down4", label = "Download the heatmap")
-    ),
+                     uiOutput("downLink4")
+                     ),
     conditionalPanel(condition = "input.conditionedPanels==5 || input.conditionedPanels==4",
                      sliderInput("ko_sd", "SD cutoff for KO terms", value = 20, min = 0, max = 100,step = 0.1)
                      ),
     conditionalPanel(condition = "input.conditionedPanels==5",
                      downloadButton(outputId = "down5", label = "Download KEGG map")
-    ),
+                     ),
     conditionalPanel(condition = "input.conditionedPanels==6",
                      fileInput('InFile', 'Upload previously saved Rdata file.'),
                      actionButton("loadRdata", "Upload Rdata"),
                      textInput("Rdataname","Enter file name for Rdata being saved (with '.Rdata' in the end"),
                      actionButton("saveRdata", "Save current Rdata")
-    ),
+                     ),
     conditionalPanel(condition = "input.conditionedPanels==7",
                      helpText("You cannot add or remove column when column types are defined (i.e. Use Data Types is set as 'TRUE')."),
                      radioButtons("useType", "Use Data Types", c("FALSE", "TRUE"))
-    ),
+                     ),
     width = 3),
   
   mainPanel(
@@ -312,6 +325,10 @@ server <- function(input, output, session) {
     numrow2 <- reactiveValues(plot2 =0)
     numrow3 <- reactiveValues(plot3 =0)
     numrow4 <- reactiveValues(plot4 =0)
+    downHeat1 <- reactiveValues(is =TRUE)
+    downHeat2 <- reactiveValues(is =TRUE)
+    downHeat3 <- reactiveValues(is =TRUE)
+    downHeat4 <- reactiveValues(is =TRUE)
     
     plotInput1 <- function(){
       tl1 <- tl1()
@@ -338,7 +355,11 @@ server <- function(input, output, session) {
       res[is.na(res)] <- 0 
       x <- heatmap.2(res,dendrogram = chooseDends(res), col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
     }
-   
+   output$downLink1 <- renderUI({
+     if(downHeat1$is==TRUE){
+       downloadButton(outputId = "down1", label = "Download the heatmap")
+     }
+   })
     output$down1 <- downloadHandler(
       filename =  function() {
         paste(input$filename, input$var3, sep=".")
@@ -387,7 +408,15 @@ server <- function(input, output, session) {
       }
       res[is.na(res)] <- 0 
       numrow1$plot1 <- dim(res)[1]
-      d3heatmap(res,dendrogram = chooseDends(res), xaxis_height = 220, yaxis_width = 280, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
+      if(dim(res)[1]>1 & dim(res)[2]>1){
+        downHeat1$is <- TRUE
+        d3heatmap(res,dendrogram = chooseDends(res), xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
+      }else{
+        downHeat1$is <- FALSE
+        showModal(modalDialog(
+          title = titleForDimErrorPopup, textForDimErrorPopup, easyClose = TRUE, footer = NULL
+        ))
+      }
     })
     output$dynamic1 <- renderUI({
     d3heatmapOutput("plot1", height = paste0(numrow1$plot1*input$pix1+220, "px"))
@@ -418,7 +447,11 @@ server <- function(input, output, session) {
     res[is.na(res)] <- 0
     x <- heatmap.2(res,dendrogram = chooseDends(res), col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
   }
-  
+  output$downLink2 <- renderUI({
+    if(downHeat2$is==TRUE){
+      downloadButton(outputId = "down2", label = "Download the heatmap")
+    }
+  })
   output$down2 <- downloadHandler(
     filename =  function() {
       paste(input$filename, input$var3, sep=".")
@@ -457,7 +490,15 @@ server <- function(input, output, session) {
       }
       res[is.na(res)] <- 0
       numrow2$plot2 <- dim(res)[1]
-      d3heatmap(res,dendrogram = chooseDends(res), xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
+      if(dim(res)[1]>1 & dim(res)[2]>1){
+        downHeat2$is <- TRUE
+        d3heatmap(res,dendrogram = chooseDends(res), xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
+      }else{
+        downHeat2$is <- FALSE
+        showModal(modalDialog(
+          title = titleForDimErrorPopup, textForDimErrorPopup, easyClose = TRUE, footer = NULL
+        ))
+      }
     })
   output$dynamic2 <- renderUI({
     d3heatmapOutput("plot2", height = paste0(numrow2$plot2*input$pix2+220, "px"))
@@ -488,7 +529,11 @@ server <- function(input, output, session) {
     res[is.na(res)] <- 0
     x <- heatmap.2(res,dendrogram = chooseDends(res), col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
   }
-  
+  output$downLink3 <- renderUI({
+    if(downHeat3$is==TRUE){
+      downloadButton(outputId = "down3", label = "Download the heatmap")
+    }
+  })
   output$down3 <- downloadHandler(
     filename =  function() {
       paste(input$filename, input$var3, sep=".")
@@ -528,8 +573,15 @@ server <- function(input, output, session) {
       }
       res[is.na(res)] <- 0
       numrow3$plot3 <- dim(res)[1]
-      
-      d3heatmap(res,dendrogram = chooseDends(res), xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal) 
+      if(dim(res)[1]>1 & dim(res)[2]>1){
+        downHeat3$is <- TRUE
+        d3heatmap(res,dendrogram = chooseDends(res), xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal) 
+      }else{
+        downHeat3$is <- FALSE
+        showModal(modalDialog(
+          title = titleForDimErrorPopup, textForDimErrorPopup, easyClose = TRUE, footer = NULL
+        ))
+      }
     })
   output$dynamic3 <- renderUI({
     d3heatmapOutput("plot3", height = paste0(numrow3$plot3*input$pix3+220, "px"))
@@ -551,7 +603,11 @@ server <- function(input, output, session) {
     mat3[is.na(mat3)] <- 0
     x <- heatmap.2(mat3,dendrogram = chooseDends(mat3), col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
   }
-  
+  output$downLink4 <- renderUI({
+    if(downHeat4$is==TRUE){
+      downloadButton(outputId = "down4", label = "Download the heatmap")
+    }
+  })
   output$down4 <- downloadHandler(
     filename =  function() {
       paste(input$filename, input$var3, sep=".")
@@ -602,7 +658,15 @@ server <- function(input, output, session) {
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = FALSE,trace = "none")
     mat3[is.na(mat3)] <- 0
     numrow4$plot4 <- dim(mat3)[1]
-    d3heatmap(mat3,dendrogram = chooseDends(mat3), xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
+    if(dim(mat3)[1]>1 & dim(mat3)[2]>1){
+      downHeat4$is <- TRUE
+      d3heatmap(mat3,dendrogram = chooseDends(mat3), xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
+    }else{
+      downHeat4$is <- FALSE
+      showModal(modalDialog(
+        title = titleForDimErrorPopup, textForDimErrorPopup, easyClose = TRUE, footer = NULL
+      ))
+    }
   })})
   output$dynamic4 <- renderUI({
     d3heatmapOutput("plot4", height = paste0(numrow4$plot4*input$pix4+220, "px"))
@@ -628,7 +692,7 @@ server <- function(input, output, session) {
     content = function(file) {
       plotInput5()
     })
-  
+  kostat <- kostat(funtaxall, d.kres)
   output$Pathway <- renderImage({
     sp.li<- tn()
     tl1 <- tl1()
