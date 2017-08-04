@@ -121,7 +121,7 @@ get_ko_data <- function(funtax, taxon, metagenomes) {
 }
 
 pathImage<-function(funtax, sp.li, mgm, pathwi, kostat) {
-  withProgress(message = paste("Drawing KEGG pathway", pathwi, "for", sp.li, ".", "please wait!"),detail = 'This may take a while...', value = 10, {
+  withProgress(message = paste("Drawing KEGG pathway", pathwi, "for", sp.li, ".", "Please wait!"), value = 10, {
   adk5<-get_ko_data(funtax, sp.li, mgm)
   rownames(adk5)<-adk5$ko
   adk5<-adk5[,-1]
@@ -776,8 +776,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$saveBtn,{
       showModal(modalDialog(
-      title = "You have saved your metadata!",
-      "Your changes will be applied after you restart the app. Saving process may take a few seconds. Please, restart the app!",
+      title = titleForSavingMetadata, textForSavingMetadata, 
       easyClose = TRUE,
       footer = NULL
     ))
