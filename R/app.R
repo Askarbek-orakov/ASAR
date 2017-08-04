@@ -266,7 +266,7 @@ ui <- fluidPage(
                      sliderInput("ko_sd", "SD cutoff for KO terms", value = 20, min = 0, max = 100,step = 0.1)
                      ),
     conditionalPanel(condition = "input.conditionedPanels==5",
-                     downloadButton(outputId = "down5", label = "Download KEGG map")
+                     actionButton("down5", "Download KEGG map")
                      ),
     conditionalPanel(condition = "input.conditionedPanels==6",
                      fileInput('InFile', 'Upload previously saved Rdata file.'),
@@ -730,13 +730,14 @@ server <- function(input, output, session) {
     x <- pathImage(funtax, sp.li, mgall, pathwi)
     }
   
-  output$down5 <- downloadHandler(
-    filename =  function() {
-    },
-    # content is a function with argument file. content writes the plot to the device
-    content = function(file) {
-      plotInput5()
-    })
+  observeEvent(input$down5,{
+    showModal(modalDialog(
+      title = textForDownloadingMetadata, 
+      easyClose = TRUE,
+      footer = NULL
+    ))
+  })
+
   kostat <- kostat(funtaxall, d.kres)
   output$Pathway <- renderImage({
     sp.li<- tn()

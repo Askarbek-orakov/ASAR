@@ -6,6 +6,7 @@ titleForNonMatchKostat <- "Error with annotation files!"
 textForNonMatchKostat <- "There is inconsistency within KEGG Orthology Annotation file."
 titleForSavingMetadata <- "Saving your metadata..."
 textForSavingMetadata <- "Your changes will be applied after you restart the app. Saving process may take a few seconds. Please, restart the app!"
+textForDownloadingMetadata <- "KEGG Map is saved in your working directory."
 ColNameSelectorTitle <- "Please select column name of metadata to select samples by."
 metagenomeone <-"Choose metagenome samples"
 metagenome1selected <- c(14,15)
