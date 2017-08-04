@@ -292,8 +292,9 @@ ui <- fluidPage(
                selectInput(inputId = "set_taxlevel2", label = set_taxtwo, choices = tax2n, selected = tax2selected),
                selectInput(inputId = "set_funlevel1", label = set_funcone, choices = func1n, selected = func1selected),
                selectInput(inputId = "set_funlevel2", label = set_functwo, choices = func2n, selected = func2selected),
-               selectInput(inputId = "colorPalette", label = "Choose color palette for heatmaps", choices = rownames(brewer.pal.info[which(brewer.pal.info$category=="seq"),]), selected = currentPalette),
-               plotOutput("paletteOutput"), 
+               selectInput(inputId = "colorPalette", label = "Choose color palette for heatmaps", choices = rownames(brewer.pal.info), selected = currentPalette),
+               actionButton("showAllCols", "Show All Color Palettes"),
+               plotOutput("paletteOutput"),
                actionButton("save_changes", "Save Changes"), value = 6),
       tabPanel("Metadata",rHandsontableOutput("hot"),
                div(class='row', div(h3("Edit Your Metadata"), class="col-sm-5", uiOutput("ui_newcolname")), div(class="col-sm-4", h3("Select the type of a new column"), 
@@ -333,9 +334,12 @@ server <- function(input, output, session) {
     save(funtaxall, mdt, file = input$Rdataname)
   })
   output$paletteOutput <- renderPlot({
-    display.brewer.all(type = "seq")
+    display.brewer.pal(8,input$colorPalette)
+  }, height = 200, width = 500)
+  observeEvent(input$showAllCols,{
+    showModal(modalDialog(
+      renderPlot({display.brewer.all()}, height = 700, width = 500),title = "All color palettes", easyClose = TRUE, footer = NULL, size = "l"))
   })
-  
     mgall <-reactive({input$mgall})
     mg1   <-reactive({input$mg1})
     tl1   <-reactive({input$tl1})
