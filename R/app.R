@@ -145,11 +145,7 @@ pathImage<-function(funtax, sp.li, mgm, pathwi, kostat) {
                species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
                limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
     }
-    
-    
-    
   }
-  
   })
 }
 filter_stats <- function(funtax, taxon, metagenomes, sd_cutoff) {
@@ -190,7 +186,10 @@ getpathsfromKOs <- function(KOs){
 getPathwayList <- function(funtax, sp.li, mgm, ko_sd) {
   dk7 <- filter_stats(funtax, sp.li, mgm, ko_sd)
   kos<- unique(dk7[,"ko"])
-  getpathsfromKOs(unique(dk7[,"ko"]))
+  listko <- getpathsfromKOs(unique(dk7[,"ko"]))
+  ko.path.name$ko <- gsub('ko','',ko.path.name$ko)
+  pathandnames <- as.matrix(ko.path.name[which(ko.path.name$ko %in% listko),])
+  return(pathandnames)
 }
 
 chooseDends <- function(res){
@@ -248,7 +247,7 @@ ui <- fluidPage(
     conditionalPanel(condition = "input.conditionedPanels==1 ||input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4",
                      textInput("filename","Enter file name")
                      ),
-    conditionalPanel(condition = "input.conditionedPanels==1 ||input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 ||input.conditionedPanels==5 ",
+    conditionalPanel(condition = "input.conditionedPanels==1 ||input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4",
                      radioButtons(inputId = "var3", label = "Select the file type", choices = list("png", "pdf"))
                      ),
     conditionalPanel(condition = "input.conditionedPanels==1",
@@ -679,7 +678,8 @@ server <- function(input, output, session) {
       }
       funtax <- Intfuntax(funtax,tl1,tn,'toplevel',NULL)
       names(funtax)[names(funtax) == tl1] <- 'usp'
-      selectInput(inputId = "PathwayID", label = "Input Pathway ID", as.vector(getPathwayList(funtax, sp.li =  tn, mgm =  mgall, ko_sd = ko_sd)))
+      pathandnames <- as.matrix(getPathwayList(funtax, sp.li =  tn, mgm =  mgall, ko_sd = ko_sd))
+      selectInput(inputId = "PathwayID", label = "Input Pathway ID", choices = setNames(as.vector(pathandnames[, "ko"]), pathandnames[,"name"]))
     })})
 
   pathw <- reactive({input$PathwayID})
