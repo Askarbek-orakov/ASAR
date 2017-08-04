@@ -120,7 +120,7 @@ get_ko_data <- function(funtax, taxon, metagenomes) {
   adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'usp', 'ufun', 'annotation')]),FUN=sum)
 }
 
-pathImage<-function(funtax, sp.li, mgm, pathwi, kostat,names) {
+pathImage<-function(funtax, sp.li, mgm, pathwi, kostat,nms) {
   withProgress(message = paste("Drawing KEGG pathway", pathwi, "for", sp.li, ".", "please wait!"),detail = 'This may take a while...', value = 10, {
   adk5<-get_ko_data(funtax, sp.li, mgm)
   rownames(adk5)<-adk5$ko
@@ -143,11 +143,13 @@ pathImage<-function(funtax, sp.li, mgm, pathwi, kostat,names) {
       adk5 <- adk5/kostat*100
       cat(class(adk5),dim(adk5),colnames(adk5),'\n',mgm,'\n')
       obj<-as.matrix(adk5)
-      colnames(obj)<-names
-      obj<-log10(avearrays(obj)+1)
+      colnames(obj)<-nms
+      obj<-avearrays(obj)
+      idx<-match(kegg$K[kegg$ko==paste0('ko',pathwi)],rownames(obj))
+      idx<-idx[!is.na(idx)]
       pathview(gene.data = obj, pathway.id = pathwi,
                species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
-               limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
+               limit = list(gene=range(as.vector(obj[idx,])),cpd=1))
     }
     
     
@@ -727,7 +729,7 @@ server <- function(input, output, session) {
     keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
     funtax <- Intfuntax(funtax,tl1,sp.li,'toplevel',NULL)
-    x <- pathImage(funtax, sp.li, mgall, pathwi,names = names)
+    x <- pathImage(funtax, sp.li, mgall, pathwi,nms = names)
     }
   
   output$down5 <- downloadHandler(
