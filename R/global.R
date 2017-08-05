@@ -1,5 +1,6 @@
 maintitle <- ""
 
+plot1Title <- 'Heatmap of '
 titleForDimErrorPopup <- "Wrong Heatmap dimensions!"
 textForDimErrorPopup <- "Please select other function or taxon or go one level higher."
 titleForNonMatchKostat <- "Error with annotation files!"

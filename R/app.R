@@ -369,6 +369,24 @@ server <- function(input, output, session) {
     downHeat3 <- reactiveValues(is =TRUE)
     downHeat4 <- reactiveValues(is =TRUE)
     
+    makePlot1Title <- function(tl1, tl2, tn, fl1, fl2, fn, mg1) {
+      main <-
+        paste(
+          plot1Title,
+          'abundances for genes in',
+          paste0('"', fn, '"'),
+          'group from',
+          paste(tn, collapse = ', '),
+          tl1,
+          'aggregated at',
+          tl2,
+          'level in metagenome',
+          mg1
+        )
+      cat('Plot1', main, '\n')
+      return(main)
+    }
+    
     plotInput1 <- function(){
       tl1 <- tl1()
       tl2 <- tl2()
@@ -392,7 +410,26 @@ server <- function(input, output, session) {
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
       res[is.na(res)] <- 0 
-      x <- heatmap.2(res,dendrogram = chooseDends(res), col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
+      main<-makePlot1Title(tl1,tl2,tn,fl1,fl2,fn,mg1)
+      x <-
+        heatmap.2(
+          res,
+          dendrogram = chooseDends(res),
+          col = colPal,
+          main = main,
+          sepcolor = "black",
+          sepwidth = c(0.05, 0.05),
+          key = TRUE,
+          keysize = 0.75,
+          key.par = list(cex = 0.7),
+          symkey = FALSE,
+          density.info = "none",
+          cexRow = 1,
+          cexCol = 1,
+          margins = c(20, 30),
+          trace = "none",
+          srtCol = 50
+        )
     }
    output$downLink1 <- renderUI({
      if(downHeat1$is==TRUE){
@@ -441,6 +478,7 @@ server <- function(input, output, session) {
       colmean <- data.frame(Means=colMeans(obj))
       idxM<-which(rowmean$Means!=0)
       obj <- obj[idxM,which(colmean$Means!=0)]
+      main<-makePlot1Title(tl1,tl2,tn,fl1,fl2,fn,mg1)
       if(length(idxM)>1){
         res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
       }else{
@@ -462,6 +500,22 @@ server <- function(input, output, session) {
     d3heatmapOutput("plot1", height = paste0(numrow1$plot1*input$pix1+220, "px"))
   })
 
+  makePlot2Title <- function(tl1, tn, fl1, fl2, fn, mg2) {
+    main <-
+      paste(
+        plot1Title,
+        'abundances for genes in',
+        paste0('"', fn, '"'),
+        'group from',
+        paste(tn, collapse = ', '),
+        tl1,
+        'in metagenomes',
+        paste(mg2,collapse = ', ')
+      )
+    cat('Plot2', main, '\n')
+    return(main)
+  }
+
   plotInput2 <- function(){ 
     tl1 <- tl1()
     tn  <- tn()
@@ -479,13 +533,32 @@ server <- function(input, output, session) {
     dk6 <- data.frame(Means=rowMeans(obj))
     obj <- obj[which(dk6$Means!=0),]
     obj <- as.matrix(obj)
+    main<-makePlot2Title(tl1,tn,fl1,fl2,fn,mg2)
     if(dim(obj)[1]>1){
       res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
     }else{
       res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
     }
     res[is.na(res)] <- 0
-    x <- heatmap.2(res,dendrogram = chooseDends(res), col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
+    x <-
+      heatmap.2(
+        res,
+        dendrogram = chooseDends(res),
+        col = colPal,
+        sepcolor = "black",
+        main=main,
+        sepwidth = c(0.05, 0.05),
+        key = TRUE,
+        keysize = 0.75,
+        key.par = list(cex = 0.7),
+        symkey = FALSE,
+        density.info = "none",
+        cexRow = 1,
+        cexCol = 1,
+        margins = c(20, 30),
+        trace = "none",
+        srtCol = 50
+      )
   }
   output$downLink2 <- renderUI({
     if(downHeat2$is==TRUE){
@@ -530,6 +603,7 @@ server <- function(input, output, session) {
       }
       res[is.na(res)] <- 0
       numrow2$plot2 <- dim(res)[1]
+      main<-makePlot2Title(tl1,tn,fl1,fl2,fn,mg2)
       if(dim(res)[1]>1 & dim(res)[2]>1){
         downHeat2$is <- TRUE
         d3heatmap(res,dendrogram = chooseDends(res), xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
@@ -544,6 +618,22 @@ server <- function(input, output, session) {
     d3heatmapOutput("plot2", height = paste0(numrow2$plot2*input$pix2+220, "px"))
   })
   
+  makePlot3Title <- function(tl1, tl2,tn, fl1, fn, mg3) {
+    main <-
+      paste(
+        plot1Title,
+        'abundances for genes in',
+        paste0('"', fn, '"'),
+        'group from',tl2,'in',
+        paste(tn, collapse = ', '),
+        tl1,
+        'in metagenomes',
+        paste(mg3,collapse = ', ')
+      )
+    cat('Plot3', main, '\n')
+    return(main)
+  }
+
   plotInput3 <- function(){ 
     tl1 <- tl1()
     tl2 <- tl2()
@@ -567,7 +657,26 @@ server <- function(input, output, session) {
       res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
     }
     res[is.na(res)] <- 0
-    x <- heatmap.2(res,dendrogram = chooseDends(res), col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
+    main<-makePlot3Title(tl1,tl2,tn,fl1,fn,mg3)
+    x <-
+      heatmap.2(
+        res,
+        dendrogram = chooseDends(res),
+        col = colPal,
+        main=main,
+        sepcolor = "black",
+        sepwidth = c(0.05, 0.05),
+        key = TRUE,
+        keysize = 0.75,
+        key.par = list(cex = 0.7),
+        symkey = FALSE,
+        density.info = "none",
+        cexRow = 1,
+        cexCol = 1,
+        margins = c(20, 30),
+        trace = "none",
+        srtCol = 50
+      )
   }
   output$downLink3 <- renderUI({
     if(downHeat3$is==TRUE){
@@ -606,6 +715,7 @@ server <- function(input, output, session) {
       dk6 <- data.frame(Means=rowMeans(obj))
       obj <- obj[which(dk6$Means!=0),]
       obj <- as.matrix(obj)
+      main<-makePlot3Title(tl1,tl2,tn,fl1,fn,mg3)
       if(dim(obj)[1]>1){
         res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
       }else{
@@ -627,6 +737,20 @@ server <- function(input, output, session) {
     d3heatmapOutput("plot3", height = paste0(numrow3$plot3*input$pix3+220, "px"))
   })
   
+  makePlot4Title <- function(tl1, tn, ko_sd, mgall) {
+    main <-
+      paste(
+        plot1Title,
+        'differentially abundant KEGG pathways from',
+        paste(tn, collapse = ', '),
+        tl1,
+        'in metagenomes',
+        paste(mgall,collapse = ', ')
+      )
+    cat('Plot4', main, '\n')
+    return(main)
+  }
+  
   
   plotInput4 <- function(){ 
     tl1 <- tl1()
@@ -641,7 +765,26 @@ server <- function(input, output, session) {
     colnames(obj)<-as.character(mdt[c(colnames(obj)), colName()])
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = TRUE,trace = "none")
     mat3[is.na(mat3)] <- 0
-    x <- heatmap.2(mat3,dendrogram = chooseDends(mat3), col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
+    main<-makePlot4Title(tl1,tn,ko_sd,mgall)
+    x <-
+      heatmap.2(
+        mat3,
+        dendrogram = chooseDends(mat3),
+        col = colPal,
+        main=main,
+        sepcolor = "black",
+        sepwidth = c(0.05, 0.05),
+        key = TRUE,
+        keysize = 0.75,
+        key.par = list(cex = 0.7),
+        symkey = FALSE,
+        density.info = "none",
+        cexRow = 1,
+        cexCol = 1,
+        margins = c(20, 30),
+        trace = "none",
+        srtCol = 50
+      )
   }
   output$downLink4 <- renderUI({
     if(downHeat4$is==TRUE){
@@ -703,6 +846,7 @@ server <- function(input, output, session) {
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = TRUE,trace = "none")
     mat3[is.na(mat3)] <- 0
     numrow4$plot4 <- dim(mat3)[1]
+    main<-makePlot4Title(tl1,tn,ko_sd,mgall)
     if(dim(mat3)[1]>1 & dim(mat3)[2]>1){
       downHeat4$is <- TRUE
       d3heatmap(mat3,dendrogram = chooseDends(mat3), xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
