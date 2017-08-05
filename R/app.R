@@ -426,6 +426,7 @@ server <- function(input, output, session) {
           density.info = "none",
           cexRow = 1,
           cexCol = 1,
+          cex.main=1,
           margins = c(20, 30),
           trace = "none",
           srtCol = 50
@@ -504,12 +505,12 @@ server <- function(input, output, session) {
     main <-
       paste(
         plot1Title,
-        'abundances for genes in',
+        'abundances for genes in\n',
         paste0('"', fn, '"'),
-        'group from',
+        'group from\n',
         paste(tn, collapse = ', '),
         tl1,
-        'in metagenomes',
+        'in metagenomes\n',
         paste(mg2,collapse = ', ')
       )
     cat('Plot2', main, '\n')
@@ -555,6 +556,7 @@ server <- function(input, output, session) {
         density.info = "none",
         cexRow = 1,
         cexCol = 1,
+        cex.main=0.5,
         margins = c(20, 30),
         trace = "none",
         srtCol = 50
