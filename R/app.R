@@ -140,16 +140,25 @@ pathImage<-function(funtax, sp.li, mgm, pathwi, kostat,nms) {
       ))
     } else {
       sapply(1:length(ind0), function(i){kostat[ind0[[i]],names(ind0)[i]] <<- 10^(-5)})
+      cat('pathImg',pathwi,class(adk5),dim(adk5),apply(adk5,2,max),nms,'\n')
       adk5 <- adk5/kostat*100
       cat(class(adk5),dim(adk5),colnames(adk5),'\n',mgm,'\n')
       obj<-as.matrix(adk5)
+      cat('pathImg!',class(obj),dim(obj),apply(obj,2,max),'\n')
       colnames(obj)<-nms
       obj<-avearrays(obj)
+      cat('pathImg!!',class(obj),dim(obj),apply(obj,2,max),'\n')
+      #obj<-log10(avearrays(obj)+1)
       idx<-match(kegg$K[kegg$ko==paste0('ko',pathwi)],rownames(obj))
       idx<-idx[!is.na(idx)]
+      cat('pathImg!!!',length(idx),length(which(is.na(idx))),'\n')
+      cat('---\t',head(kegg$K[kegg$ko==paste0('ko',pathwi)]),'\n')
+      cat('---\t',head(rownames(obj)),'\n')
+      cat('---\t',head(rownames(adk5)),'\n')
+      cat('pathImg!V',length(idx),dim(obj),apply(obj[idx,],2,max),'\n')
+      save(obj,pathwi,sp.li,file=paste0('dump.',pathwi,'.',sp.li,'.Rdata'))
       pathview(gene.data = obj, pathway.id = pathwi,
                species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
-               limit = list(gene=range(as.vector(obj[idx,])),cpd=1))
                limit = list(gene=range(as.vector(obj[idx,])),bins=list(gene=25),cpd=1))
     }
     
@@ -420,6 +429,7 @@ server <- function(input, output, session) {
     output$taxNames <- renderUI({x <- input$tl1
     if(x!="toplevel"){
       isolate({
+        cat('condPanel=',input$conditionedPanels,'\n')
     selectInput(inputId = "tn", label = taxthree, multiple=(input$conditionedPanels!=5), choices = as.vector(unique(funtaxall[,get(x)])), selected = taxnames$tn) })
     }})
     output$funNames <- renderUI({y <- input$fl1
@@ -676,6 +686,7 @@ server <- function(input, output, session) {
       if(!is.null(tn)){
       tl1 <- tl1()
       mgall <- mgall()
+      cat('mgall',mgall,'tn',class(tn),'tl1',tl1,'\n')
       ko_sd <- ko_sd()
       keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
       funtax <- funtaxall[,..keepcols]
