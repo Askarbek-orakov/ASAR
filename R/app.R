@@ -150,6 +150,7 @@ pathImage<-function(funtax, sp.li, mgm, pathwi, kostat,nms) {
       pathview(gene.data = obj, pathway.id = pathwi,
                species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
                limit = list(gene=range(as.vector(obj[idx,])),cpd=1))
+               limit = list(gene=range(as.vector(obj[idx,])),bins=list(gene=25),cpd=1))
     }
     
     
