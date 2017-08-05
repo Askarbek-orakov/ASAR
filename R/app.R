@@ -121,7 +121,7 @@ get_ko_data <- function(funtax, taxon, metagenomes) {
 }
 
 pathImage<-function(funtax, sp.li, mgm, pathwi, kostat,nms) {
-  withProgress(message = paste("Drawing KEGG pathway", pathwi, "for", sp.li, ".", "please wait!"),detail = 'This may take a while...', value = 10, {
+  withProgress(message = paste("Drawing KEGG pathway", pathwi, "for", sp.li, ".", "Please wait!"), value = 10, {
   adk5<-get_ko_data(funtax, sp.li, mgm)
   rownames(adk5)<-adk5$ko
   adk5<-adk5[,-1]
@@ -159,13 +159,9 @@ pathImage<-function(funtax, sp.li, mgm, pathwi, kostat,nms) {
       save(obj,pathwi,sp.li,file=paste0('dump.',pathwi,'.',sp.li,'.Rdata'))
       pathview(gene.data = obj, pathway.id = pathwi,
                species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
-               limit = list(gene=range(as.vector(obj[idx,])),bins=list(gene=25),cpd=1))
+               limit = list(gene=range(as.vector(obj[idx,])),cpd=1))
     }
-    
-    
-    
   }
-  
   })
 }
 filter_stats <- function(funtax, taxon, metagenomes, sd_cutoff) {
@@ -206,7 +202,10 @@ getpathsfromKOs <- function(KOs){
 getPathwayList <- function(funtax, sp.li, mgm, ko_sd) {
   dk7 <- filter_stats(funtax, sp.li, mgm, ko_sd)
   kos<- unique(dk7[,"ko"])
-  getpathsfromKOs(unique(dk7[,"ko"]))
+  listko <- getpathsfromKOs(unique(dk7[,"ko"]))
+  ko.path.name$ko <- gsub('ko','',ko.path.name$ko)
+  pathandnames <- as.matrix(ko.path.name[which(ko.path.name$ko %in% listko),])
+  return(pathandnames)
 }
 
 chooseDends <- function(res){
@@ -264,7 +263,7 @@ ui <- fluidPage(
     conditionalPanel(condition = "input.conditionedPanels==1 ||input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4",
                      textInput("filename","Enter file name")
                      ),
-    conditionalPanel(condition = "input.conditionedPanels==1 ||input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 ||input.conditionedPanels==5 ",
+    conditionalPanel(condition = "input.conditionedPanels==1 ||input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4",
                      radioButtons(inputId = "var3", label = "Select the file type", choices = list("png", "pdf"))
                      ),
     conditionalPanel(condition = "input.conditionedPanels==1",
@@ -283,7 +282,7 @@ ui <- fluidPage(
                      sliderInput("ko_sd", "SD cutoff for KO terms", value = 20, min = 0, max = 100,step = 0.1)
                      ),
     conditionalPanel(condition = "input.conditionedPanels==5",
-                     downloadButton(outputId = "down5", label = "Download KEGG map")
+                     actionButton("down5", "Download KEGG map")
                      ),
     conditionalPanel(condition = "input.conditionedPanels==6",
                      fileInput('InFile', 'Upload previously saved Rdata file.'),
@@ -309,8 +308,9 @@ ui <- fluidPage(
                selectInput(inputId = "set_taxlevel2", label = set_taxtwo, choices = tax2n, selected = tax2selected),
                selectInput(inputId = "set_funlevel1", label = set_funcone, choices = func1n, selected = func1selected),
                selectInput(inputId = "set_funlevel2", label = set_functwo, choices = func2n, selected = func2selected),
-               selectInput(inputId = "colorPalette", label = "Choose color palette for heatmaps", choices = rownames(brewer.pal.info[which(brewer.pal.info$category=="seq"),]), selected = currentPalette),
-               plotOutput("paletteOutput"), 
+               selectInput(inputId = "colorPalette", label = "Choose color palette for heatmaps", choices = rownames(brewer.pal.info), selected = currentPalette),
+               actionButton("showAllCols", "Show All Color Palettes"),
+               plotOutput("paletteOutput"),
                actionButton("save_changes", "Save Changes"), value = 6),
       tabPanel("Metadata",rHandsontableOutput("hot"),
                div(class='row', div(h3("Edit Your Metadata"), class="col-sm-5", uiOutput("ui_newcolname")), div(class="col-sm-4", h3("Select the type of a new column"), 
@@ -350,9 +350,12 @@ server <- function(input, output, session) {
     save(funtaxall, mdt, file = input$Rdataname)
   })
   output$paletteOutput <- renderPlot({
-    display.brewer.all(type = "seq")
+    display.brewer.pal(8,input$colorPalette)
+  }, height = 200, width = 500)
+  observeEvent(input$showAllCols,{
+    showModal(modalDialog(
+      renderPlot({display.brewer.all()}, height = 700, width = 500),title = "All color palettes", easyClose = TRUE, footer = NULL, size = "l"))
   })
-  
     mgall <-reactive({input$mgall})
     mg1   <-reactive({input$mg1})
     tl1   <-reactive({input$tl1})
@@ -698,7 +701,8 @@ server <- function(input, output, session) {
       }
       funtax <- Intfuntax(funtax,tl1,tn,'toplevel',NULL)
       names(funtax)[names(funtax) == tl1] <- 'usp'
-      selectInput(inputId = "PathwayID", label = "Input Pathway ID", as.vector(getPathwayList(funtax, sp.li =  tn, mgm =  mgall, ko_sd = ko_sd)))
+      pathandnames <- as.matrix(getPathwayList(funtax, sp.li =  tn, mgm =  mgall, ko_sd = ko_sd))
+      selectInput(inputId = "PathwayID", label = "Input Pathway ID", choices = setNames(as.vector(pathandnames[, "ko"]), pathandnames[,"name"]))
     }})})
 
   pathw <- reactive({input$PathwayID})
@@ -744,13 +748,14 @@ server <- function(input, output, session) {
     x <- pathImage(funtax, sp.li, mgall, pathwi,nms = names)
     }
   
-  output$down5 <- downloadHandler(
-    filename =  function() {
-    },
-    # content is a function with argument file. content writes the plot to the device
-    content = function(file) {
-      plotInput5()
-    })
+  observeEvent(input$down5,{
+    showModal(modalDialog(
+      title = textForDownloadingMetadata, 
+      easyClose = TRUE,
+      footer = NULL
+    ))
+  })
+
   kostat <- kostat(funtaxall, d.kres)
   output$Pathway <- renderImage({
     sp.li<- tn()
@@ -795,8 +800,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$saveBtn,{
       showModal(modalDialog(
-      title = "You have saved your metadata!",
-      "Your changes will be applied after you restart the app. Saving process may take a few seconds. Please, restart the app!",
+      title = titleForSavingMetadata, textForSavingMetadata, 
       easyClose = TRUE,
       footer = NULL
     ))
