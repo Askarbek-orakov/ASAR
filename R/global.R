@@ -1,5 +1,12 @@
 maintitle <- ""
 
+titletab1 <- "F/T"
+titletab2 <- "F/M"
+titletab3 <- "T/M"
+titletab4 <- "KEGG Pathways Heatmap"
+titletab5 <- "KEGG Pathway"
+titletab6 <- "Settings"
+titletab7 <- "Metadata"
 titleForEmtyDataPopup <- "Empty selection!"
 textForEmptyDataPopup <- "Please select some function or taxon."
 
@@ -10,25 +17,25 @@ textForNonMatchKostat <- "There is inconsistency within KEGG Orthology Annotatio
 titleForSavingMetadata <- "Saving your metadata..."
 textForSavingMetadata <- "Your changes will be applied after you restart the app. Saving process may take a few seconds. Please, restart the app!"
 textForDownloadingMetadata <- "KEGG Map is saved in your working directory."
-ColNameSelectorTitle <- "Please select column name of metadata to select samples by."
-metagenomeone <-"Choose metagenome samples"
+ColNameSelectorTitle <- "Please select a column of metadata to use as metagenome names"
+metagenomeone <-"Select multiple metagenomes"
 metagenome1selected <- c(14,15)
-metagenometwo <- "Choose one metagenome sample"
+metagenometwo <- "Select metagenome"
 metagenome2selected <- 14
 
-taxone <- "Choose taxlevel 1"
-tax1n <- c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain", "Toplevel" = "toplevel")
+taxone <- "Taxonomy Selection level"
+tax1n <- c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain", "root" = "toplevel")
 tax1selected <- "genus"
-taxthree <- "Select taxon"
-taxtwo <- "Aggregation taxlevel 2"
+taxthree <- "Select taxons"
+taxtwo <- "Taxonomy Aggregation level"
 tax2n <- c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain")
 tax2selected <- "usp"
 
-funcone <- "Choose funLevel 1"
-func1n <- c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4", "Toplevel/All" = "toplevel")
+funcone <- "Function Selection level"
+func1n <- c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4", "root" = "toplevel")
 func1selected <- "FUN4"
 functhree <- "Select function"
-functwo <- "Choose funLevel 2"
+functwo <- "Function Aggregation level"
 func2n <- c("level 1" = "ufun", "level 2" = "FUN2", "level 3" = "FUN3", "level 4" = "FUN4")
 func2selected <- "ufun"
 
@@ -37,10 +44,7 @@ pathwayone <- "Input Pathway ID"
 #colname for sample name pickup.
 #Color Palette for Heatmaps
 #Settings
-set_taxone <- "taxlevel 1"
-set_taxtwo <- "taxlevel 2"
-set_funcone <- "funlevel 1"
-set_functwo <- "funlevel 2"
+labelColPal <- "Select color palette for heatmaps"
 currentPalette <- "Blues"
 colName <- "Group"
 if(file.exists("Settings.Rdata")){
