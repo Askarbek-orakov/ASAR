@@ -1,5 +1,8 @@
 maintitle <- ""
 
+titleForEmtyDataPopup <- "Empty selection!"
+textForEmptyDataPopup <- "Please select some function or taxon."
+
 titleForDimErrorPopup <- "Wrong Heatmap dimensions!"
 textForDimErrorPopup <- "Please select other function or taxon or go one level higher."
 titleForNonMatchKostat <- "Error with annotation files!"

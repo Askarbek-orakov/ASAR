@@ -91,16 +91,19 @@ getSpecieFromAbundMD5_2<-function(d.bm,sp=SpName,aggregate=FALSE){
 plotHeatmap<-function(obj,n,norm=TRUE,log=TRUE,fun=sd,...){
   mat = returnAppropriateObj(obj, norm, log)
   otusToKeep = which(rowSums(mat) > 0)
-  if(length(otusToKeep)==1){
+  if(length(otusToKeep)==0){
+    return(matrix(NA,ncol = 1,nrow = 1))
+  }else if(length(otusToKeep)==1){
     otuStats<-fun(mat)
   }else{  
     otuStats = apply(mat[otusToKeep, ], 1, fun)
   }
   otuIndices = otusToKeep[order(otuStats, decreasing = TRUE)[1:min(c(length(otusToKeep),n,dim(mat)[1]))]]
   mat2 = mat[otuIndices, ]
+  return(mat2)
 }
 returnAppropriateObj<-function(obj, norm, log){
-  if(class(obj)!='matrix') stop('Obj should be a matrix')
+  if(class(obj)!='matrix') return(matrix(NA,ncol = 1,nrow=1))#stop('Obj should be a matrix')
   res<-avearrays(obj)
 
   if(log){
@@ -431,9 +434,7 @@ server <- function(input, output, session) {
       
     output$taxNames <- renderUI({x <- input$tl1
     if(x!="toplevel"){
-      isolate({
-        cat('condPanel=',input$conditionedPanels,'\n')
-    selectInput(inputId = "tn", label = taxthree, multiple=(input$conditionedPanels!=5), choices = as.vector(unique(funtaxall[,get(x)])), selected = taxnames$tn) })
+    selectInput(inputId = "tn", label = taxthree, multiple=TRUE, choices = as.vector(unique(funtaxall[,get(x)])), selected = taxnames$tn)
     }})
     output$funNames <- renderUI({y <- input$fl1
     if(y!="toplevel"){
@@ -448,32 +449,49 @@ server <- function(input, output, session) {
       fl2 <- fl2()
       fn  <- fn()
       mg1 <- mg1()
-      colPal <- colPal() 
-      keepcols<-which(names(funtaxall)%in%c(tl1, tl2, fl1, fl2, mg1))
-      funtax <- funtaxall[,..keepcols]
-      funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2,f2 = fl2)
-      obj <- make2d(funtax)
-      obj[is.na(obj)] <- 0
-      rowmean <- data.frame(Means=rowMeans(obj))
-      colmean <- data.frame(Means=colMeans(obj))
-      idxM<-which(rowmean$Means!=0)
-      obj <- obj[idxM,which(colmean$Means!=0)]
-      if(length(idxM)>1){
-        res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
-      }else{
-        res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
-      }
-      res[is.na(res)] <- 0 
-      numrow1$plot1 <- dim(res)[1]
-      if(dim(res)[1]>1 & dim(res)[2]>1){
-        downHeat1$is <- TRUE
-        d3heatmap(res,dendrogram = chooseDends(res), xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
-      }else{
+      colPal <- colPal()
+      if(is.null(fn)|is.null(tn)){
         downHeat1$is <- FALSE
-        showModal(modalDialog(
-          title = titleForDimErrorPopup, textForDimErrorPopup, easyClose = TRUE, footer = NULL
-        ))
+        return()
       }
+        keepcols <- which(names(funtaxall) %in% c(tl1, tl2, fl1, fl2, mg1))
+        funtax <- funtaxall[, ..keepcols]
+        funtax <- Intfuntax(funtax, tl1, tn, fl1, fn, t2 = tl2, f2 = fl2)
+        obj <- make2d(funtax)
+        obj[is.na(obj)] <- 0
+        rowmean <- data.frame(Means = rowMeans(obj))
+        colmean <- data.frame(Means = colMeans(obj))
+        idxM <- which(rowmean$Means != 0)
+        obj <- obj[idxM, which(colmean$Means != 0)]
+        if (length(idxM) > 1) {
+          res <- plotHeatmap(obj, 50, trace = "none", norm = FALSE)
+        } else{
+          res <- returnAppropriateObj(obj, norm = FALSE, log = TRUE)
+        }
+        res[is.na(res)] <- 0
+        numrow1$plot1 <- dim(res)[1]
+        if (dim(res)[1] > 1 & dim(res)[2] > 1) {
+          downHeat1$is <- TRUE
+          d3heatmap(
+            res,
+            dendrogram = chooseDends(res),
+            xaxis_height = 220,
+            yaxis_width = 270,
+            yaxis_font_size = "10px",
+            xaxis_font_size = "10px",
+            scalecolors = colPal
+          )
+        } else{
+          downHeat1$is <- FALSE
+          showModal(
+            modalDialog(
+              title = titleForDimErrorPopup,
+              textForDimErrorPopup,
+              easyClose = TRUE,
+              footer = NULL
+            )
+          )
+        }
     })
     output$dynamic1 <- renderUI({
     d3heatmapOutput("plot1", height = paste0(numrow1$plot1*input$pix1+220, "px"))
@@ -531,6 +549,10 @@ server <- function(input, output, session) {
       fn  <- fn()
       mg2 <- mgall()
       colPal <- colPal()
+      if(is.null(fn)|is.null(tn)){
+        downHeat2$is <- FALSE
+        return()
+        }
       keepcols<-which(names(funtaxall)%in%c(tl1, fl1, fl2, mg2))
       funtax <- funtaxall[,..keepcols]
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,f2 = fl2)
@@ -614,6 +636,10 @@ server <- function(input, output, session) {
       fn  <- fn()
       mg3 <- mgall()
       colPal <- colPal()
+      if(is.null(fn)|is.null(tn)){
+        downHeat3$is <- FALSE
+        return()
+      }
       keepcols<-which(names(funtaxall)%in%c(tl1, tl2, fl1, mg3))
       funtax <- funtaxall[,..keepcols]
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2)
@@ -714,6 +740,10 @@ server <- function(input, output, session) {
     mgall <-mgall()
     ko_sd <- ko_sd()
     colPal <- colPal()
+    if(is.null(tn)){
+      downHeat4$is <- FALSE
+      return()
+    }
     keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
     names(funtax)[names(funtax) == tl1] <- 'usp'
