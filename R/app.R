@@ -254,14 +254,14 @@ ui <- fluidPage(
     conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==2",
                      selectInput(inputId = "fl2", label = functwo, choices = func2n, selected = func2selected)),
     conditionalPanel(condition = "input.conditionedPanels==1",
-                     sliderInput("pix1", "height", value = 20, min = 10, max = 100)),
+                     sliderInput("pix1", "Heatmap height (px)", value = 20, min = 10, max = 100)),
     conditionalPanel(condition = "input.conditionedPanels==2",
-                     sliderInput("pix2", "height", value = 20, min = 10, max = 100)),
+                     sliderInput("pix2", "Heatmap height (px)", value = 20, min = 10, max = 100)),
     conditionalPanel(condition = "input.conditionedPanels==3",
-                     sliderInput("pix3", "height", value = 20, min = 10, max = 100)),
+                     sliderInput("pix3", "Heatmap height (px)", value = 20, min = 10, max = 100)),
     conditionalPanel(condition = "input.conditionedPanels==4",
                      actionButton("goButton", "GO"),
-                     sliderInput("pix4", "height", value = 20, min = 10, max = 100)
+                     sliderInput("pix4", "Heatmap height (px)", value = 20, min = 10, max = 100)
                      ),
     conditionalPanel(condition = "input.conditionedPanels==5",
                      actionButton("path", "GO"),
@@ -271,7 +271,7 @@ ui <- fluidPage(
                      textInput("filename","Enter file name")
                      ),
     conditionalPanel(condition = "input.conditionedPanels==1 ||input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4",
-                     radioButtons(inputId = "var3", label = "Select the file type", choices = list("png", "pdf"))
+                     radioButtons(inputId = "var3", label = "Select the file format", choices = list("png", "pdf"))
                      ),
     conditionalPanel(condition = "input.conditionedPanels==1",
                      uiOutput("downLink1")
@@ -305,21 +305,21 @@ ui <- fluidPage(
   
   mainPanel(
     tabsetPanel(
-      tabPanel("F&T", uiOutput("dynamic1") , value = 1), 
-      tabPanel("F&M", uiOutput("dynamic2"), value = 2),
-      tabPanel("T&M", uiOutput("dynamic3"), value = 3),
-      tabPanel("Pathway Abundance Heatmap", uiOutput("dynamic4"), value = 4),
-      tabPanel("KEGG Pathway Map", imageOutput("Pathway",width = "100%", height = "400px"), value = 5),
+      tabPanel(titletab1, uiOutput("dynamic1") , value = 1), 
+      tabPanel(titletab2, uiOutput("dynamic2"), value = 2),
+      tabPanel(titletab3, uiOutput("dynamic3"), value = 3),
+      tabPanel(titletab4, uiOutput("dynamic4"), value = 4),
+      tabPanel(titletab5, imageOutput("Pathway",width = "100%", height = "400px"), value = 5),
       id = "conditionedPanels", 
-      tabPanel("Settings", selectInput(inputId = "set_taxlevel1" , label = set_taxone, choices = tax1n, selected = tax1selected),
-               selectInput(inputId = "set_taxlevel2", label = set_taxtwo, choices = tax2n, selected = tax2selected),
-               selectInput(inputId = "set_funlevel1", label = set_funcone, choices = func1n, selected = func1selected),
-               selectInput(inputId = "set_funlevel2", label = set_functwo, choices = func2n, selected = func2selected),
-               selectInput(inputId = "colorPalette", label = "Choose color palette for heatmaps", choices = rownames(brewer.pal.info), selected = currentPalette),
+      tabPanel(titletab6, selectInput(inputId = "set_taxlevel1" , label = taxone, choices = tax1n, selected = tax1selected),
+               selectInput(inputId = "set_taxlevel2", label = taxtwo, choices = tax2n, selected = tax2selected),
+               selectInput(inputId = "set_funlevel1", label = funcone, choices = func1n, selected = func1selected),
+               selectInput(inputId = "set_funlevel2", label = functwo, choices = func2n, selected = func2selected),
+               selectInput(inputId = "colorPalette", label = labelColPal, choices = rownames(brewer.pal.info), selected = currentPalette),
                actionButton("showAllCols", "Show All Color Palettes"),
                plotOutput("paletteOutput"),
                actionButton("save_changes", "Save Changes"), value = 6),
-      tabPanel("Metadata",rHandsontableOutput("hot"),
+      tabPanel(titletab7,rHandsontableOutput("hot"),
                div(class='row', div(h3("Edit Your Metadata"), class="col-sm-5", uiOutput("ui_newcolname")), div(class="col-sm-4", h3("Select the type of a new column"), 
                radioButtons("newcolumntype", "Type of a new column", c("integer", "double", "character"))),
                div(class="col-sm-3")
