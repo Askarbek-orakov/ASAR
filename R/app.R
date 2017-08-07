@@ -24,6 +24,7 @@ library(gplots)
 library(RColorBrewer)
 library(rhandsontable)
 library(limma)
+source('mg.key.R')
 load("pathview.Rdata")
 options(shiny.maxRequestSize=10*1024^3)
 mdt$Group<-paste(gsub('is','IGBS',gsub('sws','SS',mdt$Origin)),mdt$Source)
@@ -167,6 +168,8 @@ pathImage<-function(funtax, sp.li, mgm, pathwi, kostat,nms) {
       pathview(gene.data = obj, pathway.id = pathwi,
                species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
                limit = list(gene=range(as.vector(obj[idx,])),cpd=1))
+      mg.key(fname = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
+             names = nms,node.size = node.size,cex = 0.25,lwd=0.25,tstep = 0.05,rstep = 0.05)
     }
   }
   })
@@ -369,7 +372,7 @@ server <- function(input, output, session) {
     tl2   <-reactive({input$tl2})
     fl1   <-reactive({input$fl1})
     fl2   <-reactive({input$fl2})
-    taxnames<-reactiveValues(tn=as.character(funtaxall$genus[(nrow(funtaxall)/2)]))
+    taxnames<-reactiveValues(tn=as.character(funtaxall$genus[(nrow(funtaxall)/2)]),fn=as.character(funtaxall$FUN4[(nrow(funtaxall)/2)]))
     tn    <-reactive({
 #      isolate({
       if(tl1()=='toplevel'){
@@ -393,6 +396,8 @@ server <- function(input, output, session) {
     downHeat4 <- reactiveValues(is =TRUE)
     
     makePlot1Title <- function(tl1, tl2, tn, fl1, fl2, fn, mg1) {
+      if(fl1=='toplevel') fn<-'root'
+      if(tl1=='toplevel') tn<-'root'
       main <-
         paste(
           plot1Title,'\n',
@@ -468,9 +473,10 @@ server <- function(input, output, session) {
           xaxs = "i",
           yaxs = "i"
         )
+        main<-gsub('\t','    ',main)
         x<-100+strwidth(main,units = 'user',cex = 1)/2
         y<-height-100-strheight(main,units = 'user',cex = 1)/2
-        text(x,y,labels = gsub('\t','    ',main),adj=0)
+        text(x,y,labels = main,adj=0)
         par(op)
 
       }
@@ -502,7 +508,7 @@ server <- function(input, output, session) {
     }})
     output$funNames <- renderUI({y <- input$fl1
     if(y!="toplevel"){
-      selectInput(inputId = "fn", label = functhree, choices = as.vector(unique(funtaxall[,get(y)])), selected = as.character(funtaxall$FUN4[(nrow(funtaxall)/2)]))
+      selectInput(inputId = "fn", label = functhree, choices = as.vector(unique(funtaxall[,get(y)])), selected = taxnames$fn)
     }})
     
     output$plot1 <- renderD3heatmap({
@@ -562,22 +568,27 @@ server <- function(input, output, session) {
   })
 
   makePlot2Title <- function(tl1, tn, fl1, fl2, fn, mg2) {
+    if(fl1=='toplevel') fn<-'root'
+    if(tl1=='toplevel') tn<-'root'
     main <-
       paste(
-        plot1Title,
-        'abundances for genes in\n',
-        paste0('"', fn, '"'),
-        'group from\n',
-        paste(tn, collapse = ', '),
-        tl1,
-        'in metagenomes\n',
-        paste(mg2,collapse = ', ')
+        plot2Title,'\n',
+        'Metagenome dimension:\n',
+        '\tSelection:\t',paste0(mg2,collapse = ', '),'\n',
+        '\tAggregation:\t',colName(),'\n',
+        'Functional dimension:\n',
+        '\tSelection:\n\t\tlevel:\t"',fl1,'"\n\t\tvalues:\n',
+        paste0('\t\t\t"', fn, '"\n'),
+        '\tAggregation:\n\t\tlevel:\t"',fl2,'"\n',
+        'Taxonomy dimension:\n',
+        '\tSelection:\n\t\tlevel:\t"',tl1,'"\n\t\tvalues:\n',
+        paste0('\t\t\t"',tn,'"', collapse = ',\n')
       )
     cat('Plot2', main, '\n')
     return(main)
   }
 
-  plotInput2 <- function(){ 
+  plotInput2 <- function(pdf){ 
     tl1 <- tl1()
     tn  <- tn()
     fl1 <- fl1()
@@ -607,7 +618,7 @@ server <- function(input, output, session) {
         dendrogram = chooseDends(res),
         col = colPal,
         sepcolor = "black",
-        main=main,
+        main=plot2Title,
         sepwidth = c(0.05, 0.05),
         key = TRUE,
         keysize = 0.75,
@@ -621,6 +632,26 @@ server <- function(input, output, session) {
         trace = "none",
         srtCol = 50
       )
+    if(pdf){
+      op = par(mar = c(0, 0, 0, 0),family="mono")
+      width<-1100
+      height<-1800
+      plot(
+        c(0, width),
+        c(0, height),
+        type = "n",
+        xlab = "",
+        ylab = "",
+        xaxs = "i",
+        yaxs = "i"
+      )
+      main<-gsub('\t','    ',main)
+      x<-100+strwidth(main,units = 'user',cex = 1)/2
+      y<-height-100-strheight(main,units = 'user',cex = 1)/2
+      text(x,y,labels = main,adj=0)
+      par(op)
+      
+    }
   }
   output$downLink2 <- renderUI({
     if(downHeat2$is==TRUE){
@@ -633,11 +664,13 @@ server <- function(input, output, session) {
     },
     # content is a function with argument file. content writes the plot to the device
     content = function(file) {
-      if(input$var3 == "png")
+      if(input$var3 == "png"){
         png(file, width = 3000, height = 2300, pointsize = 35) # open the png device
-      else
+        plotInput2(FALSE)
+      } else{
         pdf(file, width = 15, height = 15) # open the pdf device
-      plotInput2()
+        plotInput2(TRUE)
+      }
       dev.off()
     })
   
@@ -685,22 +718,27 @@ server <- function(input, output, session) {
   })
   
   makePlot3Title <- function(tl1, tl2,tn, fl1, fn, mg3) {
+    if(fl1=='toplevel') fn<-'root'
+    if(tl1=='toplevel') tn<-'root'
     main <-
       paste(
-        plot1Title,
-        'abundances for genes in',
-        paste0('"', fn, '"'),
-        'group from',tl2,'in',
-        paste(tn, collapse = ', '),
-        tl1,
-        'in metagenomes',
-        paste(mg3,collapse = ', ')
+        plot3Title,'\n',
+        'Metagenome dimension:\n',
+        '\tSelection:\t',paste0(mg3,collapse = ', '),'\n',
+        '\tAggregation:\t',colName(),'\n',
+        'Functional dimension:\n',
+        '\tSelection:\n\t\tlevel:\t"',fl1,'"\n\t\tvalues:\n',
+        paste0('\t\t\t"', fn, '"\n'),
+        'Taxonomy dimension:\n',
+        '\tSelection:\n\t\tlevel:\t"',tl1,'"\n\t\tvalues:\n',
+        paste0('\t\t\t"',tn,'"', collapse = ',\n'),
+        '\n\tAggregation:\n\t\tlevel:\t"',tl2,'"\n'
       )
     cat('Plot3', main, '\n')
     return(main)
   }
 
-  plotInput3 <- function(){ 
+  plotInput3 <- function(pdf){ 
     tl1 <- tl1()
     tl2 <- tl2()
     tn  <- tn()
@@ -729,7 +767,7 @@ server <- function(input, output, session) {
         res,
         dendrogram = chooseDends(res),
         col = colPal,
-        main=main,
+        main=plot3Title,
         sepcolor = "black",
         sepwidth = c(0.05, 0.05),
         key = TRUE,
@@ -743,6 +781,26 @@ server <- function(input, output, session) {
         trace = "none",
         srtCol = 50
       )
+    if(pdf){
+      op = par(mar = c(0, 0, 0, 0),family="mono")
+      width<-1100
+      height<-1800
+      plot(
+        c(0, width),
+        c(0, height),
+        type = "n",
+        xlab = "",
+        ylab = "",
+        xaxs = "i",
+        yaxs = "i"
+      )
+      main<-gsub('\t','    ',main)
+      x<-100+strwidth(main,units = 'user',cex = 1)/2
+      y<-height-100-strheight(main,units = 'user',cex = 1)/2
+      text(x,y,labels = main,adj=0)
+      par(op)
+      
+    }
   }
   output$downLink3 <- renderUI({
     if(downHeat3$is==TRUE){
@@ -755,11 +813,13 @@ server <- function(input, output, session) {
     },
     # content is a function with argument file. content writes the plot to the device
     content = function(file) {
-      if(input$var3 == "png")
+      if(input$var3 == "png"){
         png(file, width = 3000, height = 2300, pointsize = 35) # open the png device
-      else
+        plotInput3(FALSE)
+      } else{
         pdf(file, width = 15, height = 15) # open the pdf device
-      plotInput3()
+        plotInput3(TRUE)
+      }
       dev.off()
     })
   
@@ -808,21 +868,23 @@ server <- function(input, output, session) {
   })
   
   makePlot4Title <- function(tl1, tn, ko_sd, mgall) {
+    if(tl1=='toplevel') tn<-'root'
     main <-
       paste(
-        plot1Title,
-        'differentially abundant KEGG pathways from',
-        paste(tn, collapse = ', '),
-        tl1,
-        'in metagenomes',
-        paste(mgall,collapse = ', ')
+        plot4Title,'\n',
+        'Metagenome dimension:\n',
+        '\tSelection:\t',mgall,'\n',
+        '\tAggregation:\t',colName(),'\n',
+        'Taxonomy dimension:\n',
+        '\tSelection:\n\t\tlevel:\t"',tl1,'"\n\t\tvalues:\n',
+        paste0('\t\t\t"',tn,'"', collapse = ',\n')
       )
     cat('Plot4', main, '\n')
     return(main)
   }
   
   
-  plotInput4 <- function(){ 
+  plotInput4 <- function(pdf){ 
     tl1 <- tl1()
     tn  <- tn() 
     mgall <-mgall()
@@ -841,7 +903,7 @@ server <- function(input, output, session) {
         mat3,
         dendrogram = chooseDends(mat3),
         col = colPal,
-        main=main,
+        main=plot4Title,
         sepcolor = "black",
         sepwidth = c(0.05, 0.05),
         key = TRUE,
@@ -855,6 +917,26 @@ server <- function(input, output, session) {
         trace = "none",
         srtCol = 50
       )
+    if(pdf){
+      op = par(mar = c(0, 0, 0, 0),family="mono")
+      width<-1100
+      height<-1800
+      plot(
+        c(0, width),
+        c(0, height),
+        type = "n",
+        xlab = "",
+        ylab = "",
+        xaxs = "i",
+        yaxs = "i"
+      )
+      main<-gsub('\t','    ',main)
+      x<-100+strwidth(main,units = 'user',cex = 1)/2
+      y<-height-100-strheight(main,units = 'user',cex = 1)/2
+      text(x,y,labels = main,adj=0)
+      par(op)
+      
+    }
   }
   output$downLink4 <- renderUI({
     if(downHeat4$is==TRUE){
@@ -867,15 +949,17 @@ server <- function(input, output, session) {
     },
     # content is a function with argument file. content writes the plot to the device
     content = function(file) {
-      if(input$var3 == "png")
+      if(input$var3 == "png"){
         png(file, width = 3000, height = 3000, pointsize = 35) # open the png device
-      else
+        plotInput4(FALSE)
+      }else{ 
         w<-h<-15
         if(numrow4$plot4>50){
           h<-h*2
         }
         pdf(file, width = w, height = h) # open the pdf device
-      plotInput4()
+        plotInput4(TRUE)
+      }
       dev.off()
     })
   
@@ -979,7 +1063,7 @@ server <- function(input, output, session) {
     names<-as.character(mdt[match(mgall,rownames(mdt)), colName()])
     pathImage(funtax, sp.li, mgall, pathwi, kostat,names)
     }
-    list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
+    list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.leg.png"),
          contentType = 'png',
          alt = "Press GO to select Pathway!")
   }, deleteFile = FALSE)

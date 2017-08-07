@@ -63,7 +63,9 @@ mg.key <- function(fname,
         ys = ys
       ))
     }
-
+# the code was taken from wordcloud package https://github.com/ifellows/wordcloud
+# it was slightly modified for the purposes of KEGG legend, so it won't be used from the 
+# package above
   overlap <- function(x1, y1, sw1, sh1,boxes) {
     s <- 0
     if (length(boxes) == 0)
@@ -90,6 +92,9 @@ mg.key <- function(fname,
     FALSE
   }
 
+  # the code was taken from wordcloud package https://github.com/ifellows/wordcloud
+  # it was slightly modified for the purposes of KEGG legend, so it won't be used from the 
+  # package above
   wordlayout <- function(x, y, words, cex=1, rotate90 = FALSE,
                          xlim=c(-Inf,Inf), ylim=c(-Inf,Inf), tstep=.1, rstep=.1, ...){
     tails <- "g|j|p|q|y"

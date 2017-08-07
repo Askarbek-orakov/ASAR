@@ -23,6 +23,12 @@ metagenome1selected <- c(14,15)
 metagenometwo <- "Select metagenome"
 metagenome2selected <- 14
 
+plot1Title <-'F vs. T heatmap'
+plot2Title <-'F vs. M heatmap'
+plot3Title <-'T vs. M heatmap'
+plot4Title <-'KEGG pathway heatmap'
+
+
 taxone <- "Taxonomy Selection level"
 tax1n <- c("strain" = "usp", "species" = "species", "genus" = "genus", "family" = "family", "order" = "order", "class" = "class", "phylum" = "phylum", "domain" = "domain", "root" = "toplevel")
 tax1selected <- "genus"
