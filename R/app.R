@@ -102,15 +102,19 @@ plotHeatmap<-function(obj,n,norm=TRUE,log=TRUE,fun=sd,...){
   mat2 = mat[otuIndices, ]
   return(mat2)
 }
-returnAppropriateObj<-function(obj, norm, log){
-  if(class(obj)!='matrix') return(matrix(NA,ncol = 1,nrow=1))#stop('Obj should be a matrix')
-  res<-avearrays(obj)
-
-  if(log){
-    res<-log2(res+1)
+returnAppropriateObj <- function(obj, norm, log) {
+  if (class(obj) != 'matrix' |
+      any(dim(obj) == 0)){
+    return(matrix(NA, ncol = 1, nrow = 1))
+    #stop('Obj should be a matrix')
   }
-  if(norm){
-    res<-scale(res)
+  res <- avearrays(obj)
+  
+  if (log) {
+    res <- log2(res + 1)
+  }
+  if (norm) {
+    res <- scale(res)
   }
   return(res)
 }
