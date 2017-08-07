@@ -91,36 +91,43 @@ getSpecieFromAbundMD5_2<-function(d.bm,sp=SpName,aggregate=FALSE){
 plotHeatmap<-function(obj,n,norm=TRUE,log=TRUE,fun=sd,...){
   mat = returnAppropriateObj(obj, norm, log)
   otusToKeep = which(rowSums(mat) > 0)
-  if(length(otusToKeep)==1){
+  if(length(otusToKeep)==0){
+    return(matrix(NA,ncol = 1,nrow = 1))
+  }else if(length(otusToKeep)==1){
     otuStats<-fun(mat)
   }else{  
     otuStats = apply(mat[otusToKeep, ], 1, fun)
   }
   otuIndices = otusToKeep[order(otuStats, decreasing = TRUE)[1:min(c(length(otusToKeep),n,dim(mat)[1]))]]
   mat2 = mat[otuIndices, ]
+  return(mat2)
 }
-returnAppropriateObj<-function(obj, norm, log){
-  if(class(obj)!='matrix') stop('Obj should be a matrix')
-  res<-avearrays(obj)
-
-  if(log){
-    res<-log2(res+1)
+returnAppropriateObj <- function(obj, norm, log) {
+  if (class(obj) != 'matrix' |
+      any(dim(obj) == 0)){
+    return(matrix(NA, ncol = 1, nrow = 1))
+    #stop('Obj should be a matrix')
   }
-  if(norm){
-    res<-scale(res)
+  res <- avearrays(obj)
+  
+  if (log) {
+    res <- log2(res + 1)
+  }
+  if (norm) {
+    res <- scale(res)
   }
   return(res)
 }
 get_ko_data <- function(funtax, taxon, metagenomes) {
   d<-getSpecieFromAbundMD5_2(funtax,sp = taxon,aggregate = FALSE)
-  indC<-which(names(d)%in%c('md5',metagenomes))
+  indC<-c(which(names(d)=='md5'),match(metagenomes,names(d)))
   d5.1<-d[,list(m5=unlist(str_split(md5,','))),by=.(usp,ufun,md5)]
   d5<-merge(d5.1,d[,..indC],by='md5')
   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
   adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'usp', 'ufun', 'annotation')]),FUN=sum)
 }
 
-pathImage<-function(funtax, sp.li, mgm, pathwi, kostat) {
+pathImage<-function(funtax, sp.li, mgm, pathwi, kostat,nms) {
   withProgress(message = paste("Drawing KEGG pathway", pathwi, "for", sp.li, ".", "Please wait!"), value = 10, {
   adk5<-get_ko_data(funtax, sp.li, mgm)
   rownames(adk5)<-adk5$ko
@@ -140,10 +147,26 @@ pathImage<-function(funtax, sp.li, mgm, pathwi, kostat) {
       ))
     } else {
       sapply(1:length(ind0), function(i){kostat[ind0[[i]],names(ind0)[i]] <<- 10^(-5)})
+      cat('pathImg',pathwi,class(adk5),dim(adk5),apply(adk5,2,max),nms,'\n')
       adk5 <- adk5/kostat*100
-      pathview(gene.data = adk5, pathway.id = pathwi,
+      cat(class(adk5),dim(adk5),colnames(adk5),'\n',mgm,'\n')
+      obj<-as.matrix(adk5)
+      cat('pathImg!',class(obj),dim(obj),apply(obj,2,max),'\n')
+      colnames(obj)<-nms
+      obj<-avearrays(obj)
+      cat('pathImg!!',class(obj),dim(obj),apply(obj,2,max),'\n')
+      #obj<-log10(avearrays(obj)+1)
+      idx<-match(kegg$K[kegg$ko==paste0('ko',pathwi)],rownames(obj))
+      idx<-idx[!is.na(idx)]
+      cat('pathImg!!!',length(idx),length(which(is.na(idx))),'\n')
+      cat('---\t',head(kegg$K[kegg$ko==paste0('ko',pathwi)]),'\n')
+      cat('---\t',head(rownames(obj)),'\n')
+      cat('---\t',head(rownames(adk5)),'\n')
+      cat('pathImg!V',length(idx),dim(obj),apply(obj[idx,],2,max),'\n')
+      save(obj,pathwi,sp.li,file=paste0('dump.',pathwi,'.',sp.li,'.Rdata'))
+      pathview(gene.data = obj, pathway.id = pathwi,
                species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
-               limit = list(gene=range(as.vector(as.matrix(adk5))),cpd=1))
+               limit = list(gene=range(as.vector(obj[idx,])),cpd=1))
     }
   }
   })
@@ -231,14 +254,14 @@ ui <- fluidPage(
     conditionalPanel(condition = "input.conditionedPanels==1 || input.conditionedPanels==2",
                      selectInput(inputId = "fl2", label = functwo, choices = func2n, selected = func2selected)),
     conditionalPanel(condition = "input.conditionedPanels==1",
-                     sliderInput("pix1", "height", value = 20, min = 10, max = 100)),
+                     sliderInput("pix1", "Heatmap height (px)", value = 20, min = 10, max = 100)),
     conditionalPanel(condition = "input.conditionedPanels==2",
-                     sliderInput("pix2", "height", value = 20, min = 10, max = 100)),
+                     sliderInput("pix2", "Heatmap height (px)", value = 20, min = 10, max = 100)),
     conditionalPanel(condition = "input.conditionedPanels==3",
-                     sliderInput("pix3", "height", value = 20, min = 10, max = 100)),
+                     sliderInput("pix3", "Heatmap height (px)", value = 20, min = 10, max = 100)),
     conditionalPanel(condition = "input.conditionedPanels==4",
                      actionButton("goButton", "GO"),
-                     sliderInput("pix4", "height", value = 20, min = 10, max = 100)
+                     sliderInput("pix4", "Heatmap height (px)", value = 20, min = 10, max = 100)
                      ),
     conditionalPanel(condition = "input.conditionedPanels==5",
                      actionButton("path", "GO"),
@@ -248,7 +271,7 @@ ui <- fluidPage(
                      textInput("filename","Enter file name")
                      ),
     conditionalPanel(condition = "input.conditionedPanels==1 ||input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4",
-                     radioButtons(inputId = "var3", label = "Select the file type", choices = list("png", "pdf"))
+                     radioButtons(inputId = "var3", label = "Select the file format", choices = list("png", "pdf"))
                      ),
     conditionalPanel(condition = "input.conditionedPanels==1",
                      uiOutput("downLink1")
@@ -276,27 +299,27 @@ ui <- fluidPage(
                      ),
     conditionalPanel(condition = "input.conditionedPanels==7",
                      h3("Your Metadata"),
-                     selectInput("colName", ColNameSelectorTitle, choices = colnames(mdt), selected = colnames(mdt[,1]), selectize = FALSE)
+                     selectInput("colName", ColNameSelectorTitle, choices = colnames(mdt), selected = colName, selectize = FALSE)
                      ),
     width = 3),
   
   mainPanel(
     tabsetPanel(
-      tabPanel("F&T", uiOutput("dynamic1") , value = 1), 
-      tabPanel("F&M", uiOutput("dynamic2"), value = 2),
-      tabPanel("T&M", uiOutput("dynamic3"), value = 3),
-      tabPanel("Pathway Abundance Heatmap", uiOutput("dynamic4"), value = 4),
-      tabPanel("KEGG Pathway Map", imageOutput("Pathway",width = "100%", height = "400px"), value = 5),
+      tabPanel(titletab1, uiOutput("dynamic1") , value = 1), 
+      tabPanel(titletab2, uiOutput("dynamic2"), value = 2),
+      tabPanel(titletab3, uiOutput("dynamic3"), value = 3),
+      tabPanel(titletab4, uiOutput("dynamic4"), value = 4),
+      tabPanel(titletab5, imageOutput("Pathway",width = "100%", height = "400px"), value = 5),
       id = "conditionedPanels", 
-      tabPanel("Settings", selectInput(inputId = "set_taxlevel1" , label = set_taxone, choices = tax1n, selected = tax1selected),
-               selectInput(inputId = "set_taxlevel2", label = set_taxtwo, choices = tax2n, selected = tax2selected),
-               selectInput(inputId = "set_funlevel1", label = set_funcone, choices = func1n, selected = func1selected),
-               selectInput(inputId = "set_funlevel2", label = set_functwo, choices = func2n, selected = func2selected),
-               selectInput(inputId = "colorPalette", label = "Choose color palette for heatmaps", choices = rownames(brewer.pal.info), selected = currentPalette),
+      tabPanel(titletab6, selectInput(inputId = "set_taxlevel1" , label = taxone, choices = tax1n, selected = tax1selected),
+               selectInput(inputId = "set_taxlevel2", label = taxtwo, choices = tax2n, selected = tax2selected),
+               selectInput(inputId = "set_funlevel1", label = funcone, choices = func1n, selected = func1selected),
+               selectInput(inputId = "set_funlevel2", label = functwo, choices = func2n, selected = func2selected),
+               selectInput(inputId = "colorPalette", label = labelColPal, choices = rownames(brewer.pal.info), selected = currentPalette),
                actionButton("showAllCols", "Show All Color Palettes"),
                plotOutput("paletteOutput"),
                actionButton("save_changes", "Save Changes"), value = 6),
-      tabPanel("Metadata",rHandsontableOutput("hot"),
+      tabPanel(titletab7,rHandsontableOutput("hot"),
                div(class='row', div(h3("Edit Your Metadata"), class="col-sm-5", uiOutput("ui_newcolname")), div(class="col-sm-4", h3("Select the type of a new column"), 
                radioButtons("newcolumntype", "Type of a new column", c("integer", "double", "character"))),
                div(class="col-sm-3")
@@ -320,10 +343,10 @@ server <- function(input, output, session) {
   colName <- reactive({input$colName})
   
   output$Mgall <- renderUI({
-    selectInput(inputId = "mgall", label = metagenomeone, choices = setNames(c(colnames(funtaxall)[-c(1:13)]), mdt[,input$colName]), selected = c(colnames(funtaxall)[metagenome1selected]), selectize = TRUE, multiple = TRUE)
+    selectInput(inputId = "mgall", label = metagenomeone, choices = setNames(c(colnames(funtaxall)[-c(1:13)]), mdt[,colName()]), selected = c(colnames(funtaxall)[metagenome1selected]), selectize = TRUE, multiple = TRUE)
   })
   output$mg1 <- renderUI({
-    selectInput(inputId = "mg1", label = metagenometwo, choices = setNames(c(colnames(funtaxall)[-c(1:13)]), mdt[,input$colName]), selected = c(colnames(funtaxall)[metagenome2selected]), selectize = FALSE)
+    selectInput(inputId = "mg1", label = metagenometwo, choices = setNames(c(colnames(funtaxall)[-c(1:13)]), mdt[,colName()]), selected = c(colnames(funtaxall)[metagenome2selected]), selectize = FALSE)
   })  
   observeEvent(input$loadRdata, {
     inFile <- input$InFile
@@ -453,8 +476,7 @@ server <- function(input, output, session) {
       
     output$taxNames <- renderUI({x <- input$tl1
     if(x!="toplevel"){
-      isolate({
-    selectInput(inputId = "tn", label = taxthree, multiple=(input$conditionedPanels!=5), choices = as.vector(unique(funtaxall[,get(x)])), selected = taxnames$tn) })
+    selectInput(inputId = "tn", label = taxthree, multiple=TRUE, choices = as.vector(unique(funtaxall[,get(x)])), selected = taxnames$tn)
     }})
     output$funNames <- renderUI({y <- input$fl1
     if(y!="toplevel"){
@@ -469,33 +491,49 @@ server <- function(input, output, session) {
       fl2 <- fl2()
       fn  <- fn()
       mg1 <- mg1()
-      colPal <- colPal() 
-      keepcols<-which(names(funtaxall)%in%c(tl1, tl2, fl1, fl2, mg1))
-      funtax <- funtaxall[,..keepcols]
-      funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2,f2 = fl2)
-      obj <- make2d(funtax)
-      obj[is.na(obj)] <- 0
-      rowmean <- data.frame(Means=rowMeans(obj))
-      colmean <- data.frame(Means=colMeans(obj))
-      idxM<-which(rowmean$Means!=0)
-      obj <- obj[idxM,which(colmean$Means!=0)]
-      main<-makePlot1Title(tl1,tl2,tn,fl1,fl2,fn,mg1)
-      if(length(idxM)>1){
-        res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
-      }else{
-        res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
-      }
-      res[is.na(res)] <- 0 
-      numrow1$plot1 <- dim(res)[1]
-      if(dim(res)[1]>1 & dim(res)[2]>1){
-        downHeat1$is <- TRUE
-        d3heatmap(res,dendrogram = chooseDends(res), xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
-      }else{
+      colPal <- colPal()
+      if(is.null(fn)|is.null(tn)){
         downHeat1$is <- FALSE
-        showModal(modalDialog(
-          title = titleForDimErrorPopup, textForDimErrorPopup, easyClose = TRUE, footer = NULL
-        ))
+        return()
       }
+        keepcols <- which(names(funtaxall) %in% c(tl1, tl2, fl1, fl2, mg1))
+        funtax <- funtaxall[, ..keepcols]
+        funtax <- Intfuntax(funtax, tl1, tn, fl1, fn, t2 = tl2, f2 = fl2)
+        obj <- make2d(funtax)
+        obj[is.na(obj)] <- 0
+        rowmean <- data.frame(Means = rowMeans(obj))
+        colmean <- data.frame(Means = colMeans(obj))
+        idxM <- which(rowmean$Means != 0)
+        obj <- obj[idxM, which(colmean$Means != 0)]
+        if (length(idxM) > 1) {
+          res <- plotHeatmap(obj, 50, trace = "none", norm = FALSE)
+        } else{
+          res <- returnAppropriateObj(obj, norm = FALSE, log = TRUE)
+        }
+        res[is.na(res)] <- 0
+        numrow1$plot1 <- dim(res)[1]
+        if (dim(res)[1] > 1 & dim(res)[2] > 1) {
+          downHeat1$is <- TRUE
+          d3heatmap(
+            res,
+            dendrogram = chooseDends(res),
+            xaxis_height = 220,
+            yaxis_width = 270,
+            yaxis_font_size = "10px",
+            xaxis_font_size = "10px",
+            scalecolors = colPal
+          )
+        } else{
+          downHeat1$is <- FALSE
+          showModal(
+            modalDialog(
+              title = titleForDimErrorPopup,
+              textForDimErrorPopup,
+              easyClose = TRUE,
+              footer = NULL
+            )
+          )
+        }
     })
     output$dynamic1 <- renderUI({
     d3heatmapOutput("plot1", height = paste0(numrow1$plot1*input$pix1+220, "px"))
@@ -589,6 +627,10 @@ server <- function(input, output, session) {
       fn  <- fn()
       mg2 <- mgall()
       colPal <- colPal()
+      if(is.null(fn)|is.null(tn)){
+        downHeat2$is <- FALSE
+        return()
+        }
       keepcols<-which(names(funtaxall)%in%c(tl1, fl1, fl2, mg2))
       funtax <- funtaxall[,..keepcols]
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,f2 = fl2)
@@ -708,6 +750,10 @@ server <- function(input, output, session) {
       fn  <- fn()
       mg3 <- mgall()
       colPal <- colPal()
+      if(is.null(fn)|is.null(tn)){
+        downHeat3$is <- FALSE
+        return()
+      }
       keepcols<-which(names(funtaxall)%in%c(tl1, tl2, fl1, mg3))
       funtax <- funtaxall[,..keepcols]
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2)
@@ -814,8 +860,10 @@ server <- function(input, output, session) {
   observeEvent(input$path, {
     output$PathwayID <- renderUI({
       tn <- tn()
+      if(!is.null(tn)){
       tl1 <- tl1()
       mgall <- mgall()
+      cat('mgall',mgall,'tn',class(tn),'tl1',tl1,'\n')
       ko_sd <- ko_sd()
       keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
       funtax <- funtaxall[,..keepcols]
@@ -829,7 +877,7 @@ server <- function(input, output, session) {
       names(funtax)[names(funtax) == tl1] <- 'usp'
       pathandnames <- as.matrix(getPathwayList(funtax, sp.li =  tn, mgm =  mgall, ko_sd = ko_sd))
       selectInput(inputId = "PathwayID", label = "Input Pathway ID", choices = setNames(as.vector(pathandnames[, "ko"]), pathandnames[,"name"]))
-    })})
+    }})})
 
   pathw <- reactive({input$PathwayID})
 
@@ -840,6 +888,10 @@ server <- function(input, output, session) {
     mgall <-mgall()
     ko_sd <- ko_sd()
     colPal <- colPal()
+    if(is.null(tn)){
+      downHeat4$is <- FALSE
+      return()
+    }
     keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
     names(funtax)[names(funtax) == tl1] <- 'usp'
@@ -872,8 +924,7 @@ server <- function(input, output, session) {
     keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
     funtax <- Intfuntax(funtax,tl1,sp.li,'toplevel',NULL)
-    names(funtax)[names(funtax) == tl1] <- 'usp'
-    x <- pathImage(funtax, sp.li, mgall, pathwi)
+    x <- pathImage(funtax, sp.li, mgall, pathwi,nms = names)
     }
   
   observeEvent(input$down5,{
@@ -890,7 +941,8 @@ server <- function(input, output, session) {
     tl1 <- tl1()
     pathwi<- pathw()
     mgall <-mgall()
-    keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
+    if(!is.null(sp.li)){
+      keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
     if(tl1=='toplevel'){
       keepcols<-c('toplevel',keepcols)
@@ -900,7 +952,11 @@ server <- function(input, output, session) {
     }
     funtax <- Intfuntax(funtax,tl1,sp.li,'toplevel',NULL)
     names(funtax)[names(funtax) == tl1] <- 'usp'
-    pathImage(funtax, sp.li, mgall, pathwi, kostat)
+    names(funtax)[names(funtax) == tl1] <- 'usp'
+    cat(mgall,'-',dim(funtax),'-',names(funtax),'\n-',as.character(mdt[match(mgall,rownames(mdt)), colName()]),'\n')
+    names<-as.character(mdt[match(mgall,rownames(mdt)), colName()])
+    pathImage(funtax, sp.li, mgall, pathwi, kostat,names)
+    }
     list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
          contentType = 'png',
          alt = "Press GO to select Pathway!")
