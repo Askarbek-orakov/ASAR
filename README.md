@@ -1,2 +1,2 @@
-# MFCMAP
-Microbial Fuel Cells Metagenomic Analysis Pipeline 
+# ASAR
+Advanced metagenomic Sequence Analysis in R
