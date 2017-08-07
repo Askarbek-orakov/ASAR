@@ -61,7 +61,9 @@ Intfuntax <- function(result2, t1, tn, f1, fn, t2=NULL, f2=NULL){
     }
     if(!is.null(f2)){
       result2<- ddply(result2, f2, numcolwise(sum))
-    }}
+    }
+  }
+
   result2 <- result2[which(!is.na(result2[,1])& !is.na(result2[,2])& result2[,2]!= ""),]
   return(result2)
 }
@@ -148,22 +150,12 @@ pathImage<-function(funtax, sp.li, mgm, pathwi, kostat,nms) {
       ))
     } else {
       sapply(1:length(ind0), function(i){kostat[ind0[[i]],names(ind0)[i]] <<- 10^(-5)})
-      cat('pathImg',pathwi,class(adk5),dim(adk5),apply(adk5,2,max),nms,'\n')
       adk5 <- adk5/kostat*100
-      cat(class(adk5),dim(adk5),colnames(adk5),'\n',mgm,'\n')
       obj<-as.matrix(adk5)
-      cat('pathImg!',class(obj),dim(obj),apply(obj,2,max),'\n')
       colnames(obj)<-nms
       obj<-avearrays(obj)
-      cat('pathImg!!',class(obj),dim(obj),apply(obj,2,max),'\n')
-      #obj<-log10(avearrays(obj)+1)
       idx<-match(kegg$K[kegg$ko==paste0('ko',pathwi)],rownames(obj))
       idx<-idx[!is.na(idx)]
-      cat('pathImg!!!',length(idx),length(which(is.na(idx))),'\n')
-      cat('---\t',head(kegg$K[kegg$ko==paste0('ko',pathwi)]),'\n')
-      cat('---\t',head(rownames(obj)),'\n')
-      cat('---\t',head(rownames(adk5)),'\n')
-      cat('pathImg!V',length(idx),dim(obj),apply(obj[idx,],2,max),'\n')
       save(obj,pathwi,sp.li,file=paste0('dump.',pathwi,'.',sp.li,'.Rdata'))
       pathview(gene.data = obj, pathway.id = pathwi,
                species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
@@ -376,7 +368,6 @@ server <- function(input, output, session) {
     tn    <-reactive({
 #      isolate({
       if(tl1()=='toplevel'){
-        cat('toplevel\n')
         taxnames$tn<-'toplevel'
       }else{
         taxnames$tn<-input$tn
@@ -412,7 +403,6 @@ server <- function(input, output, session) {
           paste('\t\t\t"',tn,'"\n', collapse = ', '),
           '\tAggregation:\n\t\tlevel:\t"',tl2,'"\n'
           )
-      cat('Plot1', main, '\n')
       return(main)
     }
     
@@ -584,7 +574,6 @@ server <- function(input, output, session) {
         '\tSelection:\n\t\tlevel:\t"',tl1,'"\n\t\tvalues:\n',
         paste0('\t\t\t"',tn,'"', collapse = ',\n')
       )
-    cat('Plot2', main, '\n')
     return(main)
   }
 
@@ -734,7 +723,6 @@ server <- function(input, output, session) {
         paste0('\t\t\t"',tn,'"', collapse = ',\n'),
         '\n\tAggregation:\n\t\tlevel:\t"',tl2,'"\n'
       )
-    cat('Plot3', main, '\n')
     return(main)
   }
 
@@ -879,7 +867,6 @@ server <- function(input, output, session) {
         '\tSelection:\n\t\tlevel:\t"',tl1,'"\n\t\tvalues:\n',
         paste0('\t\t\t"',tn,'"', collapse = ',\n')
       )
-    cat('Plot4', main, '\n')
     return(main)
   }
   
@@ -969,7 +956,6 @@ server <- function(input, output, session) {
       if(!is.null(tn)){
       tl1 <- tl1()
       mgall <- mgall()
-      cat('mgall',mgall,'tn',class(tn),'tl1',tl1,'\n')
       ko_sd <- ko_sd()
       keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
       funtax <- funtaxall[,..keepcols]
@@ -1059,7 +1045,6 @@ server <- function(input, output, session) {
     }
     funtax <- Intfuntax(funtax,tl1,sp.li,'toplevel',NULL)
     names(funtax)[names(funtax) == tl1] <- 'usp'
-    cat(mgall,'-',dim(funtax),'-',names(funtax),'\n-',as.character(mdt[match(mgall,rownames(mdt)), colName()]),'\n')
     names<-as.character(mdt[match(mgall,rownames(mdt)), colName()])
     pathImage(funtax, sp.li, mgall, pathwi, kostat,names)
     }
