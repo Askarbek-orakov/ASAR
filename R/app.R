@@ -318,7 +318,7 @@ ui <- fluidPage(
                radioButtons("newcolumntype", "Type of a new column", c("integer", "double", "character"))),
                div(class="col-sm-3")
                ), 
-               actionButton("addcolumn", "Press here to create a column"),
+               actionButton("addcolumn", "Create a new column"),
                actionButton("addcolumn2", "Save a new column"),
                actionButton("saveBtn", "Save"), value = 7) #dataTableOutput("table1")
     ), width = 9)
