@@ -395,22 +395,23 @@ server <- function(input, output, session) {
     makePlot1Title <- function(tl1, tl2, tn, fl1, fl2, fn, mg1) {
       main <-
         paste(
-          plot1Title,
-          'abundances for genes in',
-          paste0('"', fn, '"'),
-          'group from',
-          paste(tn, collapse = ', '),
-          tl1,
-          'aggregated at',
-          tl2,
-          'level in metagenome',
-          mg1
-        )
+          plot1Title,'\n',
+          'Metagenome dimension:\n',
+          '\tSelection:\t',mg1,'\n',
+          'Functional dimension:\n',
+          '\tSelection:\n\t\tlevel:\t"',fl1,'"\n\t\tvalues:\n',
+          paste0('\t\t\t"', fn, '"\n'),
+          '\tAggregation:\n\t\tlevel:\t"',fl2,'"\n',
+          'Taxonomy dimension:\n',
+          '\tSelection:\n\t\tlevel:\t"',tl1,'"\n\t\tvalues:\n',
+          paste('\t\t\t"',tn,'"\n', collapse = ', '),
+          '\tAggregation:\n\t\tlevel:\t"',tl2,'"\n'
+          )
       cat('Plot1', main, '\n')
       return(main)
     }
     
-    plotInput1 <- function(){
+    plotInput1 <- function(pdf){
       tl1 <- tl1()
       tl2 <- tl2()
       tn  <- tn()
@@ -439,7 +440,7 @@ server <- function(input, output, session) {
           res,
           dendrogram = chooseDends(res),
           col = colPal,
-          main = main,
+          main = 'F vs. T heatmap',
           sepcolor = "black",
           sepwidth = c(0.05, 0.05),
           key = TRUE,
@@ -454,6 +455,25 @@ server <- function(input, output, session) {
           trace = "none",
           srtCol = 50
         )
+      if(pdf){
+        op = par(mar = c(0, 0, 0, 0),family="mono")
+        width<-1100
+        height<-1800
+        plot(
+          c(0, width),
+          c(0, height),
+          type = "n",
+          xlab = "",
+          ylab = "",
+          xaxs = "i",
+          yaxs = "i"
+        )
+        x<-100+strwidth(main,units = 'user',cex = 1)/2
+        y<-height-100-strheight(main,units = 'user',cex = 1)/2
+        text(x,y,labels = gsub('\t','    ',main),adj=0)
+        par(op)
+
+      }
     }
    output$downLink1 <- renderUI({
      if(downHeat1$is==TRUE){
@@ -466,11 +486,13 @@ server <- function(input, output, session) {
       },
       # content is a function with argument file. content writes the plot to the device
       content = function(file) {
-        if(input$var3 == "png")
+        if(input$var3 == "png"){
           png(file, width = 3000, height = 2300, pointsize = 35) # open the png device
-        else
+          plotInput1(pdf=FALSE)
+        } else{
           pdf(file, width = 15, height = 15) # open the pdf device
-          plotInput1()
+          plotInput1(pdf=TRUE)
+        }
           dev.off()
       })
       
