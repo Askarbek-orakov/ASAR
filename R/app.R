@@ -33,10 +33,10 @@ ko.path.name<-ko.path.name[-grep('ko01100',ko.path.name$ko),]
 kegg <- kegg[-grep('ko01100', kegg$ko),]
 loadRdata <- function(fname){
   load(file = fname)
-  return(funtaxall)
+  list <- list("funtaxall" = funtaxall, "mdt" = mdt,  "kegg" = kegg, "ko.path.name" = ko.path.name, "d.kres" = d.kres)
+  return(list)
 }
 
-funtaxall <- loadRdata("pathview.Rdata")
 source("global.R")
 mergeMetagenomes <- function(funtax, newName, prevNames){
   indC<-which(names(funtax)%in%c(prevNames))
@@ -324,9 +324,9 @@ ui <- fluidPage(
                radioButtons("newcolumntype", "Type of a new column", c("integer", "double", "character"))),
                div(class="col-sm-3")
                ), 
-               actionButton("addcolumn", "Press here to create a coumn"),
+               actionButton("addcolumn", "Press here to create a column"),
                actionButton("addcolumn2", "Save a new column"),
-               actionButton("saveBtn", "Save the metadata"), value = 7) #dataTableOutput("table1")
+               actionButton("saveBtn", "Save"), value = 7) #dataTableOutput("table1")
     ), width = 9)
 )
 
@@ -350,12 +350,27 @@ server <- function(input, output, session) {
   })  
   observeEvent(input$loadRdata, {
     inFile <- input$InFile
-    funtaxall <<- loadRdata(inFile$datapath)
+    listA <- loadRdata(inFile$datapath)
+    funtaxall <<- listA$funtaxall
+    mdt <<- listA$mdt
+    values[["hot"]] <<- mdt
+    d.kres <<- listA$d.kres
+    kegg <<- listA$kegg
+    ko.path.name <<- listA$ko.path.name
+    showModal(modalDialog(
+      title = "Congratulations!", "Other Rdata was successfully uploaded", easyClose = TRUE, footer = NULL
+    ))
   })
   
   observeEvent(input$saveRdata, {
-    save(funtaxall, mdt, file = input$Rdataname)
-  })
+    if (!is.null(values[["hot"]])) {
+      #write.table(values[["hot"]], "mtcarsss")
+      mdt <<- values[["hot"]]
+    save(funtaxall, mdt, d.kres, ko.path.name, kegg, file = input$Rdataname)
+    showModal(modalDialog(
+      title = "Congratulations!", "Rdata was successfully saved", easyClose = TRUE, footer = NULL
+    ))
+  }})
   output$paletteOutput <- renderPlot({
     display.brewer.pal(8,input$colorPalette)
   }, height = 200, width = 500)
