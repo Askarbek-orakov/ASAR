@@ -29,30 +29,40 @@
 <p>Heatmaps contain dendrograms to the left and above from heatmap and column and row names below and to the right from the heatmap. Dendrograms are generated with “hclust” function in R and color key upleft to heatmaps represents the distribution of color in the heatmap. The value of the cell in the heatmap can be viewed by locating mouse cursor above that cell. The value of the cell is the log2 value of read count for that cell.</p>
 <div class="figure">
 <img src="media/image1.png" width="684" height="396" />
-
+  <p>Figure 1. Function vs Taxonomy (F/T)</p>
 </div>
 <div class="figure">
 <img src="media/image2.png" width="696" height="396" />
-
+  <p>Figure 2. Function vs Metagenomes (F/M)</p>
 </div>
 <div class="figure">
 <img src="media/image3.png" width="660" height="408" />
-
+  <p>Figure 3. Taxonomy vs Metagenomes (T/M)</p>
 </div>
 <p><strong><em>KEGG Pathways Heatmap</em></strong></p>
-<p><img src="media/image4.png" width="672" height="372" />In addition to characteristics explained for 3D dataset heatmaps, KEGG Pathways Heatmap has Standard Deviation cutoff explained in parameters section for SD cutoff.</p>
+</div>
+<div class="figure">
+<img src="media/image4.png" width="672" height="372" />
+  <p>Figure 4. KEGG Pathways Heatmap</p>
+</div>
+<p>In addition to characteristics explained for 3D dataset heatmaps, KEGG Pathways Heatmap has Standard Deviation cutoff explained in parameters section for SD cutoff.</p>
 <p><strong><em>KEGG Pathway</em></strong></p>
-<p><img src="media/image5.png" width="684" height="300" />KEGG Pathway shows the metabolic pathway image for selected KEGG pathway and color enzymes with known expression in metagenomes. Each rectangle representing enzyme is horizontally divided into a number of selected metagenomes, where coloration of partitions corresponds to values of selected metagenomes(i.e. Partitions are colored from left to right as an order of selected metagenomes). Values of enrichment represent percent contribution of selected taxon from total read count of the whole metagenome to this KEGG Orthology(enzyme). The color key will represent a variation from zero to maximum value among KO’s in the pathway.</p>
+</div>
+<div class="figure">
+<img src="media/image5.png" width="684" height="300" />
+   <p>Figure 5. KEGG Pathway</p>
+</div>
+<p>KEGG Pathway shows the metabolic pathway image for selected KEGG pathway and color enzymes with known expression in metagenomes. Each rectangle representing enzyme is horizontally divided into a number of selected metagenomes, where coloration of partitions corresponds to values of selected metagenomes(i.e. Partitions are colored from left to right as an order of selected metagenomes). Values of enrichment represent percent contribution of selected taxon from total read count of the whole metagenome to this KEGG Orthology(enzyme). The color key will represent a variation from zero to maximum value among KO’s in the pathway.</p>
 <h2 id="parameters">Parameters</h2>
 <p><strong><em>Metagenome Selection</em></strong></p>
 <p>Function vs Taxonomy (F/T) heatmap requires selection of single metagenome, while all others allow selection of multiple metagenomes(see figure 6). Names of metagenomes shown for selection can be changed by selecting a specific column of metadata, rows of which will be used as metagenome names (see figure 7). In order to consider several metagenomes as one, these metagenomes should be given the same name in selected metadata column. In this case abundances of reads of metagenomes with same names are averaged in new metagenome under shared name before any abundances processing steps.</p>
 <div class="figure">
 <img src="media/image6.png" width="672" height="324" />
-
+  <p>Figure 6. Unlike other heatmaps, F/T heatmap requires selection of single metagenome.</p>
 </div>
 <div class="figure">
 <img src="media/image8.png" width="684" height="503" />
-
+  <p></p>
 </div>
 <p><strong><em>Taxonomy and Function Selection</em></strong></p>
 <p><img src="media/image10.png" width="701" height="468" />There are 8 choices for taxonomy level, where &quot;root&quot; means all domains and 7 levels from “domain” to “strain”. At all levels except &quot;root&quot; taxon selection will give a list of all available taxons at that level and multiple taxon selections are possible. At last, second taxon level is used to aggregate selected taxons at that level. Functions are selected with the same principle with the only difference that it has 5 levels instead of 8 (see figure 8).</p>
