@@ -18,6 +18,7 @@ library(gplots)
 library(RColorBrewer)
 library(rhandsontable)
 library(limma)
+source('mg.key.R')
 load("pathview.Rdata")
 options(shiny.maxRequestSize=10*1024^3)
 mdt$Group<-paste(gsub('is','IGBS',gsub('sws','SS',mdt$Origin)),mdt$Source)
@@ -54,7 +55,9 @@ Intfuntax <- function(result2, t1, tn, f1, fn, t2=NULL, f2=NULL){
     }
     if(!is.null(f2)){
       result2<- ddply(result2, f2, numcolwise(sum))
-    }}
+    }
+  }
+
   result2 <- result2[which(!is.na(result2[,1])& !is.na(result2[,2])& result2[,2]!= ""),]
   return(result2)
 }
@@ -141,26 +144,18 @@ pathImage<-function(funtax, sp.li, mgm, pathwi, kostat,nms) {
       ))
     } else {
       sapply(1:length(ind0), function(i){kostat[ind0[[i]],names(ind0)[i]] <<- 10^(-5)})
-      cat('pathImg',pathwi,class(adk5),dim(adk5),apply(adk5,2,max),nms,'\n')
       adk5 <- adk5/kostat*100
-      cat(class(adk5),dim(adk5),colnames(adk5),'\n',mgm,'\n')
       obj<-as.matrix(adk5)
-      cat('pathImg!',class(obj),dim(obj),apply(obj,2,max),'\n')
       colnames(obj)<-nms
       obj<-avearrays(obj)
-      cat('pathImg!!',class(obj),dim(obj),apply(obj,2,max),'\n')
-      #obj<-log10(avearrays(obj)+1)
       idx<-match(kegg$K[kegg$ko==paste0('ko',pathwi)],rownames(obj))
       idx<-idx[!is.na(idx)]
-      cat('pathImg!!!',length(idx),length(which(is.na(idx))),'\n')
-      cat('---\t',head(kegg$K[kegg$ko==paste0('ko',pathwi)]),'\n')
-      cat('---\t',head(rownames(obj)),'\n')
-      cat('---\t',head(rownames(adk5)),'\n')
-      cat('pathImg!V',length(idx),dim(obj),apply(obj[idx,],2,max),'\n')
       save(obj,pathwi,sp.li,file=paste0('dump.',pathwi,'.',sp.li,'.Rdata'))
       pathview(gene.data = obj, pathway.id = pathwi,
                species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
                limit = list(gene=range(as.vector(obj[idx,])),cpd=1))
+      mg.key(fname = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
+             names = nms,node.size = node.size,cex = 0.25,lwd=0.25,tstep = 0.05,rstep = 0.05)
     }
   }
   })
@@ -378,11 +373,10 @@ server <- function(input, output, session) {
     tl2   <-reactive({input$tl2})
     fl1   <-reactive({input$fl1})
     fl2   <-reactive({input$fl2})
-    taxnames<-reactiveValues(tn=as.character(funtaxall$genus[(nrow(funtaxall)/2)]))
+    taxnames<-reactiveValues(tn=as.character(funtaxall$genus[(nrow(funtaxall)/2)]),fn=as.character(funtaxall$FUN4[(nrow(funtaxall)/2)]))
     tn    <-reactive({
 #      isolate({
       if(tl1()=='toplevel'){
-        cat('toplevel\n')
         taxnames$tn<-'toplevel'
       }else{
         taxnames$tn<-input$tn
@@ -401,7 +395,27 @@ server <- function(input, output, session) {
     downHeat3 <- reactiveValues(is =TRUE)
     downHeat4 <- reactiveValues(is =TRUE)
     
-    plotInput1 <- function(){
+    makePlot1Title <- function(tl1, tl2, tn, fl1, fl2, fn, mg1) {
+      if(fl1=='toplevel') fn<-'root'
+      if(tl1=='toplevel') tn<-'root'
+      main <-
+        paste(
+          plot1Title,'\n',
+          'Metagenome dimension:\n',
+          '\tSelection:\t',mg1,'\n',
+          'Functional dimension:\n',
+          '\tSelection:\n\t\tlevel:\t"',fl1,'"\n\t\tvalues:\n',
+          paste0('\t\t\t"', fn, '"\n'),
+          '\tAggregation:\n\t\tlevel:\t"',fl2,'"\n',
+          'Taxonomy dimension:\n',
+          '\tSelection:\n\t\tlevel:\t"',tl1,'"\n\t\tvalues:\n',
+          paste('\t\t\t"',tn,'"\n', collapse = ', '),
+          '\tAggregation:\n\t\tlevel:\t"',tl2,'"\n'
+          )
+      return(main)
+    }
+    
+    plotInput1 <- function(pdf){
       tl1 <- tl1()
       tl2 <- tl2()
       tn  <- tn()
@@ -424,7 +438,47 @@ server <- function(input, output, session) {
         res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
       }
       res[is.na(res)] <- 0 
-      x <- heatmap.2(res,dendrogram = chooseDends(res), col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
+      main<-makePlot1Title(tl1,tl2,tn,fl1,fl2,fn,mg1)
+      x <-
+        heatmap.2(
+          res,
+          dendrogram = chooseDends(res),
+          col = colPal,
+          main = 'F vs. T heatmap',
+          sepcolor = "black",
+          sepwidth = c(0.05, 0.05),
+          key = TRUE,
+          keysize = 0.75,
+          key.par = list(cex = 0.7),
+          symkey = FALSE,
+          density.info = "none",
+          cexRow = 1,
+          cexCol = 1,
+          cex.main=1,
+          margins = c(20, 30),
+          trace = "none",
+          srtCol = 50
+        )
+      if(pdf){
+        op = par(mar = c(0, 0, 0, 0),family="mono")
+        width<-1100
+        height<-1800
+        plot(
+          c(0, width),
+          c(0, height),
+          type = "n",
+          xlab = "",
+          ylab = "",
+          xaxs = "i",
+          yaxs = "i"
+        )
+        main<-gsub('\t','    ',main)
+        x<-100+strwidth(main,units = 'user',cex = 1)/2
+        y<-height-100-strheight(main,units = 'user',cex = 1)/2
+        text(x,y,labels = main,adj=0)
+        par(op)
+
+      }
     }
    output$downLink1 <- renderUI({
      if(downHeat1$is==TRUE){
@@ -437,11 +491,13 @@ server <- function(input, output, session) {
       },
       # content is a function with argument file. content writes the plot to the device
       content = function(file) {
-        if(input$var3 == "png")
+        if(input$var3 == "png"){
           png(file, width = 3000, height = 2300, pointsize = 35) # open the png device
-        else
+          plotInput1(pdf=FALSE)
+        } else{
           pdf(file, width = 15, height = 15) # open the pdf device
-          plotInput1()
+          plotInput1(pdf=TRUE)
+        }
           dev.off()
       })
       
@@ -451,7 +507,7 @@ server <- function(input, output, session) {
     }})
     output$funNames <- renderUI({y <- input$fl1
     if(y!="toplevel"){
-      selectInput(inputId = "fn", label = functhree, choices = as.vector(unique(funtaxall[,get(y)])), selected = as.character(funtaxall$FUN4[(nrow(funtaxall)/2)]))
+      selectInput(inputId = "fn", label = functhree, choices = as.vector(unique(funtaxall[,get(y)])), selected = taxnames$fn)
     }})
     
     output$plot1 <- renderD3heatmap({
@@ -510,7 +566,27 @@ server <- function(input, output, session) {
     d3heatmapOutput("plot1", height = paste0(numrow1$plot1*input$pix1+220, "px"))
   })
 
-  plotInput2 <- function(){ 
+  makePlot2Title <- function(tl1, tn, fl1, fl2, fn, mg2) {
+    if(fl1=='toplevel') fn<-'root'
+    if(tl1=='toplevel') tn<-'root'
+    main <-
+      paste(
+        plot2Title,'\n',
+        'Metagenome dimension:\n',
+        '\tSelection:\t',paste0(mg2,collapse = ', '),'\n',
+        '\tAggregation:\t',colName(),'\n',
+        'Functional dimension:\n',
+        '\tSelection:\n\t\tlevel:\t"',fl1,'"\n\t\tvalues:\n',
+        paste0('\t\t\t"', fn, '"\n'),
+        '\tAggregation:\n\t\tlevel:\t"',fl2,'"\n',
+        'Taxonomy dimension:\n',
+        '\tSelection:\n\t\tlevel:\t"',tl1,'"\n\t\tvalues:\n',
+        paste0('\t\t\t"',tn,'"', collapse = ',\n')
+      )
+    return(main)
+  }
+
+  plotInput2 <- function(pdf){ 
     tl1 <- tl1()
     tn  <- tn()
     fl1 <- fl1()
@@ -527,13 +603,53 @@ server <- function(input, output, session) {
     dk6 <- data.frame(Means=rowMeans(obj))
     obj <- obj[which(dk6$Means!=0),]
     obj <- as.matrix(obj)
+    main<-makePlot2Title(tl1,tn,fl1,fl2,fn,mg2)
     if(dim(obj)[1]>1){
       res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
     }else{
       res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
     }
     res[is.na(res)] <- 0
-    x <- heatmap.2(res,dendrogram = chooseDends(res), col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
+    x <-
+      heatmap.2(
+        res,
+        dendrogram = chooseDends(res),
+        col = colPal,
+        sepcolor = "black",
+        main=plot2Title,
+        sepwidth = c(0.05, 0.05),
+        key = TRUE,
+        keysize = 0.75,
+        key.par = list(cex = 0.7),
+        symkey = FALSE,
+        density.info = "none",
+        cexRow = 1,
+        cexCol = 1,
+        cex.main=0.5,
+        margins = c(20, 30),
+        trace = "none",
+        srtCol = 50
+      )
+    if(pdf){
+      op = par(mar = c(0, 0, 0, 0),family="mono")
+      width<-1100
+      height<-1800
+      plot(
+        c(0, width),
+        c(0, height),
+        type = "n",
+        xlab = "",
+        ylab = "",
+        xaxs = "i",
+        yaxs = "i"
+      )
+      main<-gsub('\t','    ',main)
+      x<-100+strwidth(main,units = 'user',cex = 1)/2
+      y<-height-100-strheight(main,units = 'user',cex = 1)/2
+      text(x,y,labels = main,adj=0)
+      par(op)
+      
+    }
   }
   output$downLink2 <- renderUI({
     if(downHeat2$is==TRUE){
@@ -546,11 +662,13 @@ server <- function(input, output, session) {
     },
     # content is a function with argument file. content writes the plot to the device
     content = function(file) {
-      if(input$var3 == "png")
+      if(input$var3 == "png"){
         png(file, width = 3000, height = 2300, pointsize = 35) # open the png device
-      else
+        plotInput2(FALSE)
+      } else{
         pdf(file, width = 15, height = 15) # open the pdf device
-      plotInput2()
+        plotInput2(TRUE)
+      }
       dev.off()
     })
   
@@ -582,6 +700,7 @@ server <- function(input, output, session) {
       }
       res[is.na(res)] <- 0
       numrow2$plot2 <- dim(res)[1]
+      main<-makePlot2Title(tl1,tn,fl1,fl2,fn,mg2)
       if(dim(res)[1]>1 & dim(res)[2]>1){
         downHeat2$is <- TRUE
         d3heatmap(res,dendrogram = chooseDends(res), xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
@@ -596,7 +715,27 @@ server <- function(input, output, session) {
     d3heatmapOutput("plot2", height = paste0(numrow2$plot2*input$pix2+220, "px"))
   })
   
-  plotInput3 <- function(){ 
+  makePlot3Title <- function(tl1, tl2,tn, fl1, fn, mg3) {
+    if(fl1=='toplevel') fn<-'root'
+    if(tl1=='toplevel') tn<-'root'
+    main <-
+      paste(
+        plot3Title,'\n',
+        'Metagenome dimension:\n',
+        '\tSelection:\t',paste0(mg3,collapse = ', '),'\n',
+        '\tAggregation:\t',colName(),'\n',
+        'Functional dimension:\n',
+        '\tSelection:\n\t\tlevel:\t"',fl1,'"\n\t\tvalues:\n',
+        paste0('\t\t\t"', fn, '"\n'),
+        'Taxonomy dimension:\n',
+        '\tSelection:\n\t\tlevel:\t"',tl1,'"\n\t\tvalues:\n',
+        paste0('\t\t\t"',tn,'"', collapse = ',\n'),
+        '\n\tAggregation:\n\t\tlevel:\t"',tl2,'"\n'
+      )
+    return(main)
+  }
+
+  plotInput3 <- function(pdf){ 
     tl1 <- tl1()
     tl2 <- tl2()
     tn  <- tn()
@@ -619,7 +758,46 @@ server <- function(input, output, session) {
       res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
     }
     res[is.na(res)] <- 0
-    x <- heatmap.2(res,dendrogram = chooseDends(res), col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
+    main<-makePlot3Title(tl1,tl2,tn,fl1,fn,mg3)
+    x <-
+      heatmap.2(
+        res,
+        dendrogram = chooseDends(res),
+        col = colPal,
+        main=plot3Title,
+        sepcolor = "black",
+        sepwidth = c(0.05, 0.05),
+        key = TRUE,
+        keysize = 0.75,
+        key.par = list(cex = 0.7),
+        symkey = FALSE,
+        density.info = "none",
+        cexRow = 1,
+        cexCol = 1,
+        margins = c(20, 30),
+        trace = "none",
+        srtCol = 50
+      )
+    if(pdf){
+      op = par(mar = c(0, 0, 0, 0),family="mono")
+      width<-1100
+      height<-1800
+      plot(
+        c(0, width),
+        c(0, height),
+        type = "n",
+        xlab = "",
+        ylab = "",
+        xaxs = "i",
+        yaxs = "i"
+      )
+      main<-gsub('\t','    ',main)
+      x<-100+strwidth(main,units = 'user',cex = 1)/2
+      y<-height-100-strheight(main,units = 'user',cex = 1)/2
+      text(x,y,labels = main,adj=0)
+      par(op)
+      
+    }
   }
   output$downLink3 <- renderUI({
     if(downHeat3$is==TRUE){
@@ -632,11 +810,13 @@ server <- function(input, output, session) {
     },
     # content is a function with argument file. content writes the plot to the device
     content = function(file) {
-      if(input$var3 == "png")
+      if(input$var3 == "png"){
         png(file, width = 3000, height = 2300, pointsize = 35) # open the png device
-      else
+        plotInput3(FALSE)
+      } else{
         pdf(file, width = 15, height = 15) # open the pdf device
-      plotInput3()
+        plotInput3(TRUE)
+      }
       dev.off()
     })
   
@@ -662,6 +842,7 @@ server <- function(input, output, session) {
       dk6 <- data.frame(Means=rowMeans(obj))
       obj <- obj[which(dk6$Means!=0),]
       obj <- as.matrix(obj)
+      main<-makePlot3Title(tl1,tl2,tn,fl1,fn,mg3)
       if(dim(obj)[1]>1){
         res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
       }else{
@@ -683,8 +864,23 @@ server <- function(input, output, session) {
     d3heatmapOutput("plot3", height = paste0(numrow3$plot3*input$pix3+220, "px"))
   })
   
+  makePlot4Title <- function(tl1, tn, ko_sd, mgall) {
+    if(tl1=='toplevel') tn<-'root'
+    main <-
+      paste(
+        plot4Title,'\n',
+        'Metagenome dimension:\n',
+        '\tSelection:\t',mgall,'\n',
+        '\tAggregation:\t',colName(),'\n',
+        'Taxonomy dimension:\n',
+        '\tSelection:\n\t\tlevel:\t"',tl1,'"\n\t\tvalues:\n',
+        paste0('\t\t\t"',tn,'"', collapse = ',\n')
+      )
+    return(main)
+  }
   
-  plotInput4 <- function(){ 
+  
+  plotInput4 <- function(pdf){ 
     tl1 <- tl1()
     tn  <- tn() 
     mgall <-mgall()
@@ -697,7 +893,46 @@ server <- function(input, output, session) {
     colnames(obj)<-as.character(mdt[c(colnames(obj)), colName()])
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = TRUE,trace = "none")
     mat3[is.na(mat3)] <- 0
-    x <- heatmap.2(mat3,dendrogram = chooseDends(mat3), col = colPal, sepcolor="black", sepwidth=c(0.05,0.05), key=TRUE, keysize=0.75, key.par = list(cex=0.7), symkey=FALSE, density.info="none",cexRow=1,cexCol=1,margins=c(20,30),trace="none",srtCol=50)
+    main<-makePlot4Title(tl1,tn,ko_sd,mgall)
+    x <-
+      heatmap.2(
+        mat3,
+        dendrogram = chooseDends(mat3),
+        col = colPal,
+        main=plot4Title,
+        sepcolor = "black",
+        sepwidth = c(0.05, 0.05),
+        key = TRUE,
+        keysize = 0.75,
+        key.par = list(cex = 0.7),
+        symkey = FALSE,
+        density.info = "none",
+        cexRow = 1,
+        cexCol = 1,
+        margins = c(20, 30),
+        trace = "none",
+        srtCol = 50
+      )
+    if(pdf){
+      op = par(mar = c(0, 0, 0, 0),family="mono")
+      width<-1100
+      height<-1800
+      plot(
+        c(0, width),
+        c(0, height),
+        type = "n",
+        xlab = "",
+        ylab = "",
+        xaxs = "i",
+        yaxs = "i"
+      )
+      main<-gsub('\t','    ',main)
+      x<-100+strwidth(main,units = 'user',cex = 1)/2
+      y<-height-100-strheight(main,units = 'user',cex = 1)/2
+      text(x,y,labels = main,adj=0)
+      par(op)
+      
+    }
   }
   output$downLink4 <- renderUI({
     if(downHeat4$is==TRUE){
@@ -710,16 +945,17 @@ server <- function(input, output, session) {
     },
     # content is a function with argument file. content writes the plot to the device
     content = function(file) {
-      if(input$var3 == "png") {
+      if(input$var3 == "png"){
         png(file, width = 3000, height = 3000, pointsize = 35) # open the png device
-      } else {
+        plotInput4(FALSE)
+      }else{ 
         w<-h<-15
         if(numrow4$plot4>50){
           h<-h*2
         }
         pdf(file, width = w, height = h) # open the pdf device
+        plotInput4(TRUE)
       }
-      plotInput4()
       dev.off()
     })
   
@@ -729,7 +965,6 @@ server <- function(input, output, session) {
       if(!is.null(tn)){
       tl1 <- tl1()
       mgall <- mgall()
-      cat('mgall',mgall,'tn',class(tn),'tl1',tl1,'\n')
       ko_sd <- ko_sd()
       keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
       funtax <- funtaxall[,..keepcols]
@@ -766,6 +1001,7 @@ server <- function(input, output, session) {
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = TRUE,trace = "none")
     mat3[is.na(mat3)] <- 0
     numrow4$plot4 <- dim(mat3)[1]
+    main<-makePlot4Title(tl1,tn,ko_sd,mgall)
     if(dim(mat3)[1]>1 & dim(mat3)[2]>1){
       downHeat4$is <- TRUE
       d3heatmap(mat3,dendrogram = chooseDends(mat3), xaxis_height = 220, yaxis_width = 270, yaxis_font_size = "10px", xaxis_font_size = "10px", scalecolors = colPal)
@@ -789,6 +1025,7 @@ server <- function(input, output, session) {
     keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
     funtax <- Intfuntax(funtax,tl1,sp.li,'toplevel',NULL)
+    names<-as.character(mdt[match(mgall,rownames(mdt)), colName()])
     x <- pathImage(funtax, sp.li, mgall, pathwi,nms = names)
     }
   
@@ -817,12 +1054,10 @@ server <- function(input, output, session) {
     }
     funtax <- Intfuntax(funtax,tl1,sp.li,'toplevel',NULL)
     names(funtax)[names(funtax) == tl1] <- 'usp'
-    names(funtax)[names(funtax) == tl1] <- 'usp'
-    cat(mgall,'-',dim(funtax),'-',names(funtax),'\n-',as.character(mdt[match(mgall,rownames(mdt)), colName()]),'\n')
     names<-as.character(mdt[match(mgall,rownames(mdt)), colName()])
     pathImage(funtax, sp.li, mgall, pathwi, kostat,names)
     }
-    list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
+    list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.leg.png"),
          contentType = 'png',
          alt = "Press GO to select Pathway!")
   }, deleteFile = FALSE)
