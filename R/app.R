@@ -946,6 +946,7 @@ server <- function(input, output, session) {
     keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
     funtax <- Intfuntax(funtax,tl1,sp.li,'toplevel',NULL)
+    names<-as.character(mdt[match(mgall,rownames(mdt)), colName()])
     x <- pathImage(funtax, sp.li, mgall, pathwi,nms = names)
     }
   
@@ -973,7 +974,6 @@ server <- function(input, output, session) {
       #save(funtax,file='funtax.tmp.Rdata')
     }
     funtax <- Intfuntax(funtax,tl1,sp.li,'toplevel',NULL)
-    names(funtax)[names(funtax) == tl1] <- 'usp'
     names(funtax)[names(funtax) == tl1] <- 'usp'
     cat(mgall,'-',dim(funtax),'-',names(funtax),'\n-',as.character(mdt[match(mgall,rownames(mdt)), colName()]),'\n')
     names<-as.character(mdt[match(mgall,rownames(mdt)), colName()])
