@@ -691,14 +691,15 @@ server <- function(input, output, session) {
     },
     # content is a function with argument file. content writes the plot to the device
     content = function(file) {
-      if(input$var3 == "png")
+      if(input$var3 == "png") {
         png(file, width = 3000, height = 3000, pointsize = 35) # open the png device
-      else
+      } else {
         w<-h<-15
         if(numrow4$plot4>50){
           h<-h*2
         }
         pdf(file, width = w, height = h) # open the pdf device
+      }
       plotInput4()
       dev.off()
     })
