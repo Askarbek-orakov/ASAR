@@ -1,0 +1,300 @@
+---
+title: "Prepare data "
+author: "Анатолий Сорокин"
+date: '`r format(Sys.time(), "%d.%m.%Y")`'
+output:
+  pdf_document:
+    keep_tex: yes
+    number_sections: yes
+  html_document: default
+params:
+  format: !r if(opts_knit$get("rmarkdown.pandoc.to") == 'html') c('screen', 'print')
+    else 'print'
+  version: !r if(nchar(Sys.which("git"))) system("git describe --long --dirty --abbrev=10  --tags  --always",
+    intern=TRUE) else date()
+header-includes:
+- \usepackage[T2A]{fontenc}
+- \usepackage[utf8]{inputenc}
+- \usepackage[english,russian]{babel}
+- \usepackage{grffile}
+- \usepackage{rotating}
+- \usepackage{caption}
+- \usepackage{longtable}
+- \usepackage{lscape}
+---
+```{r loadPackages, include=FALSE, cache=FALSE}
+## load additional packages in this chunk
+library(pander)
+library(knitr)
+library(ggplot2)
+library(plyr)
+library(biomformat)
+library(RJSONIO)
+library(data.table)
+library(RCurl)
+library(xtable)
+```
+
+```{r setup, include=FALSE, cache=FALSE}
+## This chunk should contain global configuration commands.
+## Use this to set knitr options and related things. Everything
+## in this chunk will be included in an appendix to document the
+## configuration used.
+#output <- opts_knit$get("rmarkdown.pandoc.to")
+
+## By default R code is only included in HTML versions of the report
+## (where it can be collapsed). You can generate a PDF version
+## using rmarkdown::pdf_document to get a copy for print. Extensive
+## chunks of R code may or may not be desired in /hat setting. If you
+## want them simply change the following arguments to `echo = TRUE`.
+## In either case the default can be overwritten for individual chunks.
+#opts_chunk$set(echo = output=="html")
+#opts_chunk$set(warning = output=="html")
+#opts_chunk$set(message = output=="html")
+
+## Cache options
+opts_chunk$set(cache=FALSE)
+
+## Figure options
+## Set default figure format
+#options(reportmd.figure.format=params$format)
+
+## Set 'hide.fig.code' to FALSE to include code chunks that
+## produce Figures in the output. Note that this affects all chunks
+## that provide a figure caption.
+opts_chunk$set(hold=TRUE, hide.fig.code=FALSE)
+
+## Set up default plotting options for different formats.
+## These can be overwritten for individual chunks
+#interactiveFig()
+#screenFig()
+#printFig()
+
+## Pander options
+panderOptions("digits", 3)
+panderOptions("table.split.table", 160)
+
+## Configure Figure and Table lables
+#options(figcap.prefix = "Figure", figcap.sep = ":", figcap.prefix.highlight = "**")
+#options(tabcap.prefix = "Table", tabcap.sep = ":", tabcap.prefix.highlight = "**")
+
+## Install required knitr hooks
+#installHooks()
+```
+
+```{r functions, include=FALSE}
+## Custom functions used in the analysis should go into this chunk.
+## They will be listed in their own section of the appendix.
+extractOTU<-function(.x){
+.res<-data.frame(otu=gsub('(\\[|\\])','',
+                          unlist(
+                            strsplit(
+                              as.character(
+                                .x$semicolon.separated.list.of.annotations),
+                              ';'))))
+curl1<-'curl  -H "auth: "'
+curl2<-"\" -H 'Accept-Encoding: gzip,deflate' \"http://api-pql.metagenomics.anl.gov/1/matrix/organism?"
+curl3<-'&source=SEED&group_level=strain&result_type=abundance&hit_type=all&identity=60&length=15" -o mgm.biome'
+}
+
+```
+
+# Read the project
+
+Before running the code there should be two variables setted for appropriate collection of the data:
+ 
+ 1. the access key in the *webkey* 
+ 2. the project ID or temporary ID in the *prjTMP*
+
+```{r get.the.project,echo=FALSE}
+    server.resource <-
+      "http://api.metagenomics.anl.gov/1/project/"
+    server.resource <- paste0(server.resource, prjTMP)
+    message(paste("Loading the annotations form MG-RAST of",
+                  prjTMP),
+            domain = NA)
+    message("The time spent in this step is proportional to the total amount of remote data...")
+    param <-
+      list(
+        verbosity = 'full',
+        auth = webkey
+      )
+    anno <- tryCatch(
+      getForm(
+        server.resource,
+        .params = param,
+        .opts = list(
+          noprogress = TRUE)
+      ),
+      error = function(e) {
+        msg <- conditionMessage(e)
+        structure(msg, class = "try-error")
+      }
+    )
+    if (inherits(anno, "try-error")) {
+      warning(anno)
+      return(FALSE)
+    }
+    invalid.source <- which(grepl("Invalid\\s+ontology\\s+source",
+                                  anno))
+    if (length(invalid.source))
+      stop("invalid ontology source")
+    if (length(which(grepl("insufficient\\s+permissions",
+                           anno))))
+      stop("invalid webkey")
+    anno <- fromJSON(
+      textConnection(anno),
+      header = FALSE,
+      sep = "\t",
+      stringsAsFactor = F
+    )
+proj.ID<-anno$id
+metagenomes <-
+  ldply(anno$metagenomes, function(.x) {
+  data.frame(
+  MG.RAST.ID = .x$metagenome_id,
+  Metagenome.Name = .x$name,
+  bp.Count = .x$basepairs,
+  Sequence.Count = .x$sequences,
+  Biome = .x$biome,
+  Feature = .x$feature,
+  Material = .x$material,
+  Location = .x$location,
+  Country = .x$country,
+  Sequence.Type = .x$sequence_type,
+  Sequence.Method = .x$sequencing_method
+  )
+  })
+write.csv(metagenomes,file = paste0(proj.ID,'.meta.csv'))
+```
+
+```{r project.description,echo=FALSE,results='asis'}
+desc<-as.data.frame(anno$metadata)
+names(desc)<-'metadata'
+pander(desc)
+```
+
+## List of metagenomes
+
+```{r list.metagenomes,echo=FALSE}
+pander(metagenomes[,1:4])
+pander(metagenomes[,c(1,5:11)])
+```
+
+# Read the BIOM for the project
+
+In the recent version of the MG-RAST matrix become asynchronous command, which means that it is easier to get BIOM from interactive environment rather than send it to cluster.
+
+```{r ask.4.biome}
+  server.resource <-
+    "http://api.metagenomics.anl.gov/matrix/organism"
+  message(paste("Loading the BIOM from MG-RAST for",
+                prjTMP),
+          domain = NA)
+  message("The time spent in this step is proportional to the total amount of remote data...")
+  param <-
+    list(
+      id=paste0('mgm',metagenomes$MG.RAST.ID[1:59]),
+      group_level='strain',source='SEED',result_type='abundance',
+      hit_type='all',identity=60,length=15,
+      auth = webkey
+    )
+  handler <- tryCatch(
+    getForm(
+      server.resource,
+      .params = param,
+      .opts = list(
+        noprogress = TRUE)
+    ),
+    error = function(e) {
+      msg <- conditionMessage(e)
+      structure(msg, class = "try-error")
+    }
+  )
+  if (inherits(handler, "try-error")) {
+    warning(handler)
+  }else{
+    invalid.source <- which(
+      grepl("Invalid\\s+ontology\\s+source",
+                                  handler))
+    if (length(invalid.source)){
+      stop("invalid BIOM source")
+    }else if (length(
+      which(
+        grepl("insufficient\\s+permissions",
+                                 handler)))){
+      stop("invalid webkey")
+    }else{
+      handlerURL <- fromJSON(
+        textConnection(handler),
+        header = FALSE,
+        sep = "\t",
+        stringsAsFactor = F
+      )
+      i<-0
+      repeat{
+        res<-getURL(url = handlerURL['url'])
+        rj<-fromJSON(res)
+        if(length(rj)<=1){
+          break
+        }else if(rj$status=='done'){
+          break
+        }else if(i>100){
+          break
+        }
+        i<-i+1
+      }
+      if(length(rj)<=1){
+        cat(rj,'\n')
+      }else if(rj$status!='done'){
+        cat('Biom download fail after ',i,'attempts. \nTry to download later. URL="', handlerURL['url'],'\n')
+      }else{
+        
+      b<-biom(rj$data)
+      write_biom(b,paste0(proj.ID,'.biom'))
+      }
+    }
+  }
+```
+
+# Prepare download scripts
+```{r make.sango.scripts,echo=FALSE}
+lines<-c('#!/bin/bash',sapply(metagenomes$MG.RAST.ID,function(.x)paste0('sbatch getMGRAST.sh ',webkey,' mgm',.x)))
+writeLines(lines,'submit.sh')
+system('chmod a+x submit.sh')
+```
+In the same folder with this report you can find *submit.sh* file which is required to fetch all data from MG-RAST server via API. To run the script on Sango type
+
+```
+cd `r paste0('mkdir project.',proj.ID)`
+./submit.sh
+```
+
+Once all jobs are finished run the *checkDownload.R*:
+```
+./checkDownload.R
+```
+If some files are missing or partially downloaded *checkDownload.R* script will create *resubmit.<date.time>.sh* script, which will reload missing files. 
+
+If download is complete and functional the *checkDownload.R* script will create Rdata file ready for use in ASAR. 
+
+# Приложения {.tabset}
+## Функции
+```{r functions, eval=FALSE, include=TRUE}
+```
+
+## Конфигурация R
+```{r setup, eval=FALSE}
+```
+
+## Версии
+### Версия документа
+```{r docVersion, echo=FALSE, results='asis', cache=FALSE}
+cat(params$version)
+```
+
+### Session Info
+```{r sessionInfo, echo=FALSE, results='asis', class='text', warning=FALSE}
+pander(devtools::session_info())
+```
+
