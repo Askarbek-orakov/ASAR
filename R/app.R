@@ -150,7 +150,7 @@ pathImage<-function(funtax, sp.li, mgm, pathwi, kostat,nms) {
       obj<-avearrays(obj)
       idx<-match(kegg$K[kegg$ko==paste0('ko',pathwi)],rownames(obj))
       idx<-idx[!is.na(idx)]
-      save(obj,pathwi,sp.li,file=paste0('dump.',pathwi,'.',sp.li,'.Rdata'))
+      #save(obj,pathwi,sp.li,file=paste0('dump.',pathwi,'.',sp.li,'.Rdata'))
       pathview(gene.data = obj, pathway.id = pathwi,
                species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
                limit = list(gene=range(as.vector(obj[idx,])),cpd=1))
