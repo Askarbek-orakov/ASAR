@@ -209,18 +209,19 @@ _Examples:_ “mgm4714675.3.kegg” and “mgm4714675.3.seed”.
 f. Download KEGG Orthology file by selecting “ontology” for **Annotation Type** and “KO” for **Data Source** and rename the file by adding at the end “.ko”. 
 _Example:_ “mgm4714675.3.ko”.
 
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image24.png)
 g. Biome file can be downloaded only from MG-RAST API/command line tools (see below)
 
 h. Download metadata file by entering a project and pressing file icon as shown below and rename the file as “jobs.tsv” or it can be created by user.
 
 1.Press icon shown below.
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image24.png)
-
-2. Select all.
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image25.png)
 
-3. Press the icon shown below to download metadata.
+2. Select all.
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image26.png)
+
+3. Press the icon shown below to download metadata.
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image27.png)
 
 ### **II Download files through API or other command line tools, such as a terminal.**
 
@@ -229,10 +230,10 @@ h. Download metadata file by entering a project and pressing file icon as shown 
 2. An example of how to download files through terminal is shown below.
 
 Webkey will be needed to download files from private projects. To get your webkey in MG-RAST, press “ show webkey” as indicated below.
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image27.png)
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image28.png)
 
 Open Terminal and run this chunk of code after modifying webkey and metagenome ID (as marked by red squares) to download your files.
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image28.png)
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image29.png)
 
 1. Functional annotation by SEED
 ```markdown
