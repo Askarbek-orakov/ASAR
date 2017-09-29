@@ -198,9 +198,13 @@ Webkey will be needed to download files from private projects. To get your webke
 
 <img src="media/image28.png" width="600">
 
+
+
+
 Open Terminal and run this chunk of code after modifying webkey and metagenome ID (as marked by red squares) to download your files. 
 
 <img src="media/image29.png" width="1000">
+
 
 
 
@@ -250,6 +254,8 @@ curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http:
 
 
 
+
+
 **d. Download functional annotation file either by SEED or KEGG by selecting “function” for Annotation Type and either “KEGG” or “SEED” for Data Source and rename them by adding “.fkegg” or “.fseed” respectively. 
 _Examples:_ “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”.**
 
@@ -258,6 +264,7 @@ _Examples:_ “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”.**
 
 
 <img src="media/image21.png" width="1000">
+
 
 
 
@@ -272,15 +279,21 @@ _Examples:_ “mgm4714675.3.kegg” and “mgm4714675.3.seed”.**
 <img src="media/image23.png" width="1000">
 
 
+
+
 **f. Download KEGG Orthology file by selecting “ontology” for Annotation Type and “KO” for Data Source and rename the file by adding at the end “.ko”. 
 _Example:_ “mgm4714675.3.ko”.** 
+
 
 <img src="media/image24.png" width="1000">
 
 
+
 **g. Biome file can be downloaded only from MG-RAST API/command line tools (see below)**
 
+
 **h. Download metadata file by entering a project and pressing file icon as shown below and rename the file as “jobs.tsv” or it can be created by user.**
+
 
 1.Press icon shown below. 
 
