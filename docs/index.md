@@ -98,26 +98,26 @@ Upload function can be used to upload Rdata files generated previously and Save 
 
 R Packages from CRAN:
 
-1.Package ‘shiny’ _version 1.0.3_
-2.Package ‘ggplot2’ _version 2.2.1_
-3.Package ‘gplots’ _version 3.0.1_
-4.Package ‘data.table’ _version 1.10.4_
-5.Package ‘plyr’ _version 1.8.4_
-6.Package ‘stringr’ _version 1.2.0_
-7.Package ‘shinythemes’ _version 1.1.1_
-8.Package ‘matrixStats’ _version 0.52.2_
-9.Package ‘png’ _version 0.1-7_
-10.Package ‘devtools’ _version 1.13.2_
-11.Package ‘rhandsontable’ _version 0.3.4.6_
-12.Package ‘RColorBrewer’ _version 1.1-2_
+1. Package ‘shiny’ _version 1.0.3_
+2. Package ‘ggplot2’ _version 2.2.1_
+3. Package ‘gplots’ _version 3.0.1_
+4. Package ‘data.table’ _version 1.10.4_
+5. Package ‘plyr’ _version 1.8.4_
+6. Package ‘stringr’ _version 1.2.0_
+7. Package ‘shinythemes’ _version 1.1.1_
+8. Package ‘matrixStats’ _version 0.52.2_
+9. Package ‘png’ _version 0.1-7_
+10. Package ‘devtools’ _version 1.13.2_
+11. Package ‘rhandsontable’ _version 0.3.4.6_
+12. Package ‘RColorBrewer’ _version 1.1-2_
 
 Bioconductor:
 
-1.Package ‘mmnet’ _version 1.15.0-1_
-2.Package ‘pathview’ _version 1.14.0_
-3.Package ‘biomformat’ _version 1.2.0_
-4.Package ‘KEGGREST’ _version 1.14.1_
-5.Package ‘limma’ _version 3.30.13_
+1. Package ‘mmnet’ _version 1.15.0-1_
+2. Package ‘pathview’ _version 1.14.0_
+3. Package ‘biomformat’ _version 1.2.0_
+4. Package ‘KEGGREST’ _version 1.14.1_
+5. Package ‘limma’ _version 3.30.13_
 
 GitHub:
 
@@ -126,9 +126,9 @@ Package ‘d3heatmap’ by _“Alanocallaghan/d3heatmap”_
 
 **To run the app on your local machine:**
 
-1.Download RStudio/R
+1. Download RStudio/R
 
-2.Run these commands below in the console:
+2. Run these commands below in the console:
 
 ```markdown
 install.packages(c("shiny","ggplot2","gplots","RColorBrewer","data.table","plyr","stringr","shinythemes","matrixStats","png","devtools","rhandsontable"))
@@ -162,53 +162,117 @@ Preparation of data from MG-RAST only requires project ID and webkey to be given
 
 _The list of required input files:_
 
-1.Functional annotations file either by KEGG or SEED
-2.Taxonomic annotations file either by KEGG or SEED
-3.KEGG Orthology file
-4.Biom file
-5.Metadata
+1. Functional annotations file either by KEGG or SEED
+2. Taxonomic annotations file either by KEGG or SEED
+3. KEGG Orthology file
+4. Biom file
+5. Metadata
 
 Our app uses MG-RAST annotations as an example. MG-RAST has both public and private projects which can be downloaded as it is described in its manual. There are two ways of downloading files from MG-RAST and prepare them for the input.
 
 The first way is to download files directly from MG-RAST website, while second way is to download files through API or other command line tools, such as a terminal. In the case of the former way, you will have to rename files manually, while in the case of the latter way, given code will download files automatically and rename them automatically.
 
 
+I  ### **Download files directly from MG-RAST website as follows.**
 
+a. Select a project.
 
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image011.gif)
-_Figure 11._ **Function vs Metagenomes (F/M)**
+
+b. Select a sample.
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image012.gif)
-_Figure 12._ **Function vs Metagenomes (F/M)**
+
+c. Go to Download.
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image013.gif)
-_Figure 13._ **Function vs Metagenomes (F/M)**
+
+d. Download functional annotation file either by SEED or KEGG by selecting “function” for **Annotation Type** and either “KEGG” or “SEED” for **Data Source** and rename them by adding “.fkegg” or “.fseed” respectively. 
+_Examples:_ “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”.
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image014.gif)
-_Figure 14._ **Function vs Metagenomes (F/M)**
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image015.gif)
-_Figure 15._ **Function vs Metagenomes (F/M)**
+
+
+e. Download taxonomic annotation file either by SEED or KEGG by selecting “organism” for **Annotation Type** and either “KEGG” or “SEED” for **Data Source** and rename them by adding “.kegg” or “.seed” respectively. 
+_Examples:_ “mgm4714675.3.kegg” and “mgm4714675.3.seed”.
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image016.gif)
-_Figure 16._ **Function vs Metagenomes (F/M)**
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image017.gif)
-_Figure 17._ **Function vs Metagenomes (F/M)**
+
+
+f. Download KEGG Orthology file by selecting “ontology” for **Annotation Type** and “KO” for **Data Source** and rename the file by adding at the end “.ko”. 
+_Example:_ “mgm4714675.3.ko”.
+
+g. Biome file can be downloaded only from MG-RAST API/command line tools (see below)
+
+h. Download metadata file by entering a project and pressing file icon as shown below and rename the file as “jobs.tsv”.
+
+1.Press icon shown below.
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image018.gif)
-_Figure 18._ **Function vs Metagenomes (F/M)**
 
+2. Select all.
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image018.gif)
+
+3. Press the icon shown below to download metadata.
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image018.gif)
+
+II  ### **Download files through API or other command line tools, such as a terminal.**
+
+1. You can find how to download files through API by clicking this link.
+
+2. An example of how to download files through terminal is shown below.
+
+Webkey will be needed to download files from private projects. To get your webkey in MG-RAST, press “ show webkey” as indicated below.
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image018.gif)
+
+Open Terminal and run this chunk of code after modifying webkey and metagenome ID (as marked by red squares) to download your files.
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image018.gif)
+
+1. Functional annotation by SEED
 ```markdown
-Syntax highlighted code block
-
-# Nazgul
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http://api-pql.metagenomics.anl.gov/1/annotation/similarity/mgm4714675.3?source=SEED&type=function&identity=60&length=15" -o mgm4714679.3.fseed
 ```
+2. Taxonomic annotation by SEED
+```markdown
+curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http://api.metagenomics.anl.gov/1/annotation/similarity/mgm4714675.3?source=SEED&type=organism&identity=60&length=15" -o mgm4714675.3.seed
+```
+3. Functional annotation by KEGG
+```markdown
+curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http://api-pql.metagenomics.anl.gov/1/annotation/similarity/mgm4714675.3?source=KEGG&type=function&identity=60&length=15" -o mgm4714679.3.fkegg
+```
+4. Taxonomic annotation by KEGG
+```markdown
+curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http://api-pql.metagenomics.anl.gov/1/annotation/similarity/mgm4714675.3?source=KEGG&type=organism&identity=60&length=15" -o mgm4714679.3.kegg
+```
+5. KEGG Orthology file
+```markdown
+curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http://api-pql.metagenomics.anl.gov/1/annotation/similarity/mgm4714675.3?source=KO&type=ontology&identity=60&length=15" -o mgm4714675.3.ko
+```
+6. Biome file:
+```markdown
+curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http://api-pql.metagenomics.anl.gov/1/matrix/organism?id=mgm4714675.3&id=mgm4714661.3&id=mgm4714663.3&source=SEED&group_level=strain&result_type=abundance&hit_type=all&identity=60&length=15" -o mgm.biome
+```
+7. Metadata
+Metadata is created by user.
+
+**Creating .RData**
+
+Put all five files into the same directory.
+You may use this app by
+A. Exploring the pre-loaded example data set. This is a pre-loaded Metagome Samples taken from swine waste example for exploring the app's features.
+
+B. Upload your own data that is either
+C. Uploading an .RData file containing your data that was previously downloaded from the app session.
+
+## Cite us:
+
+Askarbek N. Orakov, Nazgul K. Sakenova, Anatoly Sorokin and Igor Goryanin. 2017. “ASAR: ”.
+
+## References:
+
+[1] Keegan, K. P., Glass, E. M., & Meyer, F. (2016). MG-RAST, a metagenomics service for analysis of microbial community structure and function. Microbial Environmental Genomics (MEG), 207-233.
+
+[2] Overbeek, R., Begley, T., Butler, R. M., Choudhuri, J. V., Chuang, H. Y., Cohoon, M., ... & Fonstein, M. (2005). The subsystems approach to genome annotation and its use in the project to annotate 1000 genomes. Nucleic acids research, 33(17), 5691-5702.
+
+[3] Kanehisa, M., Sato, Y., Kawashima, M., Furumichi, M., & Tanabe, M. (2016). KEGG as a reference resource for gene and protein annotation. Nucleic acids research, 44(D1), D457-D462.
+
 
 For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
 
