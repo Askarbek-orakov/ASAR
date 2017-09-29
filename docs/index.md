@@ -60,7 +60,7 @@ KEGG Pathway shows the metabolic pathway image for selected KEGG pathway and col
 Function vs Taxonomy (F/T) heatmap requires selection of single metagenome, while all others allow selection of multiple metagenomes(see figure 6). Names of metagenomes shown for selection can be changed by selecting a specific column of metadata, rows of which will be used as metagenome names (see figure 7). In order to consider several metagenomes as one, these metagenomes should be given the same name in selected metadata column. In this case abundances of reads of metagenomes with same names are averaged in new metagenome under shared name before any abundances processing steps.
 
 _Figure 6._ **Unlike other heatmaps, F/T heatmap requires selection of single metagenome.**
-<img src="media/image7.png" width="250">
+<img src="media/image7.png" width="300">
 <img src="media/image8.png" width="300">
 
 _Figure 7._ **Metagenomes’ names selection to be displayed.**
