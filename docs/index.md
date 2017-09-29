@@ -232,42 +232,55 @@ curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http:
 
 ### **II Download files directly from MG-RAST website as follows.**
 
-a. Select a project. 
+**a. Select a project.** 
 
 <img src="media/image17.png" width="2000"> 
 
-b. Select a sample. 
+
+
+**b. Select a sample. **
 
 <img src="media/image18.png" width="1000">
 
-c. Go to Download. 
+
+
+**c. Go to Download.** 
 
 <img src="media/image19.png" width="1000">
 
-d. Download functional annotation file either by SEED or KEGG by selecting “function” for **Annotation Type** and either “KEGG” or “SEED” for **Data Source** and rename them by adding “.fkegg” or “.fseed” respectively. 
-_Examples:_ “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”. 
+
+
+**d. Download functional annotation file either by SEED or KEGG by selecting “function” for Annotation Type and either “KEGG” or “SEED” for Data Source and rename them by adding “.fkegg” or “.fseed” respectively. 
+_Examples:_ “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”.**
 
 <img src="media/image20.png" width="700"> 
+
+
 
 <img src="media/image21.png" width="1000">
 
 
-e. Download taxonomic annotation file either by SEED or KEGG by selecting “organism” for **Annotation Type** and either “KEGG” or “SEED” for **Data Source** and rename them by adding “.kegg” or “.seed” respectively. 
-_Examples:_ “mgm4714675.3.kegg” and “mgm4714675.3.seed”. 
+
+**e. Download taxonomic annotation file either by SEED or KEGG by selecting “organism” for Annotation Type and either “KEGG” or “SEED” for Data Source and rename them by adding “.kegg” or “.seed” respectively. 
+_Examples:_ “mgm4714675.3.kegg” and “mgm4714675.3.seed”.** 
+
 
 <img src="media/image22.png" width="1000">
+
+
 
 <img src="media/image23.png" width="1000">
 
 
-f. Download KEGG Orthology file by selecting “ontology” for **Annotation Type** and “KO” for **Data Source** and rename the file by adding at the end “.ko”. 
-_Example:_ “mgm4714675.3.ko”. 
+**f. Download KEGG Orthology file by selecting “ontology” for Annotation Type and “KO” for Data Source and rename the file by adding at the end “.ko”. 
+_Example:_ “mgm4714675.3.ko”.** 
 
 <img src="media/image24.png" width="1000">
 
-g. Biome file can be downloaded only from MG-RAST API/command line tools (see below)
 
-h. Download metadata file by entering a project and pressing file icon as shown below and rename the file as “jobs.tsv” or it can be created by user.
+**g. Biome file can be downloaded only from MG-RAST API/command line tools (see below)**
+
+**h. Download metadata file by entering a project and pressing file icon as shown below and rename the file as “jobs.tsv” or it can be created by user.**
 
 1.Press icon shown below. 
 
