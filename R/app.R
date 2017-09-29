@@ -57,7 +57,22 @@ Intfuntax <- function(result2, t1, tn, f1, fn, t2=NULL, f2=NULL){
       result2<- ddply(result2, f2, numcolwise(sum))
     }
   }
-
+  #ERROR Warning: Error in matrix: length of 'dimnames' [2] not equal to array extent
+  # Stack trace (innermost first):
+  #   90: matrix
+  # 89: Ops.data.frame
+  # 88: NextMethod
+  # 87: Ops.data.table
+  # 86: which
+  # 85: eval
+  # 84: eval
+  # 83: [.data.table
+  #      82: [ [/Users/Askarbek/ASAR/R/app.R#61]
+  #             81: Intfuntax [/Users/Askarbek/ASAR/R/app.R#61]
+  #                            80: func [/Users/Askarbek/ASAR/R/app.R#528]
+  #                                      79: origRenderFunc
+  #                                      78: output$plot1
+  #                                      1: runApp
   result2 <- result2[which(!is.na(result2[,1])& !is.na(result2[,2])& result2[,2]!= ""),]
   return(result2)
 }
@@ -118,9 +133,33 @@ returnAppropriateObj <- function(obj, norm, log) {
 get_ko_data <- function(funtax, taxon, metagenomes) {
   d<-getSpecieFromAbundMD5_2(funtax,sp = taxon,aggregate = FALSE)
   indC<-c(which(names(d)=='md5'),match(metagenomes,names(d)))
+#   Error in [.data.table: Column 1 of j's result for the first group is NULL. We rely on the column types of the first result to decide the type expected for the remaining groups (and require consistency). NULL columns are acceptable for later groups (and those are replaced with NA of appropriate type and recycled) but not for the first. Please use a typed empty vector instead, such as integer() or numeric().
+# Stack trace (innermost first):
+#             85: [.data.table
+#             84: [ [/Users/Askarbek/ASAR/R/app.R#136]
+#             83: get_ko_data [/Users/Askarbek/ASAR/R/app.R#136]
+#             82: filter_stats [/Users/Askarbek/ASAR/R/app.R#179]
+#             81: pathwayHeatmap [/Users/Askarbek/ASAR/R/app.R#192]
+#             80: func [/Users/Askarbek/ASAR/R/app.R#1014]
+#             79: origRenderFunc
+#             78: output$plot4
+#             1: runApp
   d5.1<-d[,list(m5=unlist(str_split(md5,','))),by=.(usp,ufun,md5)]
   d5<-merge(d5.1,d[,..indC],by='md5')
   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
+  # Error in aggregate.data.frame: no rows to aggregate
+  # Stack trace (innermost first):
+  #   87: aggregate.data.frame
+  # 86: aggregate.formula
+  # 85: aggregate
+  # 84: aggregate
+  # 83: get_ko_data [/Users/Askarbek/ASAR/R/app.R#139]
+  #                  82: filter_stats [/Users/Askarbek/ASAR/R/app.R#179]
+  #                                    81: pathwayHeatmap [/Users/Askarbek/ASAR/R/app.R#192]
+  #                                                        80: func [/Users/Askarbek/ASAR/R/app.R#1014]
+  #                                                                  79: origRenderFunc
+  #                                                                  78: output$plot4
+  #                                                                  1: runApp
   adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'usp', 'ufun', 'annotation')]),FUN=sum)
 }
 
