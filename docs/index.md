@@ -33,7 +33,6 @@ There is the sample data to explore the app, and to use your own data, please, r
 
 Heatmaps contain dendrograms to the left and above from heatmap and column and row names below and to the right from the heatmap. Dendrograms are generated with “hclust” function in R and color key upleft to heatmaps represents the distribution of color in the heatmap. The value of the cell in the heatmap can be viewed by locating mouse cursor above that cell. The value of the cell is the log2 value of read count for that cell.
 
-![](https://static.esea.net/global/images/users/1524800.1482880673.png)
 
 _Figure 1._ **Function vs Taxonomy (F/T)**
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image1.png)
