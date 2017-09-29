@@ -33,21 +33,18 @@ There is the sample data to explore the app, and to use your own data, please, r
 
 Heatmaps contain dendrograms to the left and above from heatmap and column and row names below and to the right from the heatmap. Dendrograms are generated with “hclust” function in R and color key upleft to heatmaps represents the distribution of color in the heatmap. The value of the cell in the heatmap can be viewed by locating mouse cursor above that cell. The value of the cell is the log2 value of read count for that cell.
 
-
-![](https://raw.githubusercontent.com/Askarbek-orakov/ASAR/master/image6.png)
-
 _Figure 1._ **Function vs Taxonomy (F/T)**
-![](https://raw.githubusercontent.com/Askarbek-orakov/ASAR/master/docs/media/image1.png)
+![](media/image1.png)
 
 _Figure 2._ **Function vs Metagenomes (F/M)**
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image2.png)
+![](media/image2.png)
 
 _Figure 3._ **Taxonomy vs Metagenomes (T/M)**
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image3.png)
+![](media/image3.png)
 
 ### _KEGG Pathways Heatmap_
 _Figure 4._ **KEGG Pathways Heatmap**
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image4.png)
+![](media/image4.png)
 
 In addition to characteristics explained for 3D dataset heatmaps, KEGG Pathways Heatmap has Standard Deviation cutoff explained in parameters section for SD cutoff.
 
@@ -63,24 +60,24 @@ KEGG Pathway shows the metabolic pathway image for selected KEGG pathway and col
 Function vs Taxonomy (F/T) heatmap requires selection of single metagenome, while all others allow selection of multiple metagenomes(see figure 6). Names of metagenomes shown for selection can be changed by selecting a specific column of metadata, rows of which will be used as metagenome names (see figure 7). In order to consider several metagenomes as one, these metagenomes should be given the same name in selected metadata column. In this case abundances of reads of metagenomes with same names are averaged in new metagenome under shared name before any abundances processing steps.
 
 _Figure 6._ **Unlike other heatmaps, F/T heatmap requires selection of single metagenome.**
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image7.png)
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image8.png)
+![](media/image7.png)
+![](media/image8.png)
 
 _Figure 7._ **Metagenomes’ names selection to be displayed.**
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image9.png)
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image10.png)
+![](media/image9.png)
+![](media/image10.png)
 
 ### _Taxonomy and Function Selection_
 
 There are 8 choices for taxonomy level, where "root" means all domains and 7 levels from “domain” to “strain”. At all levels except "root" taxon selection will give a list of all available taxons at that level and multiple taxon selections are possible. At last, second taxon level is used to aggregate selected taxons at that level. Functions are selected with the same principle with the only difference that it has 5 levels instead of 8 (see figure 8).
 
 _Figure 8._ **Taxonomy and Function Selection**
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image11.png) 
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image12.png) 
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image13.png) 
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image14.png) 
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image15.png) 
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image16.png) 
+![](media/image11.png) 
+![](media/image12.png) 
+![](media/image13.png) 
+![](media/image14.png) 
+![](media/image15.png) 
+![](media/image16.png) 
 
 ### _Pathway Selection for Building KEGG Pathway_
 
@@ -189,24 +186,24 @@ The first way is to download files directly from MG-RAST website, while second w
 
 a. Select a project.
 
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image17.png)
+![](media/image17.png)
 
 b. Select a sample.
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image18.png)
+![](media/image18.png)
 
 c. Go to Download.
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image19.png)
+![](media/image19.png)
 
 d. Download functional annotation file either by SEED or KEGG by selecting “function” for **Annotation Type** and either “KEGG” or “SEED” for **Data Source** and rename them by adding “.fkegg” or “.fseed” respectively. 
 _Examples:_ “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”.
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image20.png)
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image21.png)
+![](media/image20.png)
+![](media/image21.png)
 
 
 e. Download taxonomic annotation file either by SEED or KEGG by selecting “organism” for **Annotation Type** and either “KEGG” or “SEED” for **Data Source** and rename them by adding “.kegg” or “.seed” respectively. 
 _Examples:_ “mgm4714675.3.kegg” and “mgm4714675.3.seed”.
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image22.png)
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image23.png)
+![](media/image22.png)
+![](media/image23.png)
 
 
 f. Download KEGG Orthology file by selecting “ontology” for **Annotation Type** and “KO” for **Data Source** and rename the file by adding at the end “.ko”. 
@@ -218,13 +215,13 @@ g. Biome file can be downloaded only from MG-RAST API/command line tools (see be
 h. Download metadata file by entering a project and pressing file icon as shown below and rename the file as “jobs.tsv” or it can be created by user.
 
 1.Press icon shown below.
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image25.png)
+![](media/image25.png)
 
 2. Select all.
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image26.png)
+![](media/image26.png)
 
 3. Press the icon shown below to download metadata.
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image27.png)
+![](media/image27.png)
 
 ### **II Download files through API or other command line tools, such as a terminal.**
 
@@ -233,10 +230,10 @@ h. Download metadata file by entering a project and pressing file icon as shown 
 2. An example of how to download files through terminal is shown below.
 
 Webkey will be needed to download files from private projects. To get your webkey in MG-RAST, press “ show webkey” as indicated below.
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image28.png)
+![](media/image28.png)
 
 Open Terminal and run this chunk of code after modifying webkey and metagenome ID (as marked by red squares) to download your files.
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image29.png)
+![](media/image29.png)
 
 1. Functional annotation by SEED
 ```markdown
