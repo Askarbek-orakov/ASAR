@@ -189,7 +189,7 @@ The first way is to download files through API or other command line tools, such
 
 Webkey will be needed to download files from private projects. To get your webkey in MG-RAST, press “ show webkey” as indicated below.
 
-<img src="media/image28.png" width="1000">
+<img src="media/image28.png" width="700">
 
 Open Terminal and run this chunk of code after modifying webkey and metagenome ID (as marked by red squares) to download your files. 
 
@@ -240,7 +240,7 @@ c. Go to Download.
 d. Download functional annotation file either by SEED or KEGG by selecting “function” for **Annotation Type** and either “KEGG” or “SEED” for **Data Source** and rename them by adding “.fkegg” or “.fseed” respectively. 
 _Examples:_ “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”. 
 
-<img src="media/image20.png" width="1000"> 
+<img src="media/image20.png" width="800"> 
 
 <img src="media/image21.png" width="1000">
 
@@ -264,7 +264,7 @@ h. Download metadata file by entering a project and pressing file icon as shown 
 
 1.Press icon shown below. 
 
-<img src="media/image25.png" width="1000">
+<img src="media/image25.png" width="800">
 
 2. Select all. 
 
@@ -272,7 +272,7 @@ h. Download metadata file by entering a project and pressing file icon as shown 
 
 3. Press the icon shown below to download metadata. 
 
-<img src="media/image27.png" width="1000">
+<img src="media/image27.png" width="1300">
 
 
 ### _Creating .RData_
