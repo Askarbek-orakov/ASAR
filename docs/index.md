@@ -42,13 +42,13 @@ _Figure 2._ **Function vs Metagenomes (F/M)**
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image003.gif)
 _Figure 3._ **Taxonomy vs Metagenomes (T/M)**
 
-**KEGG Pathways Heatmap**
+### _KEGG Pathways Heatmap_
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image004.gif)
 _Figure 4._ **KEGG Pathways Heatmap**
 
 In addition to characteristics explained for 3D dataset heatmaps, KEGG Pathways Heatmap has Standard Deviation cutoff explained in parameters section for SD cutoff.
 
-**KEGG Pathway**
+### _KEGG Pathway_
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image005.gif)
 _Figure 5._ **KEGG Pathway**
 
@@ -64,33 +64,33 @@ _Figure 6._ **Unlike other heatmaps, F/T heatmap requires selection of single me
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image007.gif)
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image008.gif)
 
-**Taxonomy and Function Selection**
+### _Taxonomy and Function Selection_
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image009.gif)
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image010.gif)
 
 There are 8 choices for taxonomy level, where "root" means all domains and 7 levels from “domain” to “strain”. At all levels except "root" taxon selection will give a list of all available taxons at that level and multiple taxon selections are possible. At last, second taxon level is used to aggregate selected taxons at that level. Functions are selected with the same principle with the only difference that it has 5 levels instead of 8 (see figure 8).
 
-**Pathway Selection for Building KEGG Pathway**
+### _Pathway Selection for Building KEGG Pathway_
 
 The list of KEGG Pathways available for current selection of metagenomes and taxons is displayed for selection. Selecting Pathway will send the request to build KEGG Pathway and may take up to several seconds depending on the number of genes in the pathway.
 
-**Heatmap Height Selection**
+### _Heatmap Height Selection_
 
 Default height of heatmaps is 20 pixels per row and is adjustable through slider input parameter, which displays and sets the height of a single row in pixels.
 
-**Image Download**
+### _Image Download_
 
 Every heatmap can be downloaded by typing a user-defined file name in “Enter file name” text input parameter and selecting image format (PNG or PDF) and subsequently pressing the Download button. KEGG map image is downloaded in the same way but without defining file name. Alternatively, map image can be saved by clicking the right mouse button (usual browser functionality), where user can define filename.
 
-**Standard deviation cutoff for KEGG Orthology terms**
+### _Standard deviation cutoff for KEGG Orthology terms_
 
 KEGG Pathways Heatmap and KEGG Pathway have the parameter called “SD cutoff for KO terms” which defines the value of Standard Deviation for individual KO’s among all selected metagenomes and is adjustable. This value cuts off all KO’s with SD less than that value from Heatmap.
 
-**Parameters in Metadata Tab**
+### _Parameters in Metadata Tab_
 
 Selection of column of metadata displays all column of metadata and allows to use rows of these columns as names of metagenomes in metagenome selection parameter. Metadata values are editable and new columns with a name specified by user can be added to the metadata. There are three types of new column user can select, namely “integer”, “double” and “character”. Pushing “Save” button updates default RData file with current dataset. Pushing “Save a new column” button will update metadata but current Rdata should be saved and run in new session. When metagenome names from some column of metadata are used identically named metagenome data will be averaged and analyzed as single metagenome. This is how aggregation of metagenomes is done.
 
-**Parameters in Settings Tab**
+### _Parameters in Settings Tab_
 
 Upload function can be used to upload Rdata files generated previously and Save function can be used to save current state of loaded dataset. Settings tab has entries for changing default values of functional and taxonomic levels. Palette of colors used for coloring heatmaps can also be selected. Pressing “Save changes” button will save these default parameters for next sessions.
 
@@ -124,7 +124,7 @@ GitHub:
 Package ‘d3heatmap’ by _“Alanocallaghan/d3heatmap”_
 
 
-**To run the app on your local machine:**
+### _To run the app on your local machine:_
 
 1. Download RStudio/R
 
@@ -251,7 +251,7 @@ curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http:
 ```
 7. Metadata should be created by user.
 
-**Creating .RData**
+### _Creating .RData_
 
 Put all five files into the same directory.
 You may use this app by
@@ -275,10 +275,3 @@ Askarbek N. Orakov, Nazgul K. Sakenova, Anatoly Sorokin and Igor Goryanin. 2017.
 
 For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
 
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/nazgul-sakenova01/test2/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
