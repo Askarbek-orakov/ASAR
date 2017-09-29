@@ -61,7 +61,7 @@ Function vs Taxonomy (F/T) heatmap requires selection of single metagenome, whil
 
 _Figure 6._ **Unlike other heatmaps, F/T heatmap requires selection of single metagenome.**
 <img src="media/image7.png" width="350">
-<img src="media/image8.png" width="360">
+<img src="media/image8.png" width="365">
 
 _Figure 7._ **Metagenomes’ names selection to be displayed.**
 ![](media/image9.png)
@@ -74,10 +74,10 @@ There are 8 choices for taxonomy level, where "root" means all domains and 7 lev
 _Figure 8._ **Taxonomy and Function Selection**                                                                 
 <img src="media/image11.png" width="300">
 <img src="media/image12.png" width="260">
-<img src="media/image13.png" width="210">
-<img src="media/image14.png" width="300">
-<img src="media/image15.png" width="230">
-<img src="media/image16.png" width="225"> 
+<img src="media/image13.png" width="215">
+<img src="media/image14.png" width="320">
+<img src="media/image15.png" width="245">
+<img src="media/image16.png" width="240"> 
 
 ### _Pathway Selection for Building KEGG Pathway_
 
@@ -184,32 +184,32 @@ The first way is to download files directly from MG-RAST website, while second w
 
 ### **I Download files directly from MG-RAST website as follows.**
 
-a. Select a project. <img src="media/image17.png" width="1200"> 
-
-b. Select a sample. <img src="media/image18.png" width="1000">
-
+a. Select a project. <img src="media/image17.png" width="1500"> 
+b. Select a sample. <img src="media/image18.png" width="1500">
 c. Go to Download. <img src="media/image19.png" width="1000">
 
 d. Download functional annotation file either by SEED or KEGG by selecting “function” for **Annotation Type** and either “KEGG” or “SEED” for **Data Source** and rename them by adding “.fkegg” or “.fseed” respectively. 
-_Examples:_ “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”. <img src="media/image20.png" width="1000"> <img src="media/image21.png" width="1000">
+_Examples:_ “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”. 
+<img src="media/image20.png" width="5000"> <img src="media/image21.png" width="500">
 
 
 e. Download taxonomic annotation file either by SEED or KEGG by selecting “organism” for **Annotation Type** and either “KEGG” or “SEED” for **Data Source** and rename them by adding “.kegg” or “.seed” respectively. 
-_Examples:_ “mgm4714675.3.kegg” and “mgm4714675.3.seed”. <img src="media/image22.png" width="1000"> <img src="media/image23.png" width="1000">
+_Examples:_ “mgm4714675.3.kegg” and “mgm4714675.3.seed”. 
+<img src="media/image22.png" width="500"> <img src="media/image23.png" width="500">
 
 
 f. Download KEGG Orthology file by selecting “ontology” for **Annotation Type** and “KO” for **Data Source** and rename the file by adding at the end “.ko”. 
-_Example:_ “mgm4714675.3.ko”. <img src="media/image24.png" width="1000">
+_Example:_ “mgm4714675.3.ko”. <img src="media/image24.png" width="500">
 
 g. Biome file can be downloaded only from MG-RAST API/command line tools (see below)
 
 h. Download metadata file by entering a project and pressing file icon as shown below and rename the file as “jobs.tsv” or it can be created by user.
 
-1.Press icon shown below. <img src="media/image25.png" width="500">
+1.Press icon shown below. <img src="media/image25.png" width="800">
 
-2. Select all. <img src="media/image26.png" width="1000">
+2. Select all. <img src="media/image26.png" width="1500">
 
-3. Press the icon shown below to download metadata. <img src="media/image27.png" width="1000">
+3. Press the icon shown below to download metadata. <img src="media/image27.png" width="1500">
 
 ### **II Download files through API or other command line tools, such as a terminal.**
 
@@ -217,7 +217,7 @@ h. Download metadata file by entering a project and pressing file icon as shown 
 
 2. An example of how to download files through terminal is shown below.
 
-Webkey will be needed to download files from private projects. To get your webkey in MG-RAST, press “ show webkey” as indicated below. <img src="media/image28.png" width="800">
+Webkey will be needed to download files from private projects. To get your webkey in MG-RAST, press “ show webkey” as indicated below. <img src="media/image28.png" width="1500">
 
 Open Terminal and run this chunk of code after modifying webkey and metagenome ID (as marked by red squares) to download your files. <img src="media/image29.png" width="1000">
 
