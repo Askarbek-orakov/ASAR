@@ -1,4 +1,4 @@
-Askarbek Orakov, Nazgul Sakenova, Anatoly Sorokin and Igor Goryanin
+_Askarbek Orakov, Nazgul Sakenova, Anatoly Sorokin and Igor Goryanin_
 
 # Outline:
 
@@ -34,7 +34,85 @@ There is the sample data to explore the app, and to use your own data, please, r
 Heatmaps contain dendrograms to the left and above from heatmap and column and row names below and to the right from the heatmap. Dendrograms are generated with “hclust” function in R and color key upleft to heatmaps represents the distribution of color in the heatmap. The value of the cell in the heatmap can be viewed by locating mouse cursor above that cell. The value of the cell is the log2 value of read count for that cell.
 
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image001.gif)
+_Figure 1._ **Function vs Taxonomy (F/T)**
 
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image002.gif)
+_Figure 2._ **Function vs Metagenomes (F/M)**
+
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image003.gif)
+_Figure 3._ **Taxonomy vs Metagenomes (T/M)**
+
+**KEGG Pathways Heatmap**
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image004.gif)
+_Figure 4._ **KEGG Pathways Heatmap**
+
+In addition to characteristics explained for 3D dataset heatmaps, KEGG Pathways Heatmap has Standard Deviation cutoff explained in parameters section for SD cutoff.
+
+**KEGG Pathway**
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image005.gif)
+_Figure 5._ **KEGG Pathway**
+
+KEGG Pathway shows the metabolic pathway image for selected KEGG pathway and color enzymes with known expression in metagenomes. Each rectangle representing enzyme is horizontally divided into a number of selected metagenomes, where coloration of partitions corresponds to values of selected metagenomes(i.e. Partitions are colored from left to right as an order of selected metagenomes). Values of enrichment represent percent contribution of selected taxon from total read count of the whole metagenome to this KEGG Orthology(enzyme). The color key will represent a variation from zero to maximum value among KO’s in the pathway.
+
+## Parameters
+### _Metagenome Selection_
+
+Function vs Taxonomy (F/T) heatmap requires selection of single metagenome, while all others allow selection of multiple metagenomes(see figure 6). Names of metagenomes shown for selection can be changed by selecting a specific column of metadata, rows of which will be used as metagenome names (see figure 7). In order to consider several metagenomes as one, these metagenomes should be given the same name in selected metadata column. In this case abundances of reads of metagenomes with same names are averaged in new metagenome under shared name before any abundances processing steps.
+
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image006.gif)
+_Figure 6._ **Unlike other heatmaps, F/T heatmap requires selection of single metagenome.**
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image007.gif)
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image008.gif)
+
+**Taxonomy and Function Selection**
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image009.gif)
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image010.gif)
+
+There are 8 choices for taxonomy level, where "root" means all domains and 7 levels from “domain” to “strain”. At all levels except "root" taxon selection will give a list of all available taxons at that level and multiple taxon selections are possible. At last, second taxon level is used to aggregate selected taxons at that level. Functions are selected with the same principle with the only difference that it has 5 levels instead of 8 (see figure 8).
+
+**Pathway Selection for Building KEGG Pathway**
+
+The list of KEGG Pathways available for current selection of metagenomes and taxons is displayed for selection. Selecting Pathway will send the request to build KEGG Pathway and may take up to several seconds depending on the number of genes in the pathway.
+
+**Heatmap Height Selection**
+
+Default height of heatmaps is 20 pixels per row and is adjustable through slider input parameter, which displays and sets the height of a single row in pixels.
+
+**Image Download**
+
+Every heatmap can be downloaded by typing a user-defined file name in “Enter file name” text input parameter and selecting image format (PNG or PDF) and subsequently pressing the Download button. KEGG map image is downloaded in the same way but without defining file name. Alternatively, map image can be saved by clicking the right mouse button (usual browser functionality), where user can define filename.
+
+**Standard deviation cutoff for KEGG Orthology terms**
+
+KEGG Pathways Heatmap and KEGG Pathway have the parameter called “SD cutoff for KO terms” which defines the value of Standard Deviation for individual KO’s among all selected metagenomes and is adjustable. This value cuts off all KO’s with SD less than that value from Heatmap.
+
+**Parameters in Metadata Tab**
+
+Selection of column of metadata displays all column of metadata and allows to use rows of these columns as names of metagenomes in metagenome selection parameter. Metadata values are editable and new columns with a name specified by user can be added to the metadata. There are three types of new column user can select, namely “integer”, “double” and “character”. Pushing “Save” button updates default RData file with current dataset. Pushing “Save a new column” button will update metadata but current Rdata should be saved and run in new session. When metagenome names from some column of metadata are used identically named metagenome data will be averaged and analyzed as single metagenome. This is how aggregation of metagenomes is done.
+
+**Parameters in Settings Tab**
+
+Upload function can be used to upload Rdata files generated previously and Save function can be used to save current state of loaded dataset. Settings tab has entries for changing default values of functional and taxonomic levels. Palette of colors used for coloring heatmaps can also be selected. Pressing “Save changes” button will save these default parameters for next sessions.
+
+
+
+
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image011.gif)
+_Figure 11._ **Function vs Metagenomes (F/M)**
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image012.gif)
+_Figure 12._ **Function vs Metagenomes (F/M)**
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image013.gif)
+_Figure 13._ **Function vs Metagenomes (F/M)**
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image014.gif)
+_Figure 14._ **Function vs Metagenomes (F/M)**
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image015.gif)
+_Figure 15._ **Function vs Metagenomes (F/M)**
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image016.gif)
+_Figure 16._ **Function vs Metagenomes (F/M)**
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image017.gif)
+_Figure 17._ **Function vs Metagenomes (F/M)**
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image018.gif)
+_Figure 18._ **Function vs Metagenomes (F/M)**
 
 ```markdown
 Syntax highlighted code block
