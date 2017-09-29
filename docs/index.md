@@ -53,7 +53,7 @@ In addition to characteristics explained for 3D dataset heatmaps, KEGG Pathways 
 
 ### _KEGG Pathway_
 _Figure 5._ **KEGG Pathway**
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image6.png)
+![](media/image6.png)
 
 KEGG Pathway shows the metabolic pathway image for selected KEGG pathway and color enzymes with known expression in metagenomes. Each rectangle representing enzyme is horizontally divided into a number of selected metagenomes, where coloration of partitions corresponds to values of selected metagenomes(i.e. Partitions are colored from left to right as an order of selected metagenomes). Values of enrichment represent percent contribution of selected taxon from total read count of the whole metagenome to this KEGG Orthology(enzyme). The color key will represent a variation from zero to maximum value among KO’s in the pathway.
 
