@@ -61,7 +61,7 @@ Function vs Taxonomy (F/T) heatmap requires selection of single metagenome, whil
 
 _Figure 6._ **Unlike other heatmaps, F/T heatmap requires selection of single metagenome.**
 <img src="media/image7.png" width="300">
-<img src="media/image8.png" width="300">
+<img src="media/image8.png" width="330">
 
 _Figure 7._ **Metagenomes’ names selection to be displayed.**
 ![](media/image9.png)
