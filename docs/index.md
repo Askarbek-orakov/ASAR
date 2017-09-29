@@ -187,10 +187,10 @@ The first way is to download files directly from MG-RAST website, while second w
 
 a. Select a project.
 
-<img src="media/image17.png" width="500"> 
+<img src="media/image17.png" width="1000"> 
 
 b. Select a sample.
-![](media/image18.png)
+<img src="media/image18.png" width="1500">
 
 c. Go to Download.
 ![](media/image19.png)
