@@ -173,7 +173,7 @@ Our app uses MG-RAST annotations as an example. MG-RAST has both public and priv
 The first way is to download files directly from MG-RAST website, while second way is to download files through API or other command line tools, such as a terminal. In the case of the former way, you will have to rename files manually, while in the case of the latter way, given code will download files automatically and rename them automatically.
 
 
-I  ### **Download files directly from MG-RAST website as follows.**
+### **I Download files directly from MG-RAST website as follows.**
 
 a. Select a project.
 
@@ -213,7 +213,7 @@ h. Download metadata file by entering a project and pressing file icon as shown 
 3. Press the icon shown below to download metadata.
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image018.gif)
 
-II  ### **Download files through API or other command line tools, such as a terminal.**
+### **II Download files through API or other command line tools, such as a terminal.**
 
 1. You can find how to download files through API by clicking this link.
 
@@ -272,6 +272,4 @@ Askarbek N. Orakov, Nazgul K. Sakenova, Anatoly Sorokin and Igor Goryanin. 2017.
 
 [3] Kanehisa, M., Sato, Y., Kawashima, M., Furumichi, M., & Tanabe, M. (2016). KEGG as a reference resource for gene and protein annotation. Nucleic acids research, 44(D1), D457-D462.
 
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
 
