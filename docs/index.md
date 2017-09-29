@@ -140,18 +140,25 @@ Package ‘d3heatmap’ by _“Alanocallaghan/d3heatmap”_
 2. Run these commands below in the console:
 
 ```markdown
-install.packages(c("shiny","ggplot2","gplots","RColorBrewer","data.table","plyr","stringr","shinythemes","matrixStats","png","devtools","rhandsontable"))
+install.packages("shiny")
+install.packages("devtools")
+install.packages("ggplot2")
+install.packages("gplots")
+install.packages("RColorBrewer")
+install.packages("data.table")
+install.packages("plyr")
+install.packages("stringr")
+install.packages("shinythemes")
+install.packages("matrixStats")
+install.packages("png")
+install.packages("rhandsontable")
 
 ##try http:// if https:// URLs are not supported
 source("https://bioconductor.org/biocLite.R")
 biocLite("mmnet")
-
 biocLite("pathview")
-
 biocLite("biomformat")
-
 biocLite("KEGGREST")
-
 biocLite("limma")
 
 library(devtools)
