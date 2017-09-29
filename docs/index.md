@@ -72,6 +72,8 @@ _Figure 7._ **Metagenomes’ names selection to be displayed.**
 There are 8 choices for taxonomy level, where "root" means all domains and 7 levels from “domain” to “strain”. At all levels except "root" taxon selection will give a list of all available taxons at that level and multiple taxon selections are possible. At last, second taxon level is used to aggregate selected taxons at that level. Functions are selected with the same principle with the only difference that it has 5 levels instead of 8 (see figure 8).
 
 _Figure 8._ **Taxonomy and Function Selection**
+
+
 <img src="media/image11.png" width="200">
 <img src="media/image12.png" width="100">
 <img src="media/image13.png" width="100">
