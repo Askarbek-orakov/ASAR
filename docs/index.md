@@ -311,11 +311,12 @@ _Example:_ “mgm4714675.3.ko”.**
 ### _Creating .RData_
 
 Put all five files into the same directory.
+
 You may use this app by
+
 A. Exploring the pre-loaded example data set. This is a pre-loaded Metagome Samples taken from swine waste example for exploring the app's features.
 
-B. Upload your own data that is either
-C. Uploading an .RData file containing your data that was previously downloaded from the app session.
+B. Uploading an .RData file containing your data that was previously downloaded from the app session.
 
 ## Cite us:
 
