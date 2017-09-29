@@ -94,6 +94,83 @@ Selection of column of metadata displays all column of metadata and allows to us
 
 Upload function can be used to upload Rdata files generated previously and Save function can be used to save current state of loaded dataset. Settings tab has entries for changing default values of functional and taxonomic levels. Palette of colors used for coloring heatmaps can also be selected. Pressing “Save changes” button will save these default parameters for next sessions.
 
+## Installation
+
+R Packages from CRAN:
+
+Package ‘shiny’ _version 1.0.3_
+Package ‘ggplot2’ _version 2.2.1_
+Package ‘gplots’ _version 3.0.1_
+Package ‘data.table’ _version 1.10.4_
+Package ‘plyr’ _version 1.8.4_
+Package ‘stringr’ _version 1.2.0_
+Package ‘shinythemes’ _version 1.1.1_
+Package ‘matrixStats’ _version 0.52.2_
+Package ‘png’ _version 0.1-7_
+Package ‘devtools’ _version 1.13.2_
+Package ‘rhandsontable’ _version 0.3.4.6_
+Package ‘RColorBrewer’ _version 1.1-2_
+
+Bioconductor:
+
+Package ‘mmnet’ _version 1.15.0-1_
+Package ‘pathview’ _version 1.14.0_
+Package ‘biomformat’ _version 1.2.0_
+Package ‘KEGGREST’ _version 1.14.1_
+Package ‘limma’ _version 3.30.13_
+
+GitHub:
+
+Package ‘d3heatmap’ by _“Alanocallaghan/d3heatmap”_
+
+**To run the app on your local machine:**
+
+1.Download RStudio/R
+
+2.Run these commands below in the console:
+
+```markdown
+install.packages(c("shiny","ggplot2","gplots","RColorBrewer","data.table","plyr","stringr","shinythemes","matrixStats","png","devtools","rhandsontable"))
+
+##try http:// if https:// URLs are not supported
+source("https://bioconductor.org/biocLite.R")
+biocLite("mmnet")
+
+biocLite("pathview")
+
+biocLite("biomformat")
+
+biocLite("KEGGREST")
+
+biocLite("limma")
+
+library(devtools)
+install_github("Alanocallaghan/d3heatmap")
+
+#Run this command in the console: 
+
+shiny::runGitHub("ASAR", "Askarbek-orakov",subdir="R")
+
+```
+
+## Data Preparation
+
+Preparation of data from MG-RAST only requires project ID and webkey to be given to BASH script which subsequently downloads and processes all required files and generates Rdata file that is directly used by the application.
+
+## Manual Download of Files
+
+_The list of required input files:_
+
+1.Functional annotations file either by KEGG or SEED
+2.Taxonomic annotations file either by KEGG or SEED
+3.KEGG Orthology file
+4.Biom file
+5.Metadata
+
+Our app uses MG-RAST annotations as an example. MG-RAST has both public and private projects which can be downloaded as it is described in its manual. There are two ways of downloading files from MG-RAST and prepare them for the input.
+
+The first way is to download files directly from MG-RAST website, while second way is to download files through API or other command line tools, such as a terminal. In the case of the former way, you will have to rename files manually, while in the case of the latter way, given code will download files automatically and rename them automatically.
+
 
 
 
