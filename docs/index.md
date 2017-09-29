@@ -73,11 +73,11 @@ There are 8 choices for taxonomy level, where "root" means all domains and 7 lev
 
 _Figure 8._ **Taxonomy and Function Selection**
 <img src="media/image11.png" width="200">
-<img src="media/image12.png" width="200">
-<img src="media/image13.png" width="200">
+<img src="media/image12.png" width="100">
+<img src="media/image13.png" width="100">
 <img src="media/image14.png" width="200">
-<img src="media/image15.png" width="200">
-<img src="media/image16.png" width="200"> 
+<img src="media/image15.png" width="100">
+<img src="media/image16.png" width="100"> 
 
 ### _Pathway Selection for Building KEGG Pathway_
 
