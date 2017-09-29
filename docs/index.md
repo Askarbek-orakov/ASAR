@@ -238,7 +238,7 @@ curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http:
 
 
 
-**b. Select a sample. **
+**b. Select a sample.**
 
 <img src="media/image18.png" width="1000">
 
