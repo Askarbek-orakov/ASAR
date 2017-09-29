@@ -13,9 +13,6 @@ _Askarbek Orakov, Nazgul Sakenova, Anatoly Sorokin and Igor Goryanin_
 9. References
 
 
-![](https://guides.github.com/activities/hello-world/branching.png) 
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image1.png)
-
 ## Summary
 **What is it?** The functional and taxonomic analysis is the critical step in understanding the interspecies interaction within the biological community. At the moment these types of analysis are run separately which makes results difficult for interpretation. Here we present ASAR interactive tool for simultaneous analysis of the metagenomic data along three dimensions: taxonomy, function, metagenome.
 
