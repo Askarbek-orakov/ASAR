@@ -99,7 +99,9 @@ Upload function can be used to upload Rdata files generated previously and Save 
 R Packages from CRAN:
 
 Package ‘shiny’ _version 1.0.3_
+
 Package ‘ggplot2’ _version 2.2.1_
+
 Package ‘gplots’ _version 3.0.1_
 Package ‘data.table’ _version 1.10.4_
 Package ‘plyr’ _version 1.8.4_
