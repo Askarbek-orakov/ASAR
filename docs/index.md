@@ -37,7 +37,7 @@ Heatmaps contain dendrograms to the left and above from heatmap and column and r
 ![](https://raw.githubusercontent.com/Askarbek-orakov/ASAR/master/image6.png)
 
 _Figure 1._ **Function vs Taxonomy (F/T)**
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image1.png)
+![](https://raw.githubusercontent.com/Askarbek-orakov/ASAR/master/docs/media/image1.png)
 
 _Figure 2._ **Function vs Metagenomes (F/M)**
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image2.png)
