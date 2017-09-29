@@ -72,12 +72,12 @@ _Figure 7._ **Metagenomes’ names selection to be displayed.**
 There are 8 choices for taxonomy level, where "root" means all domains and 7 levels from “domain” to “strain”. At all levels except "root" taxon selection will give a list of all available taxons at that level and multiple taxon selections are possible. At last, second taxon level is used to aggregate selected taxons at that level. Functions are selected with the same principle with the only difference that it has 5 levels instead of 8 (see figure 8).
 
 _Figure 8._ **Taxonomy and Function Selection**                                                                 
-<img src="media/image11.png" width="290">
+<img src="media/image11.png" width="300">
 <img src="media/image12.png" width="250">
-<img src="media/image13.png" width="230">
-<img src="media/image14.png" width="290">
+<img src="media/image13.png" width="220">
+<img src="media/image14.png" width="300">
 <img src="media/image15.png" width="250">
-<img src="media/image16.png" width="230"> 
+<img src="media/image16.png" width="220"> 
 
 ### _Pathway Selection for Building KEGG Pathway_
 
@@ -184,14 +184,11 @@ The first way is to download files directly from MG-RAST website, while second w
 
 ### **I Download files directly from MG-RAST website as follows.**
 
-a. Select a project.
-<img src="media/image17.png" width="1200"> 
+a. Select a project. <img src="media/image17.png" width="1200"> 
 
-b. Select a sample.
-<img src="media/image18.png" width="1000">
+b. Select a sample. <img src="media/image18.png" width="1000">
 
-c. Go to Download.
-<img src="media/image19.png" width="1000">
+c. Go to Download. <img src="media/image19.png" width="1000">
 
 d. Download functional annotation file either by SEED or KEGG by selecting “function” for **Annotation Type** and either “KEGG” or “SEED” for **Data Source** and rename them by adding “.fkegg” or “.fseed” respectively. 
 _Examples:_ “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”.
@@ -208,8 +205,7 @@ _Examples:_ “mgm4714675.3.kegg” and “mgm4714675.3.seed”.
 
 
 f. Download KEGG Orthology file by selecting “ontology” for **Annotation Type** and “KO” for **Data Source** and rename the file by adding at the end “.ko”. 
-_Example:_ “mgm4714675.3.ko”.
-<img src="media/image24.png" width="1000">
+_Example:_ “mgm4714675.3.ko”. <img src="media/image24.png" width="1000">
 
 g. Biome file can be downloaded only from MG-RAST API/command line tools (see below)
 
