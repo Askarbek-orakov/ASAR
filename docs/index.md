@@ -98,32 +98,31 @@ Upload function can be used to upload Rdata files generated previously and Save 
 
 R Packages from CRAN:
 
-Package ‘shiny’ _version 1.0.3_
-
-Package ‘ggplot2’ _version 2.2.1_
-
-Package ‘gplots’ _version 3.0.1_
-Package ‘data.table’ _version 1.10.4_
-Package ‘plyr’ _version 1.8.4_
-Package ‘stringr’ _version 1.2.0_
-Package ‘shinythemes’ _version 1.1.1_
-Package ‘matrixStats’ _version 0.52.2_
-Package ‘png’ _version 0.1-7_
-Package ‘devtools’ _version 1.13.2_
-Package ‘rhandsontable’ _version 0.3.4.6_
-Package ‘RColorBrewer’ _version 1.1-2_
+1.Package ‘shiny’ _version 1.0.3_
+2.Package ‘ggplot2’ _version 2.2.1_
+3.Package ‘gplots’ _version 3.0.1_
+4.Package ‘data.table’ _version 1.10.4_
+5.Package ‘plyr’ _version 1.8.4_
+6.Package ‘stringr’ _version 1.2.0_
+7.Package ‘shinythemes’ _version 1.1.1_
+8.Package ‘matrixStats’ _version 0.52.2_
+9.Package ‘png’ _version 0.1-7_
+10.Package ‘devtools’ _version 1.13.2_
+11.Package ‘rhandsontable’ _version 0.3.4.6_
+12.Package ‘RColorBrewer’ _version 1.1-2_
 
 Bioconductor:
 
-Package ‘mmnet’ _version 1.15.0-1_
-Package ‘pathview’ _version 1.14.0_
-Package ‘biomformat’ _version 1.2.0_
-Package ‘KEGGREST’ _version 1.14.1_
-Package ‘limma’ _version 3.30.13_
+1.Package ‘mmnet’ _version 1.15.0-1_
+2.Package ‘pathview’ _version 1.14.0_
+3.Package ‘biomformat’ _version 1.2.0_
+4.Package ‘KEGGREST’ _version 1.14.1_
+5.Package ‘limma’ _version 3.30.13_
 
 GitHub:
 
 Package ‘d3heatmap’ by _“Alanocallaghan/d3heatmap”_
+
 
 **To run the app on your local machine:**
 
