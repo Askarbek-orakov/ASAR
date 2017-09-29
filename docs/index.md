@@ -215,13 +215,11 @@ g. Biome file can be downloaded only from MG-RAST API/command line tools (see be
 
 h. Download metadata file by entering a project and pressing file icon as shown below and rename the file as “jobs.tsv” or it can be created by user.
 
-1.Press icon shown below.
-<img src="media/image25.png" width="1000">
+1.Press icon shown below. <img src="media/image25.png" width="900">
 
 2. Select all. <img src="media/image26.png" width="1000">
 
-3. Press the icon shown below to download metadata.
-<img src="media/image27.png" width="1000">
+3. Press the icon shown below to download metadata. <img src="media/image27.png" width="1000">
 
 ### **II Download files through API or other command line tools, such as a terminal.**
 
@@ -229,11 +227,9 @@ h. Download metadata file by entering a project and pressing file icon as shown 
 
 2. An example of how to download files through terminal is shown below.
 
-Webkey will be needed to download files from private projects. To get your webkey in MG-RAST, press “ show webkey” as indicated below.
-<img src="media/image28.png" width="1000">
+Webkey will be needed to download files from private projects. To get your webkey in MG-RAST, press “ show webkey” as indicated below. <img src="media/image28.png" width="1000">
 
-Open Terminal and run this chunk of code after modifying webkey and metagenome ID (as marked by red squares) to download your files.
-<img src="media/image29.png" width="1000">
+Open Terminal and run this chunk of code after modifying webkey and metagenome ID (as marked by red squares) to download your files. <img src="media/image29.png" width="1000">
 
 1. Functional annotation by SEED
 ```markdown
