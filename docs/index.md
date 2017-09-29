@@ -61,7 +61,7 @@ Function vs Taxonomy (F/T) heatmap requires selection of single metagenome, whil
 
 _Figure 6._ **Unlike other heatmaps, F/T heatmap requires selection of single metagenome.**
 <img src="media/image7.png" width="350">
-<img src="media/image8.png" width="365">
+<img src="media/image8.png" width="369">
 
 _Figure 7._ **Metagenomes’ names selection to be displayed.**
 ![](media/image9.png)
@@ -75,9 +75,9 @@ _Figure 8._ **Taxonomy and Function Selection**
 <img src="media/image11.png" width="300">
 <img src="media/image12.png" width="260">
 <img src="media/image13.png" width="215">
-<img src="media/image14.png" width="320">
+<img src="media/image14.png" width="315">
 <img src="media/image15.png" width="245">
-<img src="media/image16.png" width="240"> 
+<img src="media/image16.png" width="250"> 
 
 ### _Pathway Selection for Building KEGG Pathway_
 
@@ -184,18 +184,18 @@ The first way is to download files directly from MG-RAST website, while second w
 
 ### **I Download files directly from MG-RAST website as follows.**
 
-a. Select a project. <img src="media/image17.png" width="1500"> 
-b. Select a sample. <img src="media/image18.png" width="1500">
+a. Select a project. <img src="media/image17.png" width="2000"> 
+b. Select a sample. <img src="media/image18.png" width="1000">
 c. Go to Download. <img src="media/image19.png" width="1000">
 
 d. Download functional annotation file either by SEED or KEGG by selecting “function” for **Annotation Type** and either “KEGG” or “SEED” for **Data Source** and rename them by adding “.fkegg” or “.fseed” respectively. 
 _Examples:_ “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”. 
-<img src="media/image20.png" width="5000"> <img src="media/image21.png" width="500">
+<img src="media/image20.png" width="5000"> <img src="media/image21.png" width="5000">
 
 
 e. Download taxonomic annotation file either by SEED or KEGG by selecting “organism” for **Annotation Type** and either “KEGG” or “SEED” for **Data Source** and rename them by adding “.kegg” or “.seed” respectively. 
 _Examples:_ “mgm4714675.3.kegg” and “mgm4714675.3.seed”. 
-<img src="media/image22.png" width="500"> <img src="media/image23.png" width="500">
+<img src="media/image22.png" width="5000"> <img src="media/image23.png" width="5000">
 
 
 f. Download KEGG Orthology file by selecting “ontology” for **Annotation Type** and “KO” for **Data Source** and rename the file by adding at the end “.ko”. 
