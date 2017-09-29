@@ -179,39 +179,9 @@ _The list of required input files:_
 
 Our app uses MG-RAST annotations as an example. MG-RAST has both public and private projects which can be downloaded as it is described in its manual. There are two ways of downloading files from MG-RAST and prepare them for the input.
 
-The first way is to download files directly from MG-RAST website, while second way is to download files through API or other command line tools, such as a terminal. In the case of the former way, you will have to rename files manually, while in the case of the latter way, given code will download files automatically and rename them automatically.
+The first way is to download files through API or other command line tools, such as a terminal, while second way is to download files directly from MG-RAST website. In the case of the former way, you will have to rename files manually, while in the case of the latter way, given code will download files automatically and rename them automatically.
 
-
-### **I Download files directly from MG-RAST website as follows.**
-
-a. Select a project. <img src="media/image17.png" width="2000"> 
-b. Select a sample. <img src="media/image18.png" width="1000">
-c. Go to Download. <img src="media/image19.png" width="1000">
-
-d. Download functional annotation file either by SEED or KEGG by selecting “function” for **Annotation Type** and either “KEGG” or “SEED” for **Data Source** and rename them by adding “.fkegg” or “.fseed” respectively. 
-_Examples:_ “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”. 
-<img src="media/image20.png" width="5000"> <img src="media/image21.png" width="5000">
-
-
-e. Download taxonomic annotation file either by SEED or KEGG by selecting “organism” for **Annotation Type** and either “KEGG” or “SEED” for **Data Source** and rename them by adding “.kegg” or “.seed” respectively. 
-_Examples:_ “mgm4714675.3.kegg” and “mgm4714675.3.seed”. 
-<img src="media/image22.png" width="5000"> <img src="media/image23.png" width="5000">
-
-
-f. Download KEGG Orthology file by selecting “ontology” for **Annotation Type** and “KO” for **Data Source** and rename the file by adding at the end “.ko”. 
-_Example:_ “mgm4714675.3.ko”. <img src="media/image24.png" width="500">
-
-g. Biome file can be downloaded only from MG-RAST API/command line tools (see below)
-
-h. Download metadata file by entering a project and pressing file icon as shown below and rename the file as “jobs.tsv” or it can be created by user.
-
-1.Press icon shown below. <img src="media/image25.png" width="700">
-
-2. Select all. <img src="media/image26.png" width="1500">
-
-3. Press the icon shown below to download metadata. <img src="media/image27.png" width="5000">
-
-### **II Download files through API or other command line tools, such as a terminal.**
+### **I Download files through API or other command line tools, such as a terminal.**
 
 1. You can find how to download files through API by clicking this link.
 
@@ -246,6 +216,36 @@ curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http:
 curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http://api-pql.metagenomics.anl.gov/1/matrix/organism?id=mgm4714675.3&id=mgm4714661.3&id=mgm4714663.3&source=SEED&group_level=strain&result_type=abundance&hit_type=all&identity=60&length=15" -o mgm.biome
 ```
 7. Metadata should be created by user.
+
+### **II Download files directly from MG-RAST website as follows.**
+
+a. Select a project. <img src="media/image17.png" width="2000"> 
+b. Select a sample. <img src="media/image18.png" width="1000">
+c. Go to Download. <img src="media/image19.png" width="1000">
+
+d. Download functional annotation file either by SEED or KEGG by selecting “function” for **Annotation Type** and either “KEGG” or “SEED” for **Data Source** and rename them by adding “.fkegg” or “.fseed” respectively. 
+_Examples:_ “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”. 
+<img src="media/image20.png" width="1000"> <img src="media/image21.png" width="1000">
+
+
+e. Download taxonomic annotation file either by SEED or KEGG by selecting “organism” for **Annotation Type** and either “KEGG” or “SEED” for **Data Source** and rename them by adding “.kegg” or “.seed” respectively. 
+_Examples:_ “mgm4714675.3.kegg” and “mgm4714675.3.seed”. 
+<img src="media/image22.png" width="1000"> <img src="media/image23.png" width="1000">
+
+
+f. Download KEGG Orthology file by selecting “ontology” for **Annotation Type** and “KO” for **Data Source** and rename the file by adding at the end “.ko”. 
+_Example:_ “mgm4714675.3.ko”. <img src="media/image24.png" width="1000">
+
+g. Biome file can be downloaded only from MG-RAST API/command line tools (see below)
+
+h. Download metadata file by entering a project and pressing file icon as shown below and rename the file as “jobs.tsv” or it can be created by user.
+
+1.Press icon shown below. <img src="media/image25.png" width="1000">
+
+2. Select all. <img src="media/image26.png" width="1000">
+
+3. Press the icon shown below to download metadata. <img src="media/image27.png" width="1000">
+
 
 ### _Creating .RData_
 
