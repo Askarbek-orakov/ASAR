@@ -50,7 +50,7 @@ In addition to characteristics explained for 3D dataset heatmaps, KEGG Pathways 
 
 ### _KEGG Pathway_
 _Figure 5._ **KEGG Pathway**
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image5.png)
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image6.png)
 
 KEGG Pathway shows the metabolic pathway image for selected KEGG pathway and color enzymes with known expression in metagenomes. Each rectangle representing enzyme is horizontally divided into a number of selected metagenomes, where coloration of partitions corresponds to values of selected metagenomes(i.e. Partitions are colored from left to right as an order of selected metagenomes). Values of enrichment represent percent contribution of selected taxon from total read count of the whole metagenome to this KEGG Orthology(enzyme). The color key will represent a variation from zero to maximum value among KO’s in the pathway.
 
@@ -60,19 +60,24 @@ KEGG Pathway shows the metabolic pathway image for selected KEGG pathway and col
 Function vs Taxonomy (F/T) heatmap requires selection of single metagenome, while all others allow selection of multiple metagenomes(see figure 6). Names of metagenomes shown for selection can be changed by selecting a specific column of metadata, rows of which will be used as metagenome names (see figure 7). In order to consider several metagenomes as one, these metagenomes should be given the same name in selected metadata column. In this case abundances of reads of metagenomes with same names are averaged in new metagenome under shared name before any abundances processing steps.
 
 _Figure 6._ **Unlike other heatmaps, F/T heatmap requires selection of single metagenome.**
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image6.png)
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image7.png)
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image8.png)
 
 _Figure 7._ **Metagenomes’ names selection to be displayed.**
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image8.png)
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image9.png)
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image10.png)
 
 ### _Taxonomy and Function Selection_
 
 There are 8 choices for taxonomy level, where "root" means all domains and 7 levels from “domain” to “strain”. At all levels except "root" taxon selection will give a list of all available taxons at that level and multiple taxon selections are possible. At last, second taxon level is used to aggregate selected taxons at that level. Functions are selected with the same principle with the only difference that it has 5 levels instead of 8 (see figure 8).
 
 _Figure 8._ **Taxonomy and Function Selection**
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image10.png) ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image11.png) ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image12.png) ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image13.png) ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image14.png) ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image15.png) ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image16.png) ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image17.png)
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image11.png) 
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image12.png) 
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image13.png) 
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image14.png) 
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image15.png) 
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image16.png) 
 
 ### _Pathway Selection for Building KEGG Pathway_
 
@@ -181,13 +186,13 @@ The first way is to download files directly from MG-RAST website, while second w
 
 a. Select a project.
 
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image18.png)
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image17.png)
 
 b. Select a sample.
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image19.png)
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image18.png)
 
 c. Go to Download.
-![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image20.png)
+![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image19.png)
 
 d. Download functional annotation file either by SEED or KEGG by selecting “function” for **Annotation Type** and either “KEGG” or “SEED” for **Data Source** and rename them by adding “.fkegg” or “.fseed” respectively. 
 _Examples:_ “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”.
