@@ -73,10 +73,10 @@ There are 8 choices for taxonomy level, where "root" means all domains and 7 lev
 
 _Figure 8._ **Taxonomy and Function Selection**                                                                 
 <img src="media/image11.png" width="300">
-<img src="media/image12.png" width="250">
+<img src="media/image12.png" width="260">
 <img src="media/image13.png" width="220">
 <img src="media/image14.png" width="300">
-<img src="media/image15.png" width="250">
+<img src="media/image15.png" width="230">
 <img src="media/image16.png" width="220"> 
 
 ### _Pathway Selection for Building KEGG Pathway_
@@ -191,17 +191,11 @@ b. Select a sample. <img src="media/image18.png" width="1000">
 c. Go to Download. <img src="media/image19.png" width="1000">
 
 d. Download functional annotation file either by SEED or KEGG by selecting “function” for **Annotation Type** and either “KEGG” or “SEED” for **Data Source** and rename them by adding “.fkegg” or “.fseed” respectively. 
-_Examples:_ “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”.
-
-<img src="media/image20.png" width="1000">
-<img src="media/image21.png" width="1000">
+_Examples:_ “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”. <img src="media/image20.png" width="1000"> <img src="media/image21.png" width="1000">
 
 
 e. Download taxonomic annotation file either by SEED or KEGG by selecting “organism” for **Annotation Type** and either “KEGG” or “SEED” for **Data Source** and rename them by adding “.kegg” or “.seed” respectively. 
-_Examples:_ “mgm4714675.3.kegg” and “mgm4714675.3.seed”.
-
-<img src="media/image22.png" width="1000">
-<img src="media/image23.png" width="1000">
+_Examples:_ “mgm4714675.3.kegg” and “mgm4714675.3.seed”. <img src="media/image22.png" width="1000"> <img src="media/image23.png" width="1000">
 
 
 f. Download KEGG Orthology file by selecting “ontology” for **Annotation Type** and “KO” for **Data Source** and rename the file by adding at the end “.ko”. 
@@ -223,7 +217,7 @@ h. Download metadata file by entering a project and pressing file icon as shown 
 
 2. An example of how to download files through terminal is shown below.
 
-Webkey will be needed to download files from private projects. To get your webkey in MG-RAST, press “ show webkey” as indicated below. <img src="media/image28.png" width="1000">
+Webkey will be needed to download files from private projects. To get your webkey in MG-RAST, press “ show webkey” as indicated below. <img src="media/image28.png" width="800">
 
 Open Terminal and run this chunk of code after modifying webkey and metagenome ID (as marked by red squares) to download your files. <img src="media/image29.png" width="1000">
 
