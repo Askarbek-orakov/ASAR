@@ -190,11 +190,13 @@ pathImage<-function(funtax, sp.li, mgm, pathwi, kostat,nms) {
       idx<-match(kegg$K[kegg$ko==paste0('ko',pathwi)],rownames(obj))
       idx<-idx[!is.na(idx)]
       #save(obj,pathwi,sp.li,file=paste0('dump.',pathwi,'.',sp.li,'.Rdata'))
-      pathview(gene.data = obj, pathway.id = pathwi,
-               species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
-               limit = list(gene=range(as.vector(obj[idx,])),cpd=1))
-      mg.key(fname = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
-             names = nms,node.size = node.size,cex = 0.25,lwd=0.25,tstep = 0.05,rstep = 0.05)
+      if(!is.null(pathwi)){
+        pathview(gene.data = obj, pathway.id = pathwi,
+                 species = "ko", out.suffix = paste0(sp.li,".ko"), kegg.native = T,
+                 limit = list(gene=range(as.vector(obj[idx,])),cpd=1))
+        mg.key(fname = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.png"),
+               names = nms,node.size = node.size,cex = 0.25,lwd=0.25,tstep = 0.05,rstep = 0.05)
+      }
     }
   }
   })
