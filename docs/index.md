@@ -74,10 +74,10 @@ There are 8 choices for taxonomy level, where "root" means all domains and 7 lev
 _Figure 8._ **Taxonomy and Function Selection**                                                                 
 <img src="media/image11.png" width="300">
 <img src="media/image12.png" width="260">
-<img src="media/image13.png" width="220">
+<img src="media/image13.png" width="210">
 <img src="media/image14.png" width="300">
 <img src="media/image15.png" width="230">
-<img src="media/image16.png" width="220"> 
+<img src="media/image16.png" width="225"> 
 
 ### _Pathway Selection for Building KEGG Pathway_
 
@@ -205,7 +205,7 @@ g. Biome file can be downloaded only from MG-RAST API/command line tools (see be
 
 h. Download metadata file by entering a project and pressing file icon as shown below and rename the file as “jobs.tsv” or it can be created by user.
 
-1.Press icon shown below. <img src="media/image25.png" width="900">
+1.Press icon shown below. <img src="media/image25.png" width="500">
 
 2. Select all. <img src="media/image26.png" width="1000">
 
