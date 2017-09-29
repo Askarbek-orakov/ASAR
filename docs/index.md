@@ -202,7 +202,7 @@ _Example:_ “mgm4714675.3.ko”.
 
 g. Biome file can be downloaded only from MG-RAST API/command line tools (see below)
 
-h. Download metadata file by entering a project and pressing file icon as shown below and rename the file as “jobs.tsv”.
+h. Download metadata file by entering a project and pressing file icon as shown below and rename the file as “jobs.tsv” or it can be created by user.
 
 1.Press icon shown below.
 ![](https://github.com/Askarbek-orakov/ASAR/blob/master/docs/media/image018.gif)
@@ -249,8 +249,7 @@ curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http:
 ```markdown
 curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http://api-pql.metagenomics.anl.gov/1/matrix/organism?id=mgm4714675.3&id=mgm4714661.3&id=mgm4714663.3&source=SEED&group_level=strain&result_type=abundance&hit_type=all&identity=60&length=15" -o mgm.biome
 ```
-7. Metadata
-Metadata is created by user.
+7. Metadata should be created by user.
 
 **Creating .RData**
 
