@@ -73,7 +73,7 @@ Intfuntax <- function(result2, t1, tn, f1, fn, t2=NULL, f2=NULL){
   #                                      79: origRenderFunc
   #                                      78: output$plot1
   #                                      1: runApp
-  cat(dim(result2), "\n")
+  
   if(dim(result2)[1]==0){
     result2<-NULL
   }else {
@@ -153,6 +153,10 @@ get_ko_data <- function(funtax, taxon, metagenomes) {
 #             79: origRenderFunc
 #             78: output$plot4
 #             1: runApp
+  cat(dim(d))
+  if(dim(d)[1]==0){
+    adk5 <-NULL
+  } else{
   d5.1<-d[,list(m5=unlist(str_split(md5,','))),by=.(usp,ufun,md5)]
   d5<-merge(d5.1,d[,..indC],by='md5')
   dk5<-unique(merge(d5,d.kres,all=FALSE,by.x='m5',by.y='md5')[,-c('md5','.id')])
@@ -170,6 +174,8 @@ get_ko_data <- function(funtax, taxon, metagenomes) {
   #                                                                  78: output$plot4
   #                                                                  1: runApp
   adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'usp', 'ufun', 'annotation')]),FUN=sum)
+  }
+  return(adk5)
 }
 
 pathImage<-function(funtax, sp.li, mgm, pathwi, kostat,nms) {
@@ -212,12 +218,17 @@ pathImage<-function(funtax, sp.li, mgm, pathwi, kostat,nms) {
 }
 filter_stats <- function(funtax, taxon, metagenomes, sd_cutoff) {
   adk5 <- get_ko_data(funtax, taxon, metagenomes)
+  if(is.null(adk5)){
+    dk7 <- NULL
+  } else{
   indM <- which(names(adk5)%in%c(metagenomes))
   adk5 <- as.data.table(adk5)
   dk6 <- data.frame(ID = adk5[,"ko"], Means=rowMeans(adk5[,..indM]), SD=rowSds(as.matrix(adk5[,..indM])))
   dk6idx<-order(dk6$SD,decreasing = TRUE)[which((dk6$Means!=0))]
   cutoff<-as.integer(max(2,sd_cutoff*length(dk6idx)/100))
   dk7 <- adk5[dk6idx[1:cutoff],]
+  }
+  return(dk7)
 }
 getpathfromKO <- function(KO){
   temp <- kegg[K == KO]
@@ -225,6 +236,9 @@ getpathfromKO <- function(KO){
 }
 pathwayHeatmap<-function(funtax,sp.lis, mgms, ko_sd) {
   adk5 <- filter_stats(funtax, sp.lis, mgms, ko_sd)
+  if(is.null(adk5)){
+    a8 <- NULL
+  } else{
   lastcol<- ncol(adk5)+1
   for (y in 1:nrow(adk5)){adk5[y,"pathwayID"] <- getpathfromKO(adk5[y,"ko"])}
   indC<-which(names(adk5)%in%c('ko', mgms))
@@ -238,6 +252,7 @@ pathwayHeatmap<-function(funtax,sp.lis, mgms, ko_sd) {
   rownames(a7)<-ko.path.name$name[pnameIdx]
   a8<- as.matrix(a7[,-1])
   rownames(a8) <- ko.path.name$name[pnameIdx]
+  }
   return(a8)
 }
 getpathsfromKOs <- function(KOs){
@@ -972,6 +987,11 @@ server <- function(input, output, session) {
     funtax <- funtaxall[,..keepcols]
     names(funtax)[names(funtax) == tl1] <- 'usp'
     obj<-pathwayHeatmap(funtax, tn, mgall, ko_sd)
+    if(is.null(obj)){
+      showModal(modalDialog(
+        title = titleIntfuntax, textDimErrorPlot4, easyClose = TRUE, footer = NULL
+      ))
+    }else{
     colnames(obj)<-as.character(mdt[c(colnames(obj)), colName()])
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = TRUE,trace = "none")
     mat3[is.na(mat3)] <- 0
@@ -1014,7 +1034,7 @@ server <- function(input, output, session) {
       text(x,y,labels = main,adj=0)
       par(op)
       
-    }
+    }}
   }
   output$downLink4 <- renderUI({
     if(downHeat4$is==TRUE){
@@ -1057,10 +1077,15 @@ server <- function(input, output, session) {
         #save(funtax,file='funtax.tmp.Rdata')
       }
       funtax <- Intfuntax(funtax,tl1,tn,'toplevel',NULL)
+      if(is.null(funtax)){
+        showModal(modalDialog(
+          title = titleIntfuntaxPath, textIntfuntaxPath, easyClose = TRUE, footer = NULL
+        ))
+      } else{
       names(funtax)[names(funtax) == tl1] <- 'usp'
       pathandnames <- as.matrix(getPathwayList(funtax, sp.li =  tn, mgm =  mgall, ko_sd = ko_sd))
       selectInput(inputId = "PathwayID", label = "Input Pathway ID", choices = setNames(as.vector(pathandnames[, "ko"]), pathandnames[,"name"]))
-    }})})
+    }}})})
 
   pathw <- reactive({input$PathwayID})
 
@@ -1079,6 +1104,11 @@ server <- function(input, output, session) {
     funtax <- funtaxall[,..keepcols]
     names(funtax)[names(funtax) == tl1] <- 'usp'
     obj<-pathwayHeatmap(funtax, tn, mgall, ko_sd)
+    if(is.null(obj)){
+      showModal(modalDialog(
+        title = titleIntfuntax, textDimErrorPlot4, easyClose = TRUE, footer = NULL
+      ))
+    }else{
     colnames(obj)<-as.character(mdt[c(colnames(obj)), colName()])
     mat3 <- plotHeatmap(obj,100,norm = FALSE, log = TRUE,trace = "none")
     mat3[is.na(mat3)] <- 0
@@ -1092,7 +1122,7 @@ server <- function(input, output, session) {
       showModal(modalDialog(
         title = titleForDimErrorPopup, textForDimErrorPopup, easyClose = TRUE, footer = NULL
       ))
-    }
+    }}
   })})
   output$dynamic4 <- renderUI({
     d3heatmapOutput("plot4", height = paste0(numrow4$plot4*input$pix4+220, "px"))
@@ -1135,6 +1165,11 @@ server <- function(input, output, session) {
       #save(funtax,file='funtax.tmp.Rdata')
     }
     funtax <- Intfuntax(funtax,tl1,sp.li,'toplevel',NULL)
+    if(is.null(funtax)){
+      showModal(modalDialog(
+        title = titleIntfuntaxPath, textIntfuntaxPath, easyClose = TRUE, footer = NULL
+      ))
+    } else {
     names(funtax)[names(funtax) == tl1] <- 'usp'
     names<-as.character(mdt[match(mgall,rownames(mdt)), colName()])
     pathImage(funtax, sp.li, mgall, pathwi, kostat,names)
@@ -1142,7 +1177,7 @@ server <- function(input, output, session) {
     list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.leg.png"),
          contentType = 'png',
          alt = "Press GO to select Pathway!")
-  }, deleteFile = FALSE)
+  }}, deleteFile = FALSE)
   
   
   values = reactiveValues()
