@@ -73,7 +73,16 @@ Intfuntax <- function(result2, t1, tn, f1, fn, t2=NULL, f2=NULL){
   #                                      79: origRenderFunc
   #                                      78: output$plot1
   #                                      1: runApp
-  result2 <- result2[which(!is.na(result2[,1])& !is.na(result2[,2])& result2[,2]!= ""),]
+  cat(dim(result2), "\n")
+  if(dim(result2)[1]==0){
+    result2<-NULL
+  }else {
+  indR <- which(!is.na(result2[,1])& !is.na(result2[,2])& result2[,2]!= "")
+  if(length(indR)>0){
+    result2 <- result2[indR,]
+  } else {
+    result2 <- NULL
+  }}
   return(result2)
 }
 make2d <- function(funtax){
@@ -468,6 +477,11 @@ server <- function(input, output, session) {
       keepcols<-which(names(funtaxall)%in%c(tl1, tl2, fl1, fl2, mg1))
       funtax <- funtaxall[,..keepcols]
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2,f2 = fl2)
+      if(is.null(funtax)){
+        showModal(modalDialog(
+          title = titleIntfuntax, textIntfuntaxInPlot1, easyClose = TRUE, footer = NULL
+        ))
+      } else{
       obj <- make2d(funtax)
       obj[is.na(obj)] <- 0
       rowmean <- data.frame(Means=rowMeans(obj))
@@ -519,7 +533,7 @@ server <- function(input, output, session) {
         text(x,y,labels = main,adj=0)
         par(op)
 
-      }
+      }}
     }
    output$downLink1 <- renderUI({
      if(downHeat1$is==TRUE){
@@ -567,6 +581,11 @@ server <- function(input, output, session) {
         keepcols <- which(names(funtaxall) %in% c(tl1, tl2, fl1, fl2, mg1))
         funtax <- funtaxall[, ..keepcols]
         funtax <- Intfuntax(funtax, tl1, tn, fl1, fn, t2 = tl2, f2 = fl2)
+        if(is.null(funtax)){
+          showModal(modalDialog(
+            title = titleIntfuntax, textIntfuntaxInPlot1, easyClose = TRUE, footer = NULL
+          ))
+        } else{
         obj <- make2d(funtax)
         obj[is.na(obj)] <- 0
         rowmean <- data.frame(Means = rowMeans(obj))
@@ -601,7 +620,7 @@ server <- function(input, output, session) {
               footer = NULL
             )
           )
-        }
+        }}
     })
     output$dynamic1 <- renderUI({
     d3heatmapOutput("plot1", height = paste0(numrow1$plot1*input$pix1+220, "px"))
@@ -638,59 +657,66 @@ server <- function(input, output, session) {
     keepcols<-which(names(funtaxall)%in%c(tl1, fl1, fl2, mg2))
     funtax <- funtaxall[,..keepcols]
     funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,f2 = fl2)
-    obj <- funtax[,-c(1)]
-    rownames(obj)<-funtax[,fl2]
-    colnames(obj)<-as.character(mdt[c(colnames(obj)), colName()])
-    dk6 <- data.frame(Means=rowMeans(obj))
-    obj <- obj[which(dk6$Means!=0),]
-    obj <- as.matrix(obj)
-    main<-makePlot2Title(tl1,tn,fl1,fl2,fn,mg2)
-    if(dim(obj)[1]>1){
-      res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
-    }else{
-      res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
+    if(is.null(funtax)){
+      showModal(modalDialog(
+        title = titleIntfuntax, textIntfuntaxInPlot2, easyClose = TRUE, footer = NULL
+      ))
+    } else{
+      obj <- funtax[,-c(1)]
+      rownames(obj)<-funtax[,fl2]
+      colnames(obj)<-as.character(mdt[c(colnames(obj)), colName()])
+      dk6 <- data.frame(Means=rowMeans(obj))
+      obj <- obj[which(dk6$Means!=0),]
+      obj <- as.matrix(obj)
+      main<-makePlot2Title(tl1,tn,fl1,fl2,fn,mg2)
+      if(dim(obj)[1]>1){
+        res<-plotHeatmap(obj,50,trace = "none",norm=FALSE)
+      }else{
+        res<-returnAppropriateObj(obj,norm = FALSE,log = TRUE)
+      }
+      res[is.na(res)] <- 0
+      x <-
+        heatmap.2(
+          res,
+          dendrogram = chooseDends(res),
+          col = colPal,
+          sepcolor = "black",
+          main=plot2Title,
+          sepwidth = c(0.05, 0.05),
+          key = TRUE,
+          keysize = 0.75,
+          key.par = list(cex = 0.7),
+          symkey = FALSE,
+          density.info = "none",
+          cexRow = 1,
+          cexCol = 1,
+          cex.main=0.5,
+          margins = c(20, 30),
+          trace = "none",
+          srtCol = 50
+        )
+      if(pdf){
+        op = par(mar = c(0, 0, 0, 0),family="mono")
+        width<-1100
+        height<-1800
+        plot(
+          c(0, width),
+          c(0, height),
+          type = "n",
+          xlab = "",
+          ylab = "",
+          xaxs = "i",
+          yaxs = "i"
+        )
+        main<-gsub('\t','    ',main)
+        x<-100+strwidth(main,units = 'user',cex = 1)/2
+        y<-height-100-strheight(main,units = 'user',cex = 1)/2
+        text(x,y,labels = main,adj=0)
+        par(op)
+        
+      }
     }
-    res[is.na(res)] <- 0
-    x <-
-      heatmap.2(
-        res,
-        dendrogram = chooseDends(res),
-        col = colPal,
-        sepcolor = "black",
-        main=plot2Title,
-        sepwidth = c(0.05, 0.05),
-        key = TRUE,
-        keysize = 0.75,
-        key.par = list(cex = 0.7),
-        symkey = FALSE,
-        density.info = "none",
-        cexRow = 1,
-        cexCol = 1,
-        cex.main=0.5,
-        margins = c(20, 30),
-        trace = "none",
-        srtCol = 50
-      )
-    if(pdf){
-      op = par(mar = c(0, 0, 0, 0),family="mono")
-      width<-1100
-      height<-1800
-      plot(
-        c(0, width),
-        c(0, height),
-        type = "n",
-        xlab = "",
-        ylab = "",
-        xaxs = "i",
-        yaxs = "i"
-      )
-      main<-gsub('\t','    ',main)
-      x<-100+strwidth(main,units = 'user',cex = 1)/2
-      y<-height-100-strheight(main,units = 'user',cex = 1)/2
-      text(x,y,labels = main,adj=0)
-      par(op)
-      
-    }
+    
   }
   output$downLink2 <- renderUI({
     if(downHeat2$is==TRUE){
@@ -728,6 +754,11 @@ server <- function(input, output, session) {
       keepcols<-which(names(funtaxall)%in%c(tl1, fl1, fl2, mg2))
       funtax <- funtaxall[,..keepcols]
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,f2 = fl2)
+      if(is.null(funtax)){
+        showModal(modalDialog(
+          title = titleIntfuntax, textIntfuntaxInPlot2, easyClose = TRUE, footer = NULL
+        ))
+      } else{
       obj <- funtax[,-c(1)]
       rownames(obj)<-funtax[,fl2]
       colnames(obj)<-as.character(mdt[c(colnames(obj)), colName()])
@@ -750,7 +781,7 @@ server <- function(input, output, session) {
         showModal(modalDialog(
           title = titleForDimErrorPopup, textForDimErrorPopup, easyClose = TRUE, footer = NULL
         ))
-      }
+      }}
     })
   output$dynamic2 <- renderUI({
     d3heatmapOutput("plot2", height = paste0(numrow2$plot2*input$pix2+220, "px"))
@@ -787,6 +818,11 @@ server <- function(input, output, session) {
     keepcols<-which(names(funtaxall)%in%c(tl1, tl2, fl1, mg3))
     funtax <- funtaxall[,..keepcols]
     funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2)
+    if(is.null(funtax)){
+      showModal(modalDialog(
+        title = titleIntfuntax, textIntfuntaxInPlot3, easyClose = TRUE, footer = NULL
+      ))
+    } else{
     obj <- funtax[,-c(1)]
     rownames(obj)<-funtax[,tl2]
     colnames(obj)<-as.character(mdt[c(colnames(obj)), colName()])
@@ -838,7 +874,7 @@ server <- function(input, output, session) {
       text(x,y,labels = main,adj=0)
       par(op)
       
-    }
+    }}
   }
   output$downLink3 <- renderUI({
     if(downHeat3$is==TRUE){
@@ -877,6 +913,11 @@ server <- function(input, output, session) {
       keepcols<-which(names(funtaxall)%in%c(tl1, tl2, fl1, mg3))
       funtax <- funtaxall[,..keepcols]
       funtax <- Intfuntax(funtax,tl1,tn,fl1,fn,t2 = tl2)
+      if(is.null(funtax)){
+        showModal(modalDialog(
+          title = titleIntfuntax, textIntfuntaxInPlot3, easyClose = TRUE, footer = NULL
+        ))
+      } else{
       obj <- funtax[,-c(1)]
       rownames(obj)<-funtax[,tl2]
       colnames(obj)<-as.character(mdt[c(colnames(obj)), colName()])
@@ -899,7 +940,7 @@ server <- function(input, output, session) {
         showModal(modalDialog(
           title = titleForDimErrorPopup, textForDimErrorPopup, easyClose = TRUE, footer = NULL
         ))
-      }
+      }}
     })
   output$dynamic3 <- renderUI({
     d3heatmapOutput("plot3", height = paste0(numrow3$plot3*input$pix3+220, "px"))
