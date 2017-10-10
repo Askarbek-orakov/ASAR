@@ -1,6 +1,6 @@
 library(shiny)
 library(ggplot2)
-library(mmnet)
+#library(mmnet)
 library(gplots)
 library(data.table)
 library(plyr)
