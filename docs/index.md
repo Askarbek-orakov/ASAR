@@ -271,11 +271,11 @@ _Examples:_ “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”.**
 _Examples:_ “mgm4714675.3.kegg” and “mgm4714675.3.seed”.** 
 
 
-<img src="media/image22.png" width="1000">
+<img src="media/image22.png" width="1050">
 
 
 
-<img src="media/image23.png" width="1000">
+<img src="media/image23.png" width="1030">
 
 
 
@@ -284,7 +284,7 @@ _Examples:_ “mgm4714675.3.kegg” and “mgm4714675.3.seed”.**
 _Example:_ “mgm4714675.3.ko”.** 
 
 
-<img src="media/image24.png" width="1000">
+<img src="media/image24.png" width="1050">
 
 
 
