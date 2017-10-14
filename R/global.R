@@ -1,4 +1,4 @@
-maintitle <- ""
+maintitle <- "Advanced metagenomic Sequence Analysis in R"
 
 titletab1 <- "F/T"
 titletab2 <- "F/M"
