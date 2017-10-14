@@ -149,13 +149,12 @@ pathImage<-function(funtax, sp.li, mgm, pathwi, kostat,nms) {
     ))
   } else {
     kostat <- kostat[indRow, indCol]
-    ind0 <- apply(kostat,2,function(.x){which(.x==0)})
-    if(any(sapply(1:length(ind0), function(i){any(adk5[ind0[[i]],names(ind0)[i]]!=0)}))){
+    diffr <- kostat - adk5
+    if(any(diffr<0)){
       showModal(modalDialog(
-        title = titleForNonMatchZerosKostat, textForNonMatchZerosKostat, easyClose = TRUE, footer = NULL
+        title = titleForNonMatchKostat, textForNonMatchKostat, easyClose = TRUE, footer = NULL
       ))
     } else {
-      sapply(1:length(ind0), function(i){kostat[ind0[[i]],names(ind0)[i]] <<- 10^(-5)})
       adk5 <- adk5/kostat*100
       obj<-as.matrix(adk5)
       colnames(obj)<-nms
@@ -239,7 +238,7 @@ chooseDends <- function(res){
   }
   return(dend)
 }
-kostat <- function(funtaxall, d.kres){
+kostatgen <- function(funtaxall, d.kres){
   funtaxall <- funtaxall[,-c("usp","species", "genus", "family", "order", "class", "phylum", "domain","ufun", "FUN2", "FUN3", "FUN4")]
   d5.1<-funtaxall[,list(m5=unlist(str_split(md5,','))),by=.(md5)]
   d5<-merge(d5.1,funtaxall,by='md5')
@@ -247,7 +246,11 @@ kostat <- function(funtaxall, d.kres){
   adk5<-aggregate(.~ko,as.data.frame(dk5[,-c('m5', 'annotation')]),FUN=sum)
   rownames(adk5)<- adk5$ko
   adk5 <- adk5[,-1]
+  indF <-  which(adk5==0,arr.ind = TRUE) 
+  adk5[indF] <- 10^(-5)
+  return(adk5)
 }
+
 ui <- fluidPage(
   titlePanel(maintitle),
   sidebarPanel(
@@ -1096,7 +1099,7 @@ server <- function(input, output, session) {
     funtax <- funtaxall[,..keepcols]
     funtax <- Intfuntax(funtax,tl1,sp.li,'toplevel',NULL)
     names<-as.character(mdt[match(mgall,rownames(mdt)), colName()])
-    x <- pathImage(funtax, sp.li, mgall, pathwi,nms = names)
+    x <- pathImage(funtax, sp.li, mgall, pathwi,kostat,nms = names)
     }
   
   observeEvent(input$down5,{
@@ -1107,12 +1110,17 @@ server <- function(input, output, session) {
     ))
   })
 
-  kostat <- kostat(funtaxall, d.kres)
+  kostat <- kostatgen(funtaxall, d.kres)
   output$Pathway <- renderImage({
     sp.li<- tn()
     tl1 <- tl1()
     pathwi<- pathw()
     mgall <-mgall()
+    if(length(sp.li)>1){
+      showModal(modalDialog(
+        title = titleSevTaxInImage, textSevTaxInImage, easyClose = TRUE, footer = NULL
+      ))
+    }else{
     if(!is.null(sp.li)){
       keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
@@ -1131,7 +1139,7 @@ server <- function(input, output, session) {
     names(funtax)[names(funtax) == tl1] <- 'usp'
     names<-as.character(mdt[match(mgall,rownames(mdt)), colName()])
     pathImage(funtax, sp.li, mgall, pathwi, kostat,names)
-    }
+    }}
     list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.leg.png"),
          contentType = 'png',
          alt = "Press GO to select Pathway!")
