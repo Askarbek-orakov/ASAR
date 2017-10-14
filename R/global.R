@@ -19,7 +19,7 @@ textIntfuntaxPath <- "There are no pathways available for selected taxons and me
 titleForDimErrorPopup <- "Wrong Heatmap dimensions!"
 textForDimErrorPopup <- "Please select other function or taxon or go one level higher."
 titleSevTaxInImage <- "Incorrest taxonomy entering!"
-textSevTaxInImage <- "Please select only one taxonomic group."
+textSevTaxInImage <- "Please select only one taxonomic group. When several are selected, only first will be taken into account."
 titleForNonMatchKostat <- "Error with annotation files!"
 textForNonMatchKostat <- "There is inconsistency within KEGG Orthology Annotation file."
 titleForSavingMetadata <- "Saving your metadata..."

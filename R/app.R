@@ -1120,7 +1120,8 @@ server <- function(input, output, session) {
       showModal(modalDialog(
         title = titleSevTaxInImage, textSevTaxInImage, easyClose = TRUE, footer = NULL
       ))
-    }else{
+    }
+    sp.li <- sp.li[[1]]
     if(!is.null(sp.li)){
       keepcols<-which(names(funtaxall)%in%c(tl1,"ufun","md5", mgall))
     funtax <- funtaxall[,..keepcols]
@@ -1143,7 +1144,7 @@ server <- function(input, output, session) {
     list(src = paste0(getwd(),"/","ko", pathwi, ".", sp.li, ".ko.multi.leg.png"),
          contentType = 'png',
          alt = "Press GO to select Pathway!")
-  }}, deleteFile = FALSE)
+  }, deleteFile = FALSE)
   
   
   values = reactiveValues()
