@@ -75,6 +75,7 @@ _Figure 8._ **Taxonomy and Function Selection**
 <img src="media/image15.png" class="centerImage" width="500">
 <img src="media/image16.png" class="centerImage" width="500"> 
 
+
 ### _Pathway Selection for Building KEGG Pathway_
 
 The list of KEGG Pathways available for current selection of metagenomes and taxons is displayed for selection. Selecting Pathway will send the request to build KEGG Pathway and may take up to several seconds depending on the number of genes in the pathway.
