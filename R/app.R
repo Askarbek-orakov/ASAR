@@ -12,7 +12,7 @@ library(shinythemes)
 library(matrixStats)
 library(png)  # For writePNG function
 library(devtools)
-install_github("Alanocallaghan/d3heatmap") #It has color key/color bar
+#install_github("Alanocallaghan/d3heatmap") #It has color key/color bar
 library(d3heatmap)
 library(gplots)
 library(RColorBrewer)
