@@ -60,8 +60,8 @@ KEGG Pathway shows the metabolic pathway image for selected KEGG pathway and col
 Function vs Taxonomy (F/T) heatmap requires selection of single metagenome, while all others allow selection of multiple metagenomes(see figure 6). Names of metagenomes shown for selection can be changed by selecting a specific column of metadata, rows of which will be used as metagenome names (see figure 7). In order to consider several metagenomes as one, these metagenomes should be given the same name in selected metadata column. In this case abundances of reads of metagenomes with same names are averaged in new metagenome under shared name before any abundances processing steps.
 
 _Figure 6._ **Unlike other heatmaps, F/T heatmap requires selection of single metagenome.**
-<img src="media/image7.png" width="421">
-<img src="media/image8.png" width="420">
+<img src="media/image7.png" width="321">
+<img src="media/image8.png" width="320">
 
 _Figure 7._ **Metagenomes’ names selection to be displayed.**
 ![](media/image9.png)
@@ -72,12 +72,12 @@ _Figure 7._ **Metagenomes’ names selection to be displayed.**
 There are 8 choices for taxonomy level, where "root" means all domains and 7 levels from “domain” to “strain”. At all levels except "root" taxon selection will give a list of all available taxons at that level and multiple taxon selections are possible. At last, second taxon level is used to aggregate selected taxons at that level. Functions are selected with the same principle with the only difference that it has 5 levels instead of 8 (see figure 8).
 
 _Figure 8._ **Taxonomy and Function Selection**                                                                 
-<img src="media/image11.png" width="500">
-<img src="media/image12.png" width="500">
-<img src="media/image13.png" width="500">
-<img src="media/image14.png" width="500">
-<img src="media/image15.png" width="500">
-<img src="media/image16.png" width="500"> 
+<img src="media/image11.png" width="400">
+<img src="media/image12.png" width="400">
+<img src="media/image13.png" width="400">
+<img src="media/image14.png" width="400">
+<img src="media/image15.png" width="400">
+<img src="media/image16.png" width="400"> 
 
 ### _Pathway Selection for Building KEGG Pathway_
 
