@@ -4,6 +4,7 @@ _Askarbek Orakov, Nazgul Sakenova, Anatoly Sorokin and Igor Goryanin_
 
 1. Summary
 2. Introduction
+3. ASAR application
 3. Results
 4. Parameters
 5. Installation
@@ -21,7 +22,42 @@ _Askarbek Orakov, Nazgul Sakenova, Anatoly Sorokin and Igor Goryanin_
 **Why should I use it?** Advantages of the tool are 1) Integrated functional and taxonomic analysis; 2) Comparative analysis of KEGG pathway enrichments; 3) KEGG Pathway Maps; 4) User-friendly interface.
 
 ## Introduction
-This application implements two general analyses. First, it builds 3D dataset consisting of axes of taxonomy, functions and metagenome samples [1,2]. Second, through KEGG metabolic pathways analysis consists of a comparative analysis of pathways enrichment and visualization of pathways themselves [3].
+For the analysis of metagenome sequences by new generation sequencing, short reads obtained during NGS process are mapped to the annotated sequence database. That kind of mapping can provide us with information about the presence in the community of particular species and functional enzymes and their abundance. So, for each community under consideration, we are obtaining 2D matrix where each row represents specific species and column represents functions. Each cell of that matrix contains abundances of reads mapped to the particular function in particular species. The specific nature of that matrix is that both columns and rows have formed the hierarchy: the taxonomical tree for species and functional ontology/classification for functions. 
+
+It should also be mentioned, that we are rarely dealing with one community, usually, at least technical repeats and control are present. Set of samples forms the third dimension of our dataset (fig A). The community or samples direction usually do not have a hierarchical relationship between samples; it instead represents the structure of design matrix, created to estimate the contribution of factors of interest into community composition and/or functions.
+
+_Figure A._ **3D dataset**
+![](media/3Dcube.png)
+
+Datasets of dimensionality higher than two require special techniques for their analysis and visualization, so in most modern applications 3D dataset is reduced to the 2D matrix by discarding one of its dimension (fig B). For example, taxonomy analysis applications, like Kaiju [4], consider only samples and taxonomy axis of the cub, summing up read mapped to any function in particular taxon into one cell. Similarly, functional analysis software, like Paladin [5], discard taxonomy axis and analyze only sample and function dimensions.
+
+_Figure B._ **Projecting of the 3D dataset along Function axis**
+![](media/project.png)
+
+
+In ASAR we aim to provide dynamic visualization and analysis framework to facilitate exploration of the whole 3D dataset. That type of analysis can provide valuable insights not only into the composition and functional abilities of the community but also to the role of particular organisms in the community, the presence of symbiotic or antagonistic interactions between members of the community and so on.
+
+To fulfill this aim, we organize the dataset into so-called data cube, a concept developed in Computer science in the mid of 80s to describe multidimensional dataset with complex relationships between elements within each dimension (https://en.wikipedia.org/wiki/OLAP_cube) which is common in business analytics and OLAP applications. For the analysis of the content of the data cube a set of operations was defined:  Slice, Dice, Roll-up and Drill down. 
+
+The Slice operation takes specific value along one dimension an extract the 2D (in our case) subset corresponding to the selected value. In ASAR we have implemented Slice operation for samples dimension in **Function vs. Taxonomy (F/T)** tab. 
+
+The Dice operation, when the user defines set of values along different axes, is not implemented in ASAR explicitly, as we focused on Drill down and Roll-up operations.
+
+The Drill down operation, which we called *Selection* (fig C), allow the user to navigate through hierarchy by selecting element at some higher level of the tree and analyze the subset of the cube underneath that element. For example, the user can choose Deltaproteobacteria at the class level of taxonomy and restrict consideration to species and functions in that class only.
+
+_Figure C._ **Selection operation**
+![](media/select.png)
+
+
+The Roll-up operation, which we called *Aggregation*, allow the user to summarize the data at some level of the hierarchy. For example, the reliability of data at strain level is usually low, so it is common to *Aggregate* the data up to the genus level. 
+
+_Figure D._ **Aggregation operation**
+![](media/aggregate.png)
+
+Despite we have used taxonomy for the illustration of the set of operations, but all operations could be applied to the functional dimension and, with the note that samples do not form the tree structure, to samples dimension.
+
+## ASAR application
+The ASAR application implements two types of analyses. First, it builds 3D dataset consisting of axes of taxonomy, functions and metagenome samples [1,2]. Second, through KEGG metabolic pathways analysis consists of a comparative analysis of pathways enrichment and visualization of pathways themselves [3].
 
 Since taxonomic and functional annotations have many groups at several levels and metagenome samples are numerous, two main data manipulations are implemented. First, “Selection” involves selecting one or several separate groups in each axis at a certain level in functions and taxonomy. Second, “Aggregation” involves selecting a level lower than “Selection” level at which selected data should be aggregated to groups of this level by summing read counts. “Aggregation” of metagenomes is done by averaging metagenomes with same defined name.
 
