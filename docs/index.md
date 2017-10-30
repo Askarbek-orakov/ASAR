@@ -29,12 +29,10 @@ It should also be mentioned, that we are rarely dealing with a single set of seq
 
 _Figure A._ **3D dataset**
 ![](media/3Dcube.png)
-
 Datasets of dimensionality higher than 2 require special techniques for analysis and visualization, so in most modern applications, 3D datasets are reduced to 2D matrices by discarding one of their dimensions (fig B). For example, taxonomic analysis applications, like Kaiju [4], consider only samples and the taxonomy axis of the data cube, summing reads mapped to any function in a particular taxon into one cell. Similarly, functional analysis software, like Paladin [5], discards the taxonomic axis and analyzes only samples and function dimensions.
 
 _Figure B._ **Projecting the 3D dataset along the function axis**
 ![](media/project.png)
-
 
 In ASAR we aim to provide dynamic visualization and an analysis framework to facilitate exploration of the whole 3D dataset. This type of analysis can provide valuable insights not only into the composition and functional abilities of a community, but also regarding the role of particular organisms in the community, the presence of symbiotic or antagonistic interactions between members of the community, and so on.
 
@@ -76,7 +74,6 @@ _Figure 2._ **Function vs Metagenomes (F/M)**
 
 _Figure 3._ **Taxonomy vs Metagenomes (T/M)**
 ![](media/image3.png)
-
 ### _KEGG Pathways Heatmap_
 _Figure 4._ **KEGG Pathways Heatmap**
 ![](media/image4.png)
@@ -227,7 +224,7 @@ Webkey will be needed to download files from private projects. To get your webke
 
 Open Terminal and run this chunk of code after modifying the webkey and metagenome ID (as indicated by red squares) to download your files. 
 
-<img src="media/image29.png" width="1000">
+<img src="media/image29.png" width="1300">
 
 
 1. Functional annotation by SEED 
@@ -277,10 +274,7 @@ curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http:
 
 **d. Download a functional annotation file using either SEED or KEGG by selecting “function” for Annotation Type and either “KEGG” or “SEED” for Data Source. Rename them by adding “.fkegg” or “.fseed,” respectively. Examples: “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”.**
 
-<img src="media/image20.png" width="700"> 
-
-
-
+<img src="media/image20.png" width="500"> 
 <img src="media/image21.png" width="1000">
 
 **e. Download a taxonomic annotation file either from SEED or KEGG by selecting “organism” for Annotation Type and either “KEGG” or “SEED” for Data Source. Rename them by adding “.kegg” or “.seed,” respectively. Examples: “mgm4714675.3.kegg” and “mgm4714675.3.seed”.** 
@@ -310,7 +304,7 @@ curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http:
 
 3. Press the icon shown below to download metadata. 
 
-<img src="media/image27.png" width="1300">
+<img src="media/image27.png" width="1400">
 
 
 ### _Creating .RData_
