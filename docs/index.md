@@ -274,7 +274,7 @@ curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http:
 
 **d. Download a functional annotation file using either SEED or KEGG by selecting “function” for Annotation Type and either “KEGG” or “SEED” for Data Source. Rename them by adding “.fkegg” or “.fseed,” respectively. Examples: “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”.**
 
-<img src="media/image20.png" width="500"> 
+<img src="media/image20.png" width="650"> 
 <img src="media/image21.png" width="1000">
 
 **e. Download a taxonomic annotation file either from SEED or KEGG by selecting “organism” for Annotation Type and either “KEGG” or “SEED” for Data Source. Rename them by adding “.kegg” or “.seed,” respectively. Examples: “mgm4714675.3.kegg” and “mgm4714675.3.seed”.** 
@@ -296,7 +296,7 @@ curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http:
 
 1.Press icon shown below. 
 
-<img src="media/image25.png" width="700">
+<img src="media/image25.png" width="800">
 
 2. Select all. 
 
