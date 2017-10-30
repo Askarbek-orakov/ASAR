@@ -13,8 +13,6 @@ _Askarbek Orakov, Nazgul Sakenova, Anatoly Sorokin and Igor Goryanin_
 9.	How to cite us
 10.	References
 
-
-
 ## Summary
 **What is it?** Functional and taxonomic analysis are critical in understanding interspecific interactions within microbial communities. Presently, these types of analysis are run separately, which makes results difficult to interpret. Here we present the ASAR interactive tool for simultaneous analysis of metagenomic data along three dimensions: taxonomy, function, and metagenome.
 
@@ -27,17 +25,10 @@ For analysis of metagenome sequences by next-generation sequencing, short reads 
 
 It should also be mentioned, that we are rarely dealing with a single set of sequences from one community. Usually, at least technical repeats and controls are present. Sets of samples forms the third dimension of our dataset (fig A). The community or samples direction usually does not have a hierarchical relationship between samples. Instead, it represents the structure of the design matrix, created to estimate the contribution of factors of interest to community composition and/or functions.
 
-_Figure A._ **3D dataset**
-![](media/3Dcube.png)
-
+_Figure A._ **3D dataset** ![](media/3Dcube.png)
 
 Datasets of dimensionality higher than 2 require special techniques for analysis and visualization, so in most modern applications, 3D datasets are reduced to 2D matrices by discarding one of their dimensions (fig B). For example, taxonomic analysis applications, like Kaiju [4], consider only samples and the taxonomy axis of the data cube, summing reads mapped to any function in a particular taxon into one cell. Similarly, functional analysis software, like Paladin [5], discards the taxonomic axis and analyzes only samples and function dimensions.
-
-
-
-
-_Figure B._ **Projecting the 3D dataset along the function axis**
-![](media/project.png)
+_Figure B._ **Projecting the 3D dataset along the function axis** ![](media/project.png)
 
 In ASAR we aim to provide dynamic visualization and an analysis framework to facilitate exploration of the whole 3D dataset. This type of analysis can provide valuable insights not only into the composition and functional abilities of a community, but also regarding the role of particular organisms in the community, the presence of symbiotic or antagonistic interactions between members of the community, and so on.
 
@@ -47,7 +38,6 @@ The Slice operation takes a specific value along one dimension and extracts the 
 The Dice operation, when the user defines a set of values along different axes, is not implemented in ASAR explicitly, as we focused on Drill down and Roll-up operations.
 
 The Drill down operation, which we called Selection (fig C), allows the user to navigate through the hierarchy by selecting an element at some higher level of the tree and to analyze the subset of the cube underneath that element. For example, the user can choose Deltaproteobacteria at the class level of taxonomy so as to restrict consideration to species and functions in that class only.
-
 _Figure C._ **Selection operation** ![](media/select.png)
 
 The Roll-up operation, which we called Aggregation, allows the user to summarize the data at some level of the hierarchy. For example, the reliability of data at the strain level is usually low, so it is common to Aggregate the data up to the genus level.
