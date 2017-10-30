@@ -30,6 +30,7 @@ It should also be mentioned, that we are rarely dealing with a single set of seq
 _Figure A._ **3D dataset**
 ![](media/3Dcube.png)
 
+
 Datasets of dimensionality higher than 2 require special techniques for analysis and visualization, so in most modern applications, 3D datasets are reduced to 2D matrices by discarding one of their dimensions (fig B). For example, taxonomic analysis applications, like Kaiju [4], consider only samples and the taxonomy axis of the data cube, summing reads mapped to any function in a particular taxon into one cell. Similarly, functional analysis software, like Paladin [5], discards the taxonomic axis and analyzes only samples and function dimensions.
 
 
