@@ -165,29 +165,33 @@ Package ‘d3heatmap’ by _“Alanocallaghan/d3heatmap”_
 2. Run these commands below in the console:
 
 ```markdown
-install.packages("shiny")
-install.packages("devtools")
-install.packages("ggplot2")
-install.packages("gplots")
-install.packages("RColorBrewer")
-install.packages("data.table")
-install.packages("plyr")
-install.packages("stringr")
-install.packages("shinythemes")
-install.packages("matrixStats")
-install.packages("png")
-install.packages("rhandsontable")
-
+install.packages("shiny",  dependencies = TRUE)
+install.packages("devtools", dependencies = TRUE)
+install.packages("ggplot2", dependencies = TRUE)
+install.packages("gplots", dependencies = TRUE)
+install.packages("RColorBrewer", dependencies = TRUE)
+install.packages("data.table", dependencies = TRUE)
+install.packages("plyr", dependencies = TRUE)
+install.packages("stringr", dependencies = TRUE)
+install.packages("shinythemes", dependencies = TRUE)
+install.packages("matrixStats", dependencies = TRUE)
+install.packages("png", dependencies = TRUE)
+install.packages("rhandsontable", dependencies = TRUE)
+```
+```markdown
 ##try http:// if https:// URLs are not supported
 source("https://bioconductor.org/biocLite.R")
-biocLite("pathview")
-biocLite("biomformat")
-biocLite("KEGGREST")
-biocLite("limma")
-
+biocLite("pathview", suppressUpdates = TRUE)
+biocLite("biomformat", suppressUpdates = TRUE)
+biocLite("KEGGREST", suppressUpdates = TRUE)
+biocLite("limma", suppressUpdates = TRUE)
+```
+```markdown
 library(devtools)
 install_github("Alanocallaghan/d3heatmap")
+```
 
+```markdown
 #Run this command in the console: 
 
 shiny::runGitHub("ASAR", "Askarbek-orakov",subdir="R")
