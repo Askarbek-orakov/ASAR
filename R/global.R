@@ -60,7 +60,7 @@ pathwayone <- "Input Pathway ID"
 #Settings
 labelColPal <- "Select color palette for heatmaps"
 currentPalette <- "Blues"
-colName <- "Group"
+colName <- "Metagenome.Name"
 if(file.exists("Settings.Rdata")){
   load("Settings.Rdata")
 }
