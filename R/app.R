@@ -397,7 +397,7 @@ server <- function(input, output, session) {
     tl2   <-reactive({input$tl2})
     fl1   <-reactive({input$fl1})
     fl2   <-reactive({input$fl2})
-    taxnames<-reactiveValues(tn=as.character(funtaxall$genus[(nrow(funtaxall)/2)]),fn=as.character(funtaxall$FUN4[(nrow(funtaxall)/2)]))
+    taxnames<-reactiveValues(tn=as.character(funtaxall$genus[(nrow(funtaxall)/4)]),fn=as.character(funtaxall$FUN4[(nrow(funtaxall)/3)]))
     tn    <-reactive({
 #      isolate({
       if(tl1()=='toplevel'){
