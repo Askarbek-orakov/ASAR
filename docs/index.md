@@ -194,18 +194,18 @@ install_github("Alanocallaghan/d3heatmap")
 
 **I** User can clone the repository to a local machine. 
 
-   a. Open Terminal.
+a. Open Terminal.
 
-   b. Change the current working directory to the location where you want the cloned directory to be made.
+b. Change the current working directory to the location where you want the cloned directory to be made.
 
-   c. Run the command on Terminal:
+c. Run the command on Terminal:
 
 ```markdown
 
 git clone https://github.com/Askarbek-orakov/ASAR.git
 
 ```
-    d. Folder will be saved as "ASAR". Open the folder and go to subfolder "R", where you will find "app.R". 
+d. Folder will be saved as "ASAR". Open the folder and go to subfolder "R", where you will find "app.R". 
      
      
 
