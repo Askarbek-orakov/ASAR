@@ -160,10 +160,10 @@ Package ‘d3heatmap’ by _“Alanocallaghan/d3heatmap”_
 
 ### _To run the app on your local machine:_
 
-1. Download RStudio/R
+1) Download RStudio/R
 
 
-2. Run these commands below in the console:
+2) Run these commands below in the console:
 
 ```markdown
 install.packages("shiny",  dependencies = TRUE)
@@ -190,24 +190,24 @@ library(devtools)
 install_github("Alanocallaghan/d3heatmap")
 ```
 
-3. There are two ways to run the app. 
+3) There are two ways to run the app. 
 
-I User can clone the repository to a local machine. 
+**I** User can clone the repository to a local machine. 
 
-a. Open Terminal.
+    a. Open Terminal.
 
-b. Change the current working directory to the location where you want the cloned directory to be made.
+    b. Change the current working directory to the location where you want the cloned directory to be made.
 
-c. Run the command on Terminal:
+    c. Run the command on Terminal:
 
 ```markdown
 
 git clone https://github.com/Askarbek-orakov/ASAR.git
 
 ```
-d. Folder will be saved as "ASAR". Open the folder and go to subfolder "R", where you will find "app.R". 
+     d. Folder will be saved as "ASAR". Open the folder and go to subfolder "R", where you will find "app.R". 
 
-II User can run the app by using this command below. 
+**II** User can run the app by using this command below. 
 
 ```markdown
 #Run this command in the console: 
