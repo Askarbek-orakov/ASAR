@@ -368,6 +368,7 @@ kostatgen <- function(funtaxall, d.kres) {
 ui <- fluidPage(
   titlePanel(maintitle),
   sidebarPanel(
+    "Note: values in cells are log2 of read abundance.\n",
     conditionalPanel(condition = "input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4 || input.conditionedPanels==5",
                      uiOutput("Mgall")),
     conditionalPanel(condition = "input.conditionedPanels==1",
@@ -380,8 +381,15 @@ ui <- fluidPage(
         choices = tax1n,
         selected = tax1selected,
         selectize = FALSE
-      ),
+      )
+    ),
+    conditionalPanel(
+      condition = "input.conditionedPanels==1 || input.conditionedPanels==2 || input.conditionedPanels==3 || input.conditionedPanels==4",
       uiOutput("taxNames")
+    ),
+    conditionalPanel(
+      condition = "input.conditionedPanels==5",
+      uiOutput("taxNamesKEGG")
     ),
     conditionalPanel(
       condition = "input.conditionedPanels==1 || input.conditionedPanels==3",
@@ -609,6 +617,7 @@ server <- function(input, output, session) {
   })
   taxnames <-
     reactiveValues(tn = as.character(funtaxall$genus[(nrow(funtaxall) / 4)]),
+                   tnKEGG = as.character(funtaxall$genus[(nrow(funtaxall) / 4)]),
                    fn = as.character(funtaxall$FUN4[(nrow(funtaxall) / 3)]))
   tn    <- reactive({
     if (tl1() == 'toplevel') {
@@ -618,6 +627,16 @@ server <- function(input, output, session) {
     }
     return(taxnames$tn)
   })
+  
+  tnKEGG<- reactive({
+    if (tl1() == 'toplevel') {
+      taxnames$tnKEGG <- 'toplevel'
+    } else{
+      taxnames$tnKEGG <- input$tnKEGG
+    }
+    return(taxnames$tnKEGG)
+  })
+  
   fn    <- reactive({
     input$fn
   })
@@ -953,7 +972,7 @@ server <- function(input, output, session) {
     }
   }
   plotInput5 <- function() {
-    sp.li <- tn()
+    sp.li <- tnKEGG()
     tl1 <- tl1()
     pathwi <- pathw()
     mgall <- mgall()
@@ -1112,6 +1131,18 @@ server <- function(input, output, session) {
         inputId = "tn",
         label = taxthree,
         multiple = TRUE,
+        choices = as.vector(unique(funtaxall[, get(x)])),
+        selected = taxnames$tn
+      )
+    }
+  })
+  output$taxNamesKEGG <- renderUI({
+    x <- input$tl1
+    if (x != "toplevel") {
+      selectInput(
+        inputId = "tnKEGG",
+        label = taxthree,
+        multiple = FALSE,
         choices = as.vector(unique(funtaxall[, get(x)])),
         selected = taxnames$tn
       )
@@ -1433,7 +1464,7 @@ server <- function(input, output, session) {
   )
   observeEvent(input$path, {
     output$PathwayID <- renderUI({
-      tn <- tn()
+      tn <- tnKEGG()
       if (!is.null(tn)) {
         tl1 <- tl1()
         mgall <- mgall()
@@ -1554,7 +1585,7 @@ server <- function(input, output, session) {
   
   kostat <- kostatgen(funtaxall, d.kres)
   output$Pathway <- renderImage({
-    sp.li <- tn()
+    sp.li <- tnKEGG()
     tl1 <- tl1()
     pathwi <- pathw()
     mgall <- mgall()
