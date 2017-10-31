@@ -192,7 +192,7 @@ install_github("Alanocallaghan/d3heatmap")
 3)There are two ways to run the app. 
 
 
-**I** User can clone the repository to a local machine. 
+**I** The first way is to clone the repository to a local machine. 
 
 a. Open Terminal.
 
@@ -209,7 +209,7 @@ d. Folder will be saved as "ASAR". Open the folder and go to subfolder "R", wher
      
      
 
-**II** User can run the app by using this command below. 
+**II** The second way is to run the app by using this command below. 
 
 ```markdown
 #Run this command in the console: 
