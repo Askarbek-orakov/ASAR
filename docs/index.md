@@ -160,9 +160,9 @@ Package ‘d3heatmap’ by _“Alanocallaghan/d3heatmap”_
 
 ### _To run the app on your local machine:_
 
-1. Download RStudio/R
+1)Download RStudio/R
 
-2. Run these commands below in the console:
+2)Run these commands below in the console:
 
 ```markdown
 install.packages("shiny",  dependencies = TRUE)
@@ -177,19 +177,39 @@ install.packages("shinythemes", dependencies = TRUE)
 install.packages("matrixStats", dependencies = TRUE)
 install.packages("png", dependencies = TRUE)
 install.packages("rhandsontable", dependencies = TRUE)
-```
-```markdown
+
 ##try http:// if https:// URLs are not supported
 source("https://bioconductor.org/biocLite.R")
 biocLite("pathview", suppressUpdates = TRUE)
 biocLite("biomformat", suppressUpdates = TRUE)
 biocLite("KEGGREST", suppressUpdates = TRUE)
 biocLite("limma", suppressUpdates = TRUE)
-```
-```markdown
+
 library(devtools)
 install_github("Alanocallaghan/d3heatmap")
 ```
+
+3)There are two ways to run the app. 
+
+
+**I** The first way is to clone the repository to a local machine. 
+
+a. Open Terminal.
+
+b. Change the current working directory to the location where you want the cloned directory to be made.
+
+c. Run the command on Terminal:
+
+```markdown
+
+git clone https://github.com/Askarbek-orakov/ASAR.git
+
+```
+d. Folder will be saved as "ASAR". Open the folder and go to subfolder "R", where you will find "app.R". 
+     
+     
+
+**II** The second way is to run the app by using this command below. 
 
 ```markdown
 #Run this command in the console: 
