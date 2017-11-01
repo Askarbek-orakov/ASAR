@@ -254,7 +254,9 @@ Finally, an Rdata file will be generated that is directly used by the applicatio
 The app can be used either by
 
 A. Exploring the pre-loaded example data set. This is a pre-loaded Metagome Sample taken from the swine waste example for exploring the app's features
+
 **or** 
+
 B. Uploading an .RData file containing your data, previously downloaded from the app session.
 
 ## Cite us:
