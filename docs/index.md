@@ -205,9 +205,9 @@ d. The folder will be saved as "ASAR". Open the folder and go to subfolder "R", 
 
 ## Data Preparation
 
-1. After cloning the repository as described above, in RStudio open ASAR/bash/prepareProject.Rmd . 
+1) After cloning the repository as described above, in RStudio open ASAR/bash/prepareProject.Rmd . 
 
-2. Install packages listed below. 
+2) Install packages listed below. 
 
 ```markdown
 #Run this command in the console. 
@@ -227,9 +227,9 @@ source("https://bioconductor.org/biocLite.R")
 biocLite("biomformat", suppressUpdates = TRUE)
 
 ```
-3. Preparation of data from MG-RAST requires only the project ID and a webkey. Before running the code in "prepareProject.Rmd" there should be two variables set for appropriate collection of the data:
+3) Preparation of data from MG-RAST requires only the project ID and a webkey. Before running the code in "prepareProject.Rmd" there should be two variables set for appropriate collection of the data:
 
-**webkey** 
+  **webkey** 
  ```markdown
 #Run this command in the console.
  webkey <- "your_webkey_goes_here"
@@ -239,16 +239,16 @@ To have a webkey, user has to be registered in MG-RAST. To get your webkey in MG
 
 <img src="media/image28.png" width="600">
 
-**prjTMP**
+  **prjTMP**
  ```markdown 
  #Run this command in the console.
  prjTMP <- "mgpXXXXX"
  ```
 Project ID starts with "mgp". The example of Project ID is "mgp13644".
 
-4. After packages have been installed and variables set, "prepareProject.Rmd" can be run.
+4) After packages have been installed and variables set, "prepareProject.Rmd" can be run.
 
-5. In the same folder with this report you can find 'submit.sh' file which is required to fetch all data from MG-RAST server via API. To run the script on Terminal type
+5) In the same folder with this report you can find 'submit.sh' file which is required to fetch all data from MG-RAST server via API. To run the script on Terminal type
 
 ```markdown
 cd `r paste0('mkdir project.',proj.ID)`
