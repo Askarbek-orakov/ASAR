@@ -9,8 +9,7 @@ _Askarbek Orakov, Nazgul Sakenova, Anatoly Sorokin and Igor Goryanin_
 5.	Parameters
 6.	Installation
 7.	Data Preparation
-8.	How to cite us
-9.	References
+8.	References
 
 ## Summary
 **What is it?** Functional and taxonomic analysis are critical in understanding interspecific interactions within microbial communities. Presently, these types of analysis are run separately, which makes results difficult to interpret. Here we present the ASAR interactive tool for simultaneous analysis of metagenomic data along three dimensions: taxonomy, function, and metagenome.
@@ -270,9 +269,6 @@ B. Replacing initial 'pathview.RData' in in ASAR/R.
 
 C. Uploading an .RData file containing your data, previously downloaded from the app session.
 
-## Cite us:
-
-Askarbek N. Orakov, Nazgul K. Sakenova, Anatoly Sorokin and Igor Goryanin. 2017. “ASAR: ”.
 
 ## References:
 
