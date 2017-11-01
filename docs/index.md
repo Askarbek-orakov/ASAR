@@ -229,12 +229,15 @@ biocLite("biomformat", suppressUpdates = TRUE)
 
 ```
 3. Preparation of data from MG-RAST requires only the project ID and a webkey. Before running the code in "prepareProject.Rmd" there should be two variables set for appropriate collection of the data:
+
  a. webkey 
  ```markdown
  #Run this command in the console.
  webkey <- "your_webkey_goes_here"
  ```
+ 
 To have a webkey, user has to be registered in MG-RAST. To get your webkey in MG-RAST, press “show webkey,” as indicated below.
+
 <img src="media/image28.png" width="600">
 
  b. prjTMP
@@ -248,119 +251,10 @@ Project ID starts with "mgp". The example of Project ID is "mgp13644".
  
 Finally, an Rdata file will be generated that is directly used by the application.
 
-## Manual Download of Files
+The app can be used either by
 
-_The list of required input files:_
-
-1. Functional annotations file either by KEGG or SEED
-2. Taxonomic annotations file either by KEGG or SEED
-3. KEGG Orthology file
-4. Biom file
-5. Metadata
-
-Our app uses MG-RAST annotations as an example. MG-RAST has both public and private projects which can be downloaded as described in its manual. There are two ways of downloading files from MG-RAST to prepare them for input.  The first is to download files through API or other command line tools, such as Terminal, while the second is to download files directly from the MG-RAST website. In the first, you will have to rename files manually, while in the latter case, the code will download files and rename them automatically.
-
-### **I Download files through API or other command line tools, such as Terminal.**
-
-1.	You can learn how to download files via API by clicking this link.
-2.	An example of how to download files through Terminal is shown below.
-
-Webkey will be needed to download files from private projects. To get your webkey in MG-RAST, press “show webkey,” as indicated below.
-<img src="media/image28.png" width="600">
-
-Open Terminal and run this chunk of code after modifying the webkey and metagenome ID (as indicated by red squares) to download your files. 
-
-<img src="media/image29.png" width="1300">
-
-
-1. Functional annotation by SEED 
-```markdown
-curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http://api-pql.metagenomics.anl.gov/1/annotation/similarity/mgm4714675.3?source=SEED&type=function&identity=60&length=15" -o mgm4714679.3.fseed
-```
-2. Taxonomic annotation by SEED
-```markdown
-curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http://api.metagenomics.anl.gov/1/annotation/similarity/mgm4714675.3?source=SEED&type=organism&identity=60&length=15" -o mgm4714675.3.seed
-```
-3. Functional annotation by KEGG
-```markdown
-curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http://api-pql.metagenomics.anl.gov/1/annotation/similarity/mgm4714675.3?source=KEGG&type=function&identity=60&length=15" -o mgm4714679.3.fkegg
-```
-4. Taxonomic annotation by KEGG
-```markdown
-curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http://api-pql.metagenomics.anl.gov/1/annotation/similarity/mgm4714675.3?source=KEGG&type=organism&identity=60&length=15" -o mgm4714679.3.kegg
-```
-5. KEGG Orthology file
-```markdown
-curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http://api-pql.metagenomics.anl.gov/1/annotation/similarity/mgm4714675.3?source=KO&type=ontology&identity=60&length=15" -o mgm4714675.3.ko
-```
-6. Biome file:
-```markdown
-curl -H "auth: your_webkey_comes_here" -H 'Accept-Encoding: gzip,deflate' "http://api-pql.metagenomics.anl.gov/1/matrix/organism?id=mgm4714675.3&id=mgm4714661.3&id=mgm4714663.3&source=SEED&group_level=strain&result_type=abundance&hit_type=all&identity=60&length=15" -o mgm.biome
-```
-7. Metadata should be created by the user.
-
-### **II Download files directly from MG-RAST website as follows.**
-
-**a. Select a project.** 
-
-<img src="media/image17.png" width="2000"> 
-
-
-
-**b. Select a sample.**
-
-<img src="media/image18.png" width="1000">
-
-
-
-**c. Go to Download.** 
-
-<img src="media/image19.png" width="1000">
-
-
-**d. Download a functional annotation file using either SEED or KEGG by selecting “function” for Annotation Type and either “KEGG” or “SEED” for Data Source. Rename them by adding “.fkegg” or “.fseed,” respectively. Examples: “mgm4714675.3.fkegg” and “mgm4714675.3.fseed”.**
-
-<img src="media/image20.png" width="690"> 
-<img src="media/image21.png" width="1000">
-
-**e. Download a taxonomic annotation file either from SEED or KEGG by selecting “organism” for Annotation Type and either “KEGG” or “SEED” for Data Source. Rename them by adding “.kegg” or “.seed,” respectively. Examples: “mgm4714675.3.kegg” and “mgm4714675.3.seed”.** 
-
-
-<img src="media/image22.png" width="1040">
-<img src="media/image23.png" width="1030">
-
-**f. Download a KEGG Orthology file by selecting “ontology” for Annotation Type and “KO” for Data Source. Rename the file by adding “.ko”. Example: “mgm4714675.3.ko”.** 
-
-
-<img src="media/image24.png" width="1050">
-
-**g. The biome file can be downloaded only from MG-RAST API/command line tools (see below)**
-
-
-**h. Download the metadata file by entering a project and pressing the file icon as shown below. Rename the file as “jobs.tsv” or create your own.**
-
-
-1.Press icon shown below. 
-
-<img src="media/image25.png" width="800">
-
-2. Select all. 
-
-<img src="media/image26.png" width="1000">
-
-3. Press the icon shown below to download metadata. 
-
-<img src="media/image27.png" width="1400">
-
-
-### _Creating .RData_
-
-Put all five files into the same directory.
-
-You may use this app by
-
-A. Exploring the pre-loaded example data set. This is a pre-loaded Metagome Sample taken from the swine waste example for exploring the app's features.
-
+A. Exploring the pre-loaded example data set. This is a pre-loaded Metagome Sample taken from the swine waste example for exploring the app's features
+**or** 
 B. Uploading an .RData file containing your data, previously downloaded from the app session.
 
 ## Cite us:
