@@ -234,7 +234,6 @@ biocLite("biomformat", suppressUpdates = TRUE)
 #Run this command in the console.
  webkey <- "your_webkey_goes_here"
  ```
- 
 To have a webkey, user has to be registered in MG-RAST. To get your webkey in MG-RAST, press “show webkey,” as indicated below.
 
 <img src="media/image28.png" width="600">
