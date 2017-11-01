@@ -248,8 +248,12 @@ To have a webkey, user has to be registered in MG-RAST. To get your webkey in MG
 Project ID starts with "mgp". The example of Project ID is "mgp13644".
 
 4. After packages being installed and variables being set, "prepareProject.Rmd" can be run.
- 
-Finally, an Rdata file will be generated that is directly used by the application.
+
+Once all jobs are finished run the *checkDownload.R*:
+```markdown
+./checkDownload.R
+```
+If some files are missing or partially downloaded 'checkDownload.R' script will create 'resubmit.<date.time>.sh' script, which will reload missing files. If download is complete and functional the 'checkDownload.R' script will create Rdata file ready for use in ASAR. 
 
 The app can be used either by
 
