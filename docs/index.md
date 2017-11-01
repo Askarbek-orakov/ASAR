@@ -249,11 +249,18 @@ Project ID starts with "mgp". The example of Project ID is "mgp13644".
 
 4. After packages have been installed and variables set, "prepareProject.Rmd" can be run.
 
+5. In the same folder with this report you can find 'submit.sh' file which is required to fetch all data from MG-RAST server via API. To run the script on Terminal type
+
+```markdown
+cd `r paste0('mkdir project.',proj.ID)`
+./submit.sh
+```
 Once all jobs are finished run the *checkDownload.R*:
 ```markdown
 ./checkDownload.R
 ```
-If some files are missing or partially downloaded 'checkDownload.R' script will create 'resubmit.<date.time>.sh' script, which will reload missing files. If download is complete and functional the 'checkDownload.R' script will create Rdata file ready for use in ASAR. 
+If some files are missing or partially downloaded 'checkDownload.R' script will create 'resubmit.<date.time>.sh' script, which will reload missing files. 
+If download is complete and functional the 'checkDownload.R' script will create Rdata file ready for use in ASAR. 
 
 The app can be used by
 
