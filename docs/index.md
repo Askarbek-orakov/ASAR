@@ -205,7 +205,7 @@ c. Run the command on Terminal:
 git clone https://github.com/Askarbek-orakov/ASAR.git
 
 ```
-d. Folder will be saved as "ASAR". Open the folder and go to subfolder "R", where you will find "app.R". 
+d. The folder will be saved as "ASAR". Open the folder and go to subfolder "R", where you will find "app.R". Please, open "app.R" with RStudio and then click on "Run App" button. 
      
      
 
