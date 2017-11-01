@@ -9,9 +9,8 @@ _Askarbek Orakov, Nazgul Sakenova, Anatoly Sorokin and Igor Goryanin_
 5.	Parameters
 6.	Installation
 7.	Data Preparation
-8.	Manual download of files
-9.	How to cite us
-10.	References
+8.	How to cite us
+9.	References
 
 ## Summary
 **What is it?** Functional and taxonomic analysis are critical in understanding interspecific interactions within microbial communities. Presently, these types of analysis are run separately, which makes results difficult to interpret. Here we present the ASAR interactive tool for simultaneous analysis of metagenomic data along three dimensions: taxonomy, function, and metagenome.
@@ -189,10 +188,7 @@ library(devtools)
 install_github("Alanocallaghan/d3heatmap")
 ```
 
-3)There are two ways to run the app. 
-
-
-**I** The first way is to clone the repository to a local machine. 
+3)To run the app user has to clone the repository to a local machine. 
 
 a. Open Terminal.
 
@@ -207,20 +203,50 @@ git clone https://github.com/Askarbek-orakov/ASAR.git
 ```
 d. The folder will be saved as "ASAR". Open the folder and go to subfolder "R", where you will find "app.R". Please, open "app.R" with RStudio and then click on "Run App" button. 
      
-     
-
-**II** The second way is to run the app by using this command below. 
-
-```markdown
-#Run this command in the console: 
-
-shiny::runGitHub("ASAR", "Askarbek-orakov",subdir="R")
-
-```
 
 ## Data Preparation
 
-Preparation of data from MG-RAST requires only the project ID and a webkey to be given to a BASH script that subsequently downloads and processes all required files and generates an Rdata file that is directly used by the application.
+1. After cloning the repository as discribed in previous section, open "prepareProject.Rmd" with RStudio that can be found in the folder "bash" inside the folder "ASAR".
+
+2. Install packages listed below. 
+
+```markdown
+#Run this command in the console. 
+
+install.packages("pander",  dependencies = TRUE)
+install.packages("knitr",  dependencies = TRUE)
+install.packages("ggplot2",  dependencies = TRUE)
+install.packages("plyr",  dependencies = TRUE)
+install.packages("RJSONIO",  dependencies = TRUE)
+install.packages("data.table",  dependencies = TRUE)
+install.packages("RCurl",  dependencies = TRUE)
+install.packages("xtable",  dependencies = TRUE)
+install.packages("shiny",  dependencies = TRUE)
+
+##try http:// if https:// URLs are not supported
+source("https://bioconductor.org/biocLite.R")
+biocLite("biomformat", suppressUpdates = TRUE)
+
+```
+3. Preparation of data from MG-RAST requires only the project ID and a webkey. Before running the code in "prepareProject.Rmd" there should be two variables set for appropriate collection of the data:
+ a. webkey 
+ ```markdown
+ #Run this command in the console.
+ webkey <- "your_webkey_goes_here"
+ ```
+To have a webkey, user has to be registered in MG-RAST. To get your webkey in MG-RAST, press “show webkey,” as indicated below.
+<img src="media/image28.png" width="600">
+
+ b. prjTMP
+ ```markdown 
+ #Run this command in the console.
+ prjTMP <- "mgpXXXXX"
+ ```
+Project ID starts with "mgp". The example of Project ID is "mgp13644".
+
+4. After packages being installed and variables being set, "prepareProject.Rmd" can be run.
+ 
+Finally, an Rdata file will be generated that is directly used by the application.
 
 ## Manual Download of Files
 
