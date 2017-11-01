@@ -161,7 +161,7 @@ Package ‘d3heatmap’ by _“Alanocallaghan/d3heatmap”_
 
 1)Download RStudio/R
 
-2)Run these commands below in the console:
+2) Install packages listed below.
 
 ```markdown
 install.packages("shiny",  dependencies = TRUE)
@@ -201,12 +201,12 @@ c. Run the command on Terminal:
 git clone https://github.com/Askarbek-orakov/ASAR.git
 
 ```
-d. The folder will be saved as "ASAR". Open the folder and go to subfolder "R", where you will find "app.R". Please, open "app.R" with RStudio and then click on "Run App" button. 
+d. The folder will be saved as "ASAR". Open the folder and go to subfolder "R", where you will find "app.R". Please, open "app.R" with RStudio and then click on "Run App" button (ASAR/R/app.R). 
      
 
 ## Data Preparation
 
-1. After cloning the repository as discribed in previous section, open "prepareProject.Rmd" with RStudio that can be found in the folder "bash" inside the folder "ASAR".
+1. After cloning the repository as described above, in RStudio open ASAR/bash/prepareProject.Rmd . 
 
 2. Install packages listed below. 
 
@@ -230,9 +230,9 @@ biocLite("biomformat", suppressUpdates = TRUE)
 ```
 3. Preparation of data from MG-RAST requires only the project ID and a webkey. Before running the code in "prepareProject.Rmd" there should be two variables set for appropriate collection of the data:
 
- a. webkey 
+**webkey** 
  ```markdown
- #Run this command in the console.
+#Run this command in the console.
  webkey <- "your_webkey_goes_here"
  ```
  
@@ -240,14 +240,14 @@ To have a webkey, user has to be registered in MG-RAST. To get your webkey in MG
 
 <img src="media/image28.png" width="600">
 
- b. prjTMP
+**prjTMP**
  ```markdown 
  #Run this command in the console.
  prjTMP <- "mgpXXXXX"
  ```
 Project ID starts with "mgp". The example of Project ID is "mgp13644".
 
-4. After packages being installed and variables being set, "prepareProject.Rmd" can be run.
+4. After packages have been installed and variables set, "prepareProject.Rmd" can be run.
 
 Once all jobs are finished run the *checkDownload.R*:
 ```markdown
@@ -255,13 +255,13 @@ Once all jobs are finished run the *checkDownload.R*:
 ```
 If some files are missing or partially downloaded 'checkDownload.R' script will create 'resubmit.<date.time>.sh' script, which will reload missing files. If download is complete and functional the 'checkDownload.R' script will create Rdata file ready for use in ASAR. 
 
-The app can be used either by
+The app can be used by
 
 A. Exploring the pre-loaded example data set. This is a pre-loaded Metagome Sample taken from the swine waste example for exploring the app's features
 
-**or** 
+B. Replacing initial 'pathview.RData' in in ASAR/R. 
 
-B. Uploading an .RData file containing your data, previously downloaded from the app session.
+C. Uploading an .RData file containing your data, previously downloaded from the app session.
 
 ## Cite us:
 
