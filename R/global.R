@@ -1,4 +1,4 @@
-maintitle <- ""
+maintitle <- "Advanced metagenomic Sequence Analysis in R"
 
 titletab1 <- "F/T"
 titletab2 <- "F/M"
@@ -9,9 +9,17 @@ titletab6 <- "Settings"
 titletab7 <- "Metadata"
 titleForEmtyDataPopup <- "Empty selection!"
 textForEmptyDataPopup <- "Please select some function or taxon."
-
+titleIntfuntax <- "Heatmap cannot be generated"
+textIntfuntaxInPlot1 <- "There are no data to display for this function and taxonomy in your dataset. Please try to change either function or taxonomy selections."
+textIntfuntaxInPlot2 <- "There are no data to display for this function and taxonomy in your dataset. Please try to change either function or taxonomy selections."
+textIntfuntaxInPlot3 <- "There are no data to display for this function and taxonomy in your dataset. Please try to change either function or taxonomy selections."
+textDimErrorPlot4 <- "There are no metabolic pathways found for selected taxonomy in selected metagenomes. Please try changing those selections."
+titleIntfuntaxPath <- "Pathway List cannot be generated"
+textIntfuntaxPath <- "There are no pathways available for selected taxons and metagenomes. Please try changing your selections."
 titleForDimErrorPopup <- "Wrong Heatmap dimensions!"
 textForDimErrorPopup <- "Please select other function or taxon or go one level higher."
+titleSevTaxInImage <- "Incorrest taxonomy entering!"
+textSevTaxInImage <- "Please select only one taxonomic group. When several are selected, only first will be taken into account."
 titleForNonMatchKostat <- "Error with annotation files!"
 textForNonMatchKostat <- "There is inconsistency within KEGG Orthology Annotation file."
 titleForSavingMetadata <- "Saving your metadata..."
@@ -52,7 +60,7 @@ pathwayone <- "Input Pathway ID"
 #Settings
 labelColPal <- "Select color palette for heatmaps"
 currentPalette <- "Blues"
-colName <- "Group"
+colName <- "Metagenome.Name"
 if(file.exists("Settings.Rdata")){
   load("Settings.Rdata")
 }
