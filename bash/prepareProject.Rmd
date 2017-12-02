@@ -259,7 +259,7 @@ In the recent version of the MG-RAST matrix become asynchronous command, which m
 
 # Prepare download scripts
 ```{r make.sango.scripts,echo=FALSE}
-lines<-c('#!/bin/bash',sapply(metagenomes$MG.RAST.ID,function(.x)paste0('sbatch getMGRAST.sh ',webkey,' mgm',.x)))
+lines<-c('#!/bin/bash',sapply(metagenomes$MG.RAST.ID,function(.x)paste0('sbatch getMGRAST.sh ',webkey,' ',.x)))
 writeLines(lines,'submit.sh')
 system('chmod a+x submit.sh')
 ```
