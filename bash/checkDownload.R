@@ -42,6 +42,6 @@ if(length(lines)>0){
   system(paste0('chmod a+x ',fname))
   cat('The download is incomplete. Run ',fname,'\n')
 }else{
-  cat('The download is complete. Preparing Rdata file\n')
-
+  cat('The download is complete. Preparing Rdata file\n\tBe patient it could take several minutes.\n')
+  source('createPathView.R')
 }
