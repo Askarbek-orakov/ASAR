@@ -10,6 +10,7 @@
 key=$1
 mgid=$2
 echo "$1 for $2"
+srun curl  -H "auth: $key" -H 'Accept-Encoding: gzip,deflate' "http://api.metagenomics.anl.gov/1/annotation/similarity/$mgid?source=SEED&type=organism&identity=60&length=15" -o "$mgid.seed"
+srun curl  -H "auth: $key" -H 'Accept-Encoding: gzip,deflate' "http://api.metagenomics.anl.gov/1/annotation/similarity/$mgid?source=SEED&type=function&identity=60&length=15" -o "$mgid.fseed"
 srun curl  -H "auth: $key" -H 'Accept-Encoding: gzip,deflate' "http://api.metagenomics.anl.gov/1/annotation/similarity/$mgid?source=KO&type=ontology&identity=60&length=15" -o "$mgid.ko"
-
 
