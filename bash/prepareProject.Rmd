@@ -1,6 +1,6 @@
 ---
 title: "Prepare data "
-author: "Анатолий Сорокин"
+author: "Anatoly Sorokin"
 date: '`r format(Sys.time(), "%d.%m.%Y")`'
 output:
   pdf_document:
@@ -13,9 +13,6 @@ params:
   version: !r if(nchar(Sys.which("git"))) system("git describe --long --dirty --abbrev=10  --tags  --always",
     intern=TRUE) else date()
 header-includes:
-- \usepackage[T2A]{fontenc}
-- \usepackage[utf8]{inputenc}
-- \usepackage[english,russian]{babel}
 - \usepackage{grffile}
 - \usepackage{rotating}
 - \usepackage{caption}
@@ -278,17 +275,9 @@ If some files are missing or partially downloaded *checkDownload.R* script will 
 
 If download is complete and functional the *checkDownload.R* script will create Rdata file ready for use in ASAR. 
 
-# Приложения {.tabset}
-## Функции
-```{r functions, eval=FALSE, include=TRUE}
-```
 
-## Конфигурация R
-```{r setup, eval=FALSE}
-```
-
-## Версии
-### Версия документа
+## Versions
+### Versions of the document
 ```{r docVersion, echo=FALSE, results='asis', cache=FALSE}
 cat(params$version)
 ```
