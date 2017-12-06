@@ -11,7 +11,7 @@ mdt<-read.csv(file = paste0(proj.ID,'.meta.csv'))
 lines<-c()
 i<-1
 for(mid in mdt$MG.RAST.ID){
-  s<-tryCatch(paste(fread(paste0('tail -n 1 mgm',mid,'.fseed')),collapse = ' '))
+  s<-tryCatch(paste(fread(paste0('tail -n 1 ',mid,'.fseed')),collapse = ' '))
   if (inherits(s, "try-error")) {
     lines[i]<-paste0('sbatch getMGRAST.fseed.sh ',webkey,' mgm',mid)
     i<-i+1
@@ -19,7 +19,7 @@ for(mid in mdt$MG.RAST.ID){
     lines[i]<-paste0('sbatch getMGRAST.fseed.sh ',webkey,' mgm',mid)
     i<-i+1
   }
-  s<-tryCatch(paste(fread(paste0('tail -n 1 mgm',mid,'.seed')),collapse = ' '))
+  s<-tryCatch(paste(fread(paste0('tail -n 1 ',mid,'.seed')),collapse = ' '))
   if (inherits(s, "try-error")) {
     lines[i]<-paste0('sbatch getMGRAST.seed.sh ',webkey,' mgm',mid)
     i<-i+1
@@ -27,7 +27,7 @@ for(mid in mdt$MG.RAST.ID){
     lines[i]<-paste0('sbatch getMGRAST.seed.sh ',webkey,' mgm',mid)
     i<-i+1
   }
-  s<-tryCatch(paste(fread(paste0('tail -n 1 mgm',mid,'.ko')),collapse = ' '))
+  s<-tryCatch(paste(fread(paste0('tail -n 1 ',mid,'.ko')),collapse = ' '))
   if (inherits(s, "try-error")) {
     lines[i]<-paste0('sbatch getMGRAST.ko.sh ',webkey,' mgm',mid)
     i<-i+1
