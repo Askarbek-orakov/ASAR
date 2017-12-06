@@ -236,7 +236,9 @@ biocLite("biomformat", suppressUpdates = TRUE)
 ./prepareProject.sh <webkey> <projectID>
 ```
 To have a webkey, user has to be registered in MG-RAST. To get your webkey in MG-RAST, press “show webkey,” as indicated below.
+
 <img src="media/image28.png" width="600">
+
 Project ID starts with "mgp". The example of Project ID is "mgp13644".
 This script will produce a folder called “project.<projectID>” and its .tbz2 zipped file which will contain files for further use.
 
