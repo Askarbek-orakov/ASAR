@@ -205,12 +205,14 @@ d. The folder will be saved as "ASAR". Open the folder and go to subfolder "R", 
 
 ## Data Preparation
 
-1) After cloning the repository as described above, in RStudio open ASAR/bash/prepareProject.Rmd . 
+1) After cloning the repository as described above, You will have to run several shell scripts in terminal, preferably in HPC cluster due to memory and computing resources requirements. 
 
-2) Install packages listed below. 
+2) If you want to run this script in HPC cluster please have “pandoc” (https://github.com/jgm/pandoc/releases/tag/2.0.4) installed. Otherwise, if you want to run it on Mac, “pandoc” is installed together with Rstudio by default.
+
+3)Install R packages listed below. 
 
 ```markdown
-#Run this command in the console. 
+#Run this command in R console. To open R console in terminal just type "R".
 
 install.packages("pander",  dependencies = TRUE)
 install.packages("knitr",  dependencies = TRUE)
@@ -221,44 +223,36 @@ install.packages("data.table",  dependencies = TRUE)
 install.packages("RCurl",  dependencies = TRUE)
 install.packages("xtable",  dependencies = TRUE)
 install.packages("shiny",  dependencies = TRUE)
+install.packages("taxize",  dependencies = TRUE)
 
 ##try http:// if https:// URLs are not supported
 source("https://bioconductor.org/biocLite.R")
 biocLite("biomformat", suppressUpdates = TRUE)
 
 ```
-3) Preparation of data from MG-RAST requires only the project ID and a webkey. Before running the code in "prepareProject.Rmd" there should be two variables set for appropriate collection of the data:
-
-  **webkey** 
- ```markdown
-#Run this command in the console.
- webkey <- "your_webkey_goes_here"
- ```
-To have a webkey, user has to be registered in MG-RAST. To get your webkey in MG-RAST, press “show webkey,” as indicated below.
-
-<img src="media/image28.png" width="600">
-
-  **prjTMP**
- ```markdown 
- #Run this command in the console.
- prjTMP <- "mgpXXXXX"
- ```
-Project ID starts with "mgp". The example of Project ID is "mgp13644".
-
-4) After packages have been installed and variables set, "prepareProject.Rmd" can be run.
-
-5) In the same folder with this report you can find 'submit.sh' file which is required to fetch all data from MG-RAST server via API. To run the script on Terminal type
+4) Preparation of data from MG-RAST requires only the project ID and a webkey. Please run this first. When insering your own variables remove "<" and ">". 
 
 ```markdown
-cd `r paste0('mkdir project.',proj.ID)`
+./prepareProject.sh <webkey> <projectID>
+```
+To have a webkey, user has to be registered in MG-RAST. To get your webkey in MG-RAST, press “show webkey,” as indicated below.
+<img src="media/image28.png" width="600">
+Project ID starts with "mgp". The example of Project ID is "mgp13644".
+This script will produce a folder called “project.<projectID>” and its .tbz2 zipped file which will contain files for further use.
+
+5) In the project specific folder you can find 'submit.sh' file which is required to fetch all data from MG-RAST server via API. To run the 'submit.sh' go to project folder and then run it.
+
+```markdown
+cd project.<projectID>
 ./submit.sh
 ```
-Once all jobs are finished run the *checkDownload.R*:
+6) Once all jobs are finished run the 'checkDownload.R':
 ```markdown
 ./checkDownload.R
 ```
 If some files are missing or partially downloaded 'checkDownload.R' script will create 'resubmit.<date.time>.sh' script, which will reload missing files. 
 If download is complete and functional the 'checkDownload.R' script will create Rdata file ready for use in ASAR. 
+If there is an error with lack of “ghead” command in the system, you should try replacing it with “head”.
 
 The app can be used by
 
