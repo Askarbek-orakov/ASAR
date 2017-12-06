@@ -250,9 +250,9 @@ cd project.<projectID>
 ```
 6) Once all jobs are finished run the 'checkDownload.R':
 ```markdown
-./checkDownload.R
+./checkDownload.R <webkey> <projectID>
 ```
-If some files are missing or partially downloaded 'checkDownload.R' script will create 'resubmit.<date.time>.sh' script, which will reload missing files. 
+If some files are missing or partially downloaded 'checkDownload.R' script will create 'resubmit.<date.time>.sh' script, which will reload missing files. After reloading go back to step 6.
 If download is complete and functional the 'checkDownload.R' script will create Rdata file ready for use in ASAR. 
 If there is an error with lack of “ghead” command in the system, you should try replacing it with “head”.
 
