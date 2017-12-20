@@ -19,8 +19,8 @@ library(limma)
 source('mg.key.R')
 load("pathview.Rdata")
 options(shiny.maxRequestSize = 10 * 1024 ^ 3)
-mdt$Group <- paste(gsub('is', 'IGBS', gsub('sws', 'SS', mdt$Origin)), mdt$Source)
-mdt$Group <- gsub('inflow inflow', 'SW', gsub(' inoculum', '', mdt$Group))
+#mdt$Group <- paste(gsub('is', 'IGBS', gsub('sws', 'SS', mdt$Origin)), mdt$Source)
+#mdt$Group <- gsub('inflow inflow', 'SW', gsub(' inoculum', '', mdt$Group))
 ko.path.name <- ko.path.name[-grep('ko01100', ko.path.name$ko), ]
 kegg <- kegg[-grep('ko01100', kegg$ko), ]
 loadRdata <- function(fname) {
