@@ -4,7 +4,6 @@ if(!require(data.table)){stop('Install library "data.table"')}
 if(!require(taxize)){stop('Install library "taxize"')}
 if(!require(stringr)){stop('Install library "stringr"')}
 if(!require(plyr)){stop('Install library "plyr"')}
-#load('../data/funtree.rda')
 
 ####--------------------------------------------------####
 
@@ -234,6 +233,8 @@ d.res <- make.d.res(kres.res)
 d.kres <- make.d.kres(kres.res)
 d.bm <- our.aggregate(d.res)
 usp<-unique(d.bm$usp)
+sources <- gnr_datasources()
+ncbi <- sources$id[sources$title == 'NCBI']
 tempC <- gnr_resolve(names = usp,best_match_only=TRUE,data_source_ids = ncbi,canonical = TRUE)
 taxCLS<-classification(unique(tempC$matched_name2),db='ncbi')
 
@@ -258,5 +259,8 @@ txTab<-ldply(taxCLS,.fun = function(.x){
   return(res)})
 taxL<-merge(tempC,txTab,by.x='matched_name2',by.y='.id')
 taxall<-merge(d.bm,data.table(taxL),by.y = 'user_supplied_name',by.x='usp')
+load("funtree.rda")
 funtaxallL <- merge(taxall, funtree, by.x = 'ufun', by.y = 'FUN1')
 funtaxall<-funtaxallL[,c("usp", "species","genus","family","order","class","phylum","domain","md5","ufun","FUN2","FUN3","FUN4",grep('mgm',names(funtaxall),value = TRUE)), with=FALSE]
+load("../../R/keggmappings.Rdata")
+save(funtaxall, d.kres, mdt, kegg, ko.path.name, file = paste0("pathview.", proj.ID, ".Rdata"))
