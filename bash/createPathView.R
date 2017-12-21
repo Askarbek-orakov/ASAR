@@ -261,6 +261,6 @@ taxL<-merge(tempC,txTab,by.x='matched_name2',by.y='.id')
 taxall<-merge(d.bm,data.table(taxL),by.y = 'user_supplied_name',by.x='usp')
 load("funtree.rda")
 funtaxallL <- merge(taxall, funtree, by.x = 'ufun', by.y = 'FUN1')
-funtaxall<-funtaxallL[,c("usp", "species","genus","family","order","class","phylum","domain","md5","ufun","FUN2","FUN3","FUN4",grep('mgm',names(funtaxall),value = TRUE)), with=FALSE]
+funtaxall<-funtaxallL[,c("usp", "species","genus","family","order","class","phylum","domain","md5","ufun","FUN2","FUN3","FUN4",grep('mgm',names(funtaxallL),value = TRUE)), with=FALSE]
 load("../../R/keggmappings.Rdata")
 save(funtaxall, d.kres, mdt, kegg, ko.path.name, file = paste0("pathview.", proj.ID, ".Rdata"))
