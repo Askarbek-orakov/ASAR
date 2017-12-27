@@ -1,4 +1,4 @@
-#!/usr/local/bin/Rscript
+#!/usr/bin/Rscript
 args <- commandArgs(trailingOnly = TRUE)
 print(args)
 webkey<-args[1]
@@ -13,26 +13,26 @@ i<-1
 for(mid in mdt$MG.RAST.ID){
   s<-tryCatch(paste(fread(paste0('tail -n 1 ',mid,'.fseed')),collapse = ' '))
   if (inherits(s, "try-error")) {
-    lines[i]<-paste0('sbatch getMGRAST.fseed.sh ',webkey,' mgm',mid)
+    lines[i]<-paste0('sbatch getMGRAST.fseed.sh ',webkey,' ',mid)
     i<-i+1
   }else if(!grepl('Download complete',s)){
-    lines[i]<-paste0('sbatch getMGRAST.fseed.sh ',webkey,' mgm',mid)
+    lines[i]<-paste0('sbatch getMGRAST.fseed.sh ',webkey,' ',mid)
     i<-i+1
   }
   s<-tryCatch(paste(fread(paste0('tail -n 1 ',mid,'.seed')),collapse = ' '))
   if (inherits(s, "try-error")) {
-    lines[i]<-paste0('sbatch getMGRAST.seed.sh ',webkey,' mgm',mid)
+    lines[i]<-paste0('sbatch getMGRAST.seed.sh ',webkey,' ',mid)
     i<-i+1
   }else if(!grepl('Download complete',s)){
-    lines[i]<-paste0('sbatch getMGRAST.seed.sh ',webkey,' mgm',mid)
+    lines[i]<-paste0('sbatch getMGRAST.seed.sh ',webkey,' ',mid)
     i<-i+1
   }
   s<-tryCatch(paste(fread(paste0('tail -n 1 ',mid,'.ko')),collapse = ' '))
   if (inherits(s, "try-error")) {
-    lines[i]<-paste0('sbatch getMGRAST.ko.sh ',webkey,' mgm',mid)
+    lines[i]<-paste0('sbatch getMGRAST.ko.sh ',webkey,' ',mid)
     i<-i+1
   }else if(!grepl('Download complete',s)){
-    lines[i]<-paste0('sbatch getMGRAST.ko.sh ',webkey,' mgm',mid)
+    lines[i]<-paste0('sbatch getMGRAST.ko.sh ',webkey,' ',mid)
     i<-i+1
   }
 }

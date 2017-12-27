@@ -167,8 +167,10 @@ write.csv(metagenomes,file = paste0(proj.ID,'.meta.csv'))
 
 ```{r project.description,echo=FALSE,results='asis'}
 desc<-as.data.frame(anno$metadata)
+if(dim(desc)[1]>0){
 names(desc)<-'metadata'
 pander(desc)
+}
 ```
 
 ## List of metagenomes
@@ -191,7 +193,7 @@ In the recent version of the MG-RAST matrix become asynchronous command, which m
   message("The time spent in this step is proportional to the total amount of remote data...")
   param <-
     list(
-      id=paste0('mgm',metagenomes$MG.RAST.ID[1:59]),
+      id=paste0('mgm',metagenomes$MG.RAST.ID[1:min(59,dim(metagenomes)[1])]),
       group_level='strain',source='SEED',result_type='abundance',
       hit_type='all',identity=60,length=15,
       auth = webkey

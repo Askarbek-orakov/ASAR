@@ -9,8 +9,9 @@ prjTMP<-'$2'
 cat(webkey,prjTMP)
 rmarkdown::render('prepareProject.Rmd','pdf_document')
 system(paste0('mkdir project.',proj.ID))
-system(paste0('cp submit.sh getMGRAST.sh prepareProject.pdf ',proj.ID,'.biom ',proj.ID,'.meta.csv project.',proj.ID,'/'))
+system(paste0('cp submit.sh getMGRAST*.sh prepareProject.pdf ',proj.ID,'.meta.csv project.',proj.ID,'/'))
 system(paste0('cp checkDownload.R createPathView.R funtree.rda project.',proj.ID,'/'))
+system(paste0('cp ',proj.ID,'.biom 	',proj.ID,'/'))
 system(paste0('tar cvjf project.',proj.ID,'.tbz2 project.',proj.ID,'/'))
 q(save='no')
 EOR
