@@ -228,6 +228,7 @@ our.merge <- function(path='.') {
   return(list(kres=kres, res=res))
 }
 
+mdt<-read.csv(file = paste0(proj.ID,'.meta.csv'))
 kres.res <- our.merge()
 d.res <- make.d.res(kres.res)
 d.kres <- make.d.kres(kres.res)
@@ -237,9 +238,12 @@ sources <- gnr_datasources()
 ncbi <- sources$id[sources$title == 'NCBI']
 tempC <- gnr_resolve(names = usp,best_match_only=TRUE,data_source_ids = ncbi,canonical = TRUE)
 taxCLS<-classification(unique(tempC$matched_name2),db='ncbi')
-
+indNA<-which(is.na(taxCLS))
+naTax<-classification(tempC$user_supplied_name[match(names(indNA),tempC$matched_name2)],db='ncbi')
+taxCLS[indNA]<-naTax
+# check for double last name grep('^[^ +]+ (\\b\\w+) \\1',names(taxCLS))
 txTab<-ldply(taxCLS,.fun = function(.x){
-  if(is.na(.x)){
+  if(any(is.na(.x))){
     res<-data.frame(species=NA,
                     genus=NA,
                     family=NA,
