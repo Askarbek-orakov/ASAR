@@ -229,6 +229,7 @@ our.merge <- function(path='.') {
 }
 
 mdt<-read.csv(file = paste0(proj.ID,'.meta.csv'))
+rownames(mdt)<-mdt$MG.RAST.ID
 kres.res <- our.merge()
 d.res <- make.d.res(kres.res)
 d.kres <- make.d.kres(kres.res)
